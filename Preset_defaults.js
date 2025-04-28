@@ -14,6 +14,7 @@ function DoCallType() {
 	radio_btns[14].parentNode.click(); //'невозможно определить'
 
 	window.scroll(0, -30);
+	console.log('DoCallType() after scroll')
 	
 	return;
 };
