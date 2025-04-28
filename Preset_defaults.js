@@ -13,7 +13,7 @@ function DoCallType() {
 	radio_btns[1].parentNode.click(); //'личные сообщения'
 	radio_btns[14].parentNode.click(); //'невозможно определить'
 
-	window.scroll(0, -50);
+	window.scroll(0, -30);
 	
 	return;
 };
