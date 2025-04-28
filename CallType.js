@@ -1,5 +1,5 @@
 function DoCallType() {
-	console.log('DoCallType() begin')
+	console.log('DoCallType() begin (CallType.js)')
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
 	//console.log('DoCallType() btns:', radio_btns.length)
