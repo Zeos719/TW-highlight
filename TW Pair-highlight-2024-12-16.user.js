@@ -10,10 +10,10 @@
 // @grant        GM_openInTab
 // @run-at       document-end
 // @require      https://code.jquery.com/jquery-3.7.1.min.js
-// @require      file:///C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/Goods_in_check.js
-// @require      file:///C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/Obuv_v1.js
-// @require      file:///C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/Call_027.js
-// @require      file:///C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\Preset_defaults.js
+// @require      https://zeos719.github.io/TW-highlight/Goods_in_check.js
+// @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
+// @require      https://zeos719.github.io/TW-highlight/Call_027.js
+// @require      https://zeos719.github.io/TW-highlight/Preset_defaults.js
 // ==/UserScript==
 
 console.log('Monkey very begin!');
