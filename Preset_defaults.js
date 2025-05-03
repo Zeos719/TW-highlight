@@ -43,9 +43,9 @@ function DoCheckImage() {
 }	
 
 // Preset RadioButtons
-// Usage: Preset_RB(0) or Preset_RB([1,10])
-function Preset_RB(choice) {
-	console.log(`Preset_RB(${choice.toString()}) begin`);
+// Usage: RB_set(0) or RB_set([1,10])
+function RB_set(choice) {
+	console.log(`RB_set(${choice.toString()}) begin`);
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
 
@@ -63,4 +63,16 @@ function Preset_RB(choice) {
 	} //for(ch)
 	
 	return;
+}
+
+function RB_alreadySet() {
+	console.log('RB_alreadySet() begin');
+	
+	const radio_btns = document.querySelectorAll('input[type=radio]');
+
+	let anyChecked = false;
+	for (const btn of radio_btns) 
+		{anyChecked = anyChecked || btn.checked }
+	
+	return anyChecked;
 }
