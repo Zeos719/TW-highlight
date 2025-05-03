@@ -49,12 +49,6 @@ function RB_set(choice) {
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
 
-	let anyChecked = false;
-	for (const btn of radio_btns) 
-		{anyChecked = anyChecked || btn.checked }
-	
-	if (anyChecked) return; //выбор уже сделан	
-
 	if (typeof(choice)=='number') choice = [choice];
 	
 	for(let ch in choice) {
