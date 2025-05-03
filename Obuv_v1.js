@@ -24,7 +24,11 @@ function Obuv_onCtrlEnter(e) {
 			let completeBtn = document.querySelector("#completeBtn");
 			completeBtn.removeEventListener("click", Obuv_onBtnClick);	
 		}
-	}	
+	}
+
+	if (e.ctrlKey && (e.keyCode == '~') {
+		console.log('Obuv_onBtnClick: Ctrl ~');
+	
 }
 
 function Obuv_SendToServer() {
