@@ -14,7 +14,7 @@ function Obuv_onBtnClick(e) {
 
 function Obuv_onCtrlEnter(e) {
 	if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
-		//console.log('--GiC finish: CtrlEnter--');
+		//console.log('Obuv_onCtrlEnter: CtrlEnter--');
 		let choice = Obuv_SendToServer();
 		
 		//Remove listeners
@@ -26,8 +26,9 @@ function Obuv_onCtrlEnter(e) {
 		}
 	}
 
-	if (e.ctrlKey && (e.keyCode == 78)) { // Ctrl ~
-		console.log('Obuv_onBtnClick: Ctrl ~');
+	//if (e.ctrlKey && (e.keyCode == 78)) { // Ctrl ~
+	if (e.ctrlKey) {
+		console.log('Obuv_onCtrlEnter:', e.keyCode);
 	}
 }
 
