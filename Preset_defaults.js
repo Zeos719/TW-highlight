@@ -52,9 +52,8 @@ function RB_set(choice) {
 
 	if (typeof(choice)=='number') choice = [choice];
 	
-	for(let ch in choice) {
-		radio_btns[ch].parentNode.click();
-		
+	for(let i=0; i<choice.length; i++) {
+		radio_btns[ choice[i] ].parentNode.click();
 	} //for(ch)
 	
 	return;
