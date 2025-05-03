@@ -29,6 +29,7 @@ function Obuv_onCtrlEnter(e) {
 	if (e.ctrlKey && (e.keyCode == 192)) { // Ctrl ~
 	//if (e.ctrlKey) {
 		console.log('Obuv_onCtrlEnter:', e.keyCode);
+		Preset_RB(1); //Незначительно отличаются
 	}
 }
 
