@@ -30,6 +30,10 @@ function Obuv_onCtrlEnter(e) {
 	//if (e.ctrlKey) {
 		console.log('Obuv_onCtrlEnter:', e.keyCode);
 		RB_set(1); //Незначительно отличаются
+
+		let completeBtn = document.querySelector("#completeBtn");
+		completeBtn.click();
+		
 	}
 }
 
