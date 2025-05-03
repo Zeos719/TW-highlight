@@ -28,7 +28,7 @@ function Obuv_onCtrlEnter(e) {
 
 	if (e.ctrlKey && (e.keyCode == '~') {
 		console.log('Obuv_onBtnClick: Ctrl ~');
-	
+	}
 }
 
 function Obuv_SendToServer() {
