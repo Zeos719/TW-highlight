@@ -48,7 +48,7 @@ function RB_set(choice) {
 	console.log(`RB_set(${choice.toString()}) begin`);
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
-	console.log('RB_set() rb:', radio_btns);
+	//console.log('RB_set() rb:', radio_btns);
 
 	if (typeof(choice)=='number') choice = [choice];
 	
