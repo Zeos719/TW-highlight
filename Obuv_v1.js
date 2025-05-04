@@ -125,6 +125,7 @@ function DoObuv() {
 			(choice) }
 
 		//Auto select for https://superstep.ru - 'недостаточно данных' и выход
+		/*
 		if (document.links[0].href.includes('superstep.ru') &&
 		   (document.links[0].href==document.links[1].href) ) {
 
@@ -133,7 +134,7 @@ function DoObuv() {
 			let completeBtn = document.querySelector("#completeBtn");
 			completeBtn.click();			
 		   } // superstep.ru
-		
+		*/
 			
 	}
 
