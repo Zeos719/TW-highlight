@@ -131,7 +131,7 @@ function DoObuv() {
 			RB_set(3); //Данных недостаточно
 
 			let completeBtn = document.querySelector("#completeBtn");
-			//completeBtn.click();			
+			completeBtn.click();			
 		   } // superstep.ru
 		
 			
