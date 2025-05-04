@@ -122,7 +122,18 @@ function DoObuv() {
 		//console.log('Obuv_AutoDecision: ', choice);
 		
 		if (choice!=-1) {
-			Obuv_SelectDecision(choice) }
+			(choice) }
+
+		//Auto select for https://superstep.ru - 'недостаточно данных' и выход
+		if (document.links[0].href.includes('superstep.ru') &&
+		   (document.links[0].href==document.links[1].href) ) {
+
+			RB_set(3); //Данных недостаточно
+
+			let completeBtn = document.querySelector("#completeBtn");
+			//completeBtn.click();			
+		   } // superstep.ru
+		
 			
 	}
 
