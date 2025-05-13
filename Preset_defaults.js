@@ -38,7 +38,10 @@ function DoCheckImage() {
 */
 
 function DoCheckImage() {
-	Preset_RB(0);
+	if (!RB_alreadySet()) {
+		RB_set(0);
+	}	
+	
 	return;
 }	
 
