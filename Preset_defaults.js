@@ -37,9 +37,16 @@ function DoCheckImage() {
 }	
 */
 
-function DoCheckImage() {
+function DoCheckImage(taskVersion) {
+	console.log('DoCheckImage ver:', taskVersion)
 	if (!RB_alreadySet()) {
+		if (taskVersion==0) {  //Безопасная картинка
 		RB_set(0);
+		} 	
+		if (taskVersion==1) { //Обнаженные органы
+		RB_set(1);
+		} 	
+		
 	}	
 	
 	return;
