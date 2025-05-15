@@ -21,7 +21,7 @@ function DoCallType() {
 
 /*
 function DoCheckImage() {
-	console.log('DoCheckImage() begin')
+	//console.log('DoCheckImage() begin')
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
 	
@@ -38,7 +38,7 @@ function DoCheckImage() {
 */
 
 function DoCheckImage(taskVersion) {
-	console.log('DoCheckImage ver:', taskVersion)
+	//console.log('DoCheckImage ver:', taskVersion)
 	if (!RB_alreadySet()) {
 		if (taskVersion==0) {  //Безопасная картинка
 		RB_set(0);
@@ -55,7 +55,7 @@ function DoCheckImage(taskVersion) {
 // Preset RadioButtons
 // Usage: RB_set(0) or RB_set([1,10])
 function RB_set(choice) {
-	console.log(`RB_set(${choice.toString()}) begin`);
+	//console.log(`RB_set(${choice.toString()}) begin`);
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
 	//console.log('RB_set() rb:', radio_btns);
@@ -70,7 +70,7 @@ function RB_set(choice) {
 }
 
 function RB_alreadySet() {
-	console.log('RB_alreadySet() begin');
+	//console.log('RB_alreadySet() begin');
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
 
