@@ -60,8 +60,6 @@ if (window!=window.top) {
      });
     observer.observe(document.body, { childList: true, subtree: true });
 */
-        let linkTabs = [{tab:null, href:''}, {obj:null, href:''}];
-
         var observer = new customObserver(document,false,function(observer,mutations){
             this.disconnect();
 
@@ -80,9 +78,8 @@ if (window!=window.top) {
 console.log('detectTask2:', taskCode, taskVersion);
             if (taskCode==tc_Obuv) {
                 //AskHttpHelper('obuv', document.links);
-                console.log('before DoObuv()');
                 DoObuv();
-                OpenPreviewTabs(linkTabs);
+                OpenPreviewTabs(document.links[0].href, document.links[1].href);
             }
 
             if (taskCode==tc_Brand) {DoBrandCorrespond()};
@@ -112,7 +109,7 @@ console.log('detectTask2:', taskCode, taskVersion);
             }
 
             if (taskCode==tc_CheckImage) {
-                DoCheckImage();
+                DoCheckImage(taskVersion);
             }
 
 
@@ -130,32 +127,64 @@ else {
     //console.log('Tw: not frame');
 }
 
-function OpenPreviewTabs(linkTabs) {
+//Multiple items
+function OpenPreviewTabs(link0, link1) {
+    if (!Object.hasOwn(this, 'linkTabs')) this.linkTabs = [];
+
+    console.log('OpenPreviewTabs start', this.linkTabs)
 
     //Close last pre-view tabs
-    if (linkTabs[0].href != document.links[0].href) {
-        if ( (linkTabs[0].tab!=null) && !linkTabs[0].tab.closed ) linkTabs[0].tab.close();
-    }
+    for (let i=this.linkTabs.length-1;i>=0;i--) {
+        let item = this.linkTabs[i]
 
-    if (linkTabs[1].href != document.links[1].href) {
-        if ( (linkTabs[1].tab!=null) && !linkTabs[1].tab.closed ) linkTabs[1].tab.close();
-    }
+        let closed_0 = ((item[0].tab!=null) && item[0].tab.closed) || (item[0].tab==null)
+        let closed_1 = ((item[1].tab!=null) && item[1].tab.closed) || (item[1].tab==null)
+
+        if ( (item[0].tab!=null) && !item[0].tab.closed ) item[0].tab.close(); //better before splice because item then will be deleted
+        if ( (item[1].tab!=null) && !item[1].tab.closed ) item[1].tab.close();
+
+        if ( closed_0 && closed_1 ) { //delete closed
+            this.linkTabs.splice(i,1); //remove closed
+            continue;
+        }
+    } //for
+
+    // May new links are already in list?
+    for (let i=0;i<this.linkTabs.length;i++) {
+        let item = this.linkTabs[i]
+
+        if ((item[0].href==link0) && (item[1].href==link1)) {
+            return false;
+            }
+    } //for
+
+    //Add new item to list and open previews
+    let v1 = {tab:GM_openInTab(link1), href: link1}
+    let v0 = {tab:GM_openInTab(link0), href: link0}
+    
+    this.linkTabs.push( [v0, v1] );
+
+    //console.log('OpenPreviewTabs end', this.linkTabs)
+    return true
+}
 
 
-    //Open pre-view tabs
-    if (linkTabs[0].href != document.links[0].href) {
-        linkTabs[0].href = document.links[0].href;
-        linkTabs[0].tab = GM_openInTab(document.links[0].href);
-    }
-    if (document.links[0].href != document.links[1].href) {
-        if (linkTabs[1].href != document.links[1].href) {
-            linkTabs[1].href = document.links[1].href;
-            linkTabs[1].tab = GM_openInTab(document.links[1].href);
+//Just a test
+/*
+function OpenPreviewTabs() {
+    console.log('OpenPreviewTabs start', this.linkTabs)
+
+    if (typeof this.linkTabs !== 'undefined') {
+        if ((this.linkTabs[0]==document.links[0].href) && (this.linkTabs[1]==document.links[1].href)) {
+            console.log('OpenPreviewTabs same!!!')
+            return
         }
     }
 
-    return;
+    this.linkTabs = [document.links[0].href, document.links[1].href]
+    console.log('OpenPreviewTabs end', this.linkTabs)
 }
+*/
 
 
 //return [taskCode, taskVersion]
@@ -168,7 +197,7 @@ function detectTask(docText) {
     { marker: "Подходят ли товары?|Название товара в чеке:", code: tc_GiC },
     { marker: "расшифровка телефонного разговора", code: tc_Call027 },
     { marker: "Фраза из диалога:", code: tc_CallType },
-    { marker: "Проверь изображение", code: tc_CheckImage },
+    { marker: "Проверь изображение|половые органы", code: tc_CheckImage },
 
   ].reverse();
 
