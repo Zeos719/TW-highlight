@@ -20,7 +20,6 @@ function DoCallType() {
 };
 
 function SaveCanvas(canvas) {
-	console.log('SaveCanvas', canvas)
 	const dataUrl = canvas.toDataURL('image/png');
 	const link = document.createElement('a');
 	link.href = dataUrl;
@@ -55,8 +54,9 @@ function DoCheckImage(taskVersion) {
 		if (taskVersion==0) {  //Безопасная картинка
 		RB_set(0);
 
-		let canvas = document.querySelector('#canvas');
-		SaveCanvas(canvas);
+		let canvas = document.getElementsByTagName('canvas');
+		console.log('SaveCanvas', canvas)
+		//SaveCanvas(canvas[0]);
 			
 		}  //version 0
 		
