@@ -70,10 +70,10 @@ function DoCheckImage(taskVersion) {
 		im_1 = canvas[1].getContext('2d');
 		console.log('SaveCanvas GetCont 1', im_1)
 
-		im_1.moveTo(30,90); 
-		im_1.lineTo(30,120); 
-		im_1.lineTo(60,120); 
-		im_1.lineTo(60,90); 
+		im_1.moveTo(90,30); 
+		im_1.lineTo(120,30); 
+		im_1.lineTo(120,60); 
+		im_1.lineTo(90,60); 
 		im_1.lineTo(90,30);
 		im_1.stroke(); 	
 
