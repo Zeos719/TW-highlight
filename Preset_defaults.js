@@ -56,7 +56,7 @@ function DoCheckImage(taskVersion) {
 
 		let canvas = document.getElementsByTagName('canvas');
 		console.log('SaveCanvas canv', canvas)
-
+/*
 		let im_1 = canvas[0].getContext('2d');
 		console.log('SaveCanvas GetCont 0', im_1)
 
@@ -76,9 +76,8 @@ function DoCheckImage(taskVersion) {
 		im_1.lineTo(90,60); 
 		im_1.lineTo(90,30);
 		im_1.stroke(); 	
-
-			
-		//SaveCanvas(canvas[0]);
+*/			
+		SaveCanvas(canvas[0]);
 			
 		}  //version 0
 		
