@@ -24,6 +24,7 @@ function SaveCanvas(canvas) {
 	const link = document.createElement('a');
 	link.href = dataUrl;
 	link.download = 'safe-pic.png'; // Это было бы по душе Пикассо 👍
+	link.innerText = '*** Save the picture ***';
 	document.body.appendChild(link);
 	//link.click();
 	//document.body.removeChild(link); // Не забывайте подчищать после себя
