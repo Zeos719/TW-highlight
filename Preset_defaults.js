@@ -58,7 +58,7 @@ function DoCheckImage(taskVersion) {
 		console.log('SaveCanvas canv', canvas)
 
 		let im_1 = canvas[0].getContext('2d');
-		console.log('SaveCanvas GetCont', im_1)
+		console.log('SaveCanvas GetCont 0', im_1)
 
 		im_1.moveTo(30,30); 
 		im_1.lineTo(30,60); 
@@ -66,6 +66,17 @@ function DoCheckImage(taskVersion) {
 		im_1.lineTo(60,30); 
 		im_1.lineTo(30,30);
 		im_1.stroke(); 	
+
+		im_1 = canvas[1].getContext('2d');
+		console.log('SaveCanvas GetCont 1', im_1)
+
+		im_1.moveTo(30,90); 
+		im_1.lineTo(30,120); 
+		im_1.lineTo(60,120); 
+		im_1.lineTo(60,90); 
+		im_1.lineTo(90,30);
+		im_1.stroke(); 	
+
 			
 		//SaveCanvas(canvas[0]);
 			
