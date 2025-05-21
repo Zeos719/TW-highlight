@@ -19,15 +19,15 @@ function DoCallType() {
 	return;
 };
 
-function SaveCanvas(canvas) {
-	const dataUrl = canvas.toDataURL('image/png');
+function SaveCanvas(cnv) {
+	const dataUrl = cnv.toDataURL('image/png');
 	const link = document.createElement('a');
 	link.href = dataUrl;
 	link.download = 'safe-pic.png'; // Это было бы по душе Пикассо 👍
-	link.innerText = '*** Save the picture ***';
+	//link.innerText = '*** Save the picture ***';
 	document.body.appendChild(link);
-	//link.click();
-	//document.body.removeChild(link); // Не забывайте подчищать после себя
+	link.click();
+	document.body.removeChild(link); // Не забывайте подчищать после себя
 }
 
 
@@ -56,7 +56,7 @@ function DoCheckImage(taskVersion) {
 		RB_set(0);
 
 		let canvas = document.getElementsByTagName('canvas');
-		console.log('SaveCanvas canv', canvas)
+		//console.log('SaveCanvas canv', canvas)
 /*
 		let im_1 = canvas[0].getContext('2d');
 		console.log('SaveCanvas GetCont 0', im_1)
@@ -78,11 +78,10 @@ function DoCheckImage(taskVersion) {
 		im_1.lineTo(90,30);
 		im_1.stroke(); 	
 */			
-		canvas[0].style.border = "solid 2px green";
-		canvas[1].style.border = "solid 4px red";
+		//canvas[0].style.border = "solid 2px green";
+		//canvas[1].style.border = "solid 4px red";			
 			
-			
-		//SaveCanvas(canvas[0]);
+		SaveCanvas(canvas[0]);
 			
 		}  //version 0
 		
