@@ -19,6 +19,17 @@ function DoCallType() {
 	return;
 };
 
+function SaveCanvas(canvas) {
+	const dataUrl = canvas.toDataURL('image/png');
+	const link = document.createElement('a');
+	link.href = dataUrl;
+	link.download = 'safe-pic.png'; // Это было бы по душе Пикассо 👍
+	document.body.appendChild(link);
+	//link.click();
+	//document.body.removeChild(link); // Не забывайте подчищать после себя
+}
+
+
 /*
 function DoCheckImage() {
 	//console.log('DoCheckImage() begin')
@@ -42,10 +53,15 @@ function DoCheckImage(taskVersion) {
 	if (!RB_alreadySet()) {
 		if (taskVersion==0) {  //Безопасная картинка
 		RB_set(0);
-		} 	
+
+		let canvas = document.querySelector('#canvas');
+		SaveCanvas(canvas);
+			
+		}  //version 0
+		
 		if (taskVersion==1) { //Обнаженные органы
 		RB_set(1);
-		} 	
+		} //version 1	
 		
 	}	
 	
