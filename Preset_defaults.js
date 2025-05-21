@@ -78,7 +78,9 @@ function DoCheckImage(taskVersion) {
 		im_1.lineTo(90,30);
 		im_1.stroke(); 	
 */			
-		canvas.style.border = "solid 2px green"	
+		canvas[0].style.border = "solid 2px green";
+		canvas[1].style.border = "solid 4px red";
+			
 			
 		//SaveCanvas(canvas[0]);
 			
