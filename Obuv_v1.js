@@ -577,7 +577,7 @@ class Obuv {
 		if (title1.innerHTML.includes('<span')) return; //Already done
 		
 		let colorized1, colorized2;
-		[colorized1, colorized2] = Strings_CompareAndColor(title1.textContent, title2.textContent, colorRed='#ffcccc', colorGreen=null);
+		[colorized1, colorized2] = Strings_CompareAndColor(title1.textContent, title2.textContent, '#ffcccc', null);
 	
 		title1.innerHTML = colorized1;
 		title2.innerHTML = colorized2;
@@ -665,7 +665,7 @@ class Obuv {
 		console.log('Compare_VendorCode:', codeSearch);	
 	
 		//Compare and colorize
-		let colorized = Strings_CompareAndColor(codeSearch[0].value, codeSearch[1].value, colorRed=null, colorGreen=GREEN_COLOR, delim=/\-|\./);
+		let colorized = Strings_CompareAndColor(codeSearch[0].value, codeSearch[1].value, null, GREEN_COLOR, /\-|\./);
 		
 		nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(codeSearch[0].value, colorized[0]);
 		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(codeSearch[1].value, colorized[1]);
