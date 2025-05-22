@@ -116,37 +116,6 @@ function Compare_href_byParts(links) {
 	}
 }
 
-
-//choice = 0,1,2 (see Obuv_AutoDecision() )
-function Obuv_SelectDecision(choice) {
-	let btn;
-
-	const radio_btns = document.querySelectorAll('input[type=radio]');
-	
-	let anyChecked = false;
-	for (const btn of radio_btns) 
-		{anyChecked = anyChecked || btn.checked }
-	
-	if (anyChecked) {
-		console.log('Obuv_SelectDecision: already done');
-		return;
-	}
-	
-	
-	//radio_btns[choice].checked = true;	
-	//radio_btns[choice].click(); 
-	radio_btns[choice].parentNode.click();
-	
-	window.scroll(0, 0); //scroll back to top
-	
-	//Auto close the task
-	//let btn_Ok = document.querySelectordocument.querySelector("#completeBtn");
-	//btn_Ok.click();
-	
-	//console.log('Obuv_SelectDecision-click');
-}
-
-
 function Compare_Titles() {
 	
 	let titles = document.getElementsByClassName('name');
@@ -660,7 +629,7 @@ class Obuv {
 		document.addEventListener("keydown", Obuv_onCtrlEnter);
 		
 		//Preset default
-		Obuv_SelectDecision(2); //'Abs differ' by deffault
+		this.SelectDecision(2); //'Abs differ' by deffault
 					
 		let bound = document.links[0].getBoundingClientRect();
 		const REQUIRED_TOP = 600; //80
@@ -697,6 +666,13 @@ class Obuv {
 	return;		
 	} //MainJob
 
+	//choice = 0,1,2 (see Obuv_AutoDecision() )
+	function SelectDecision(choice) {
+		if (RB_alreadySet()) { return }
+	
+		RB_set(choice)	
+		window.scroll(0, 0); //scroll back to top
+	} //SelectDecision()
 	
 
 
