@@ -91,137 +91,6 @@ function DoObuv() {
 }
 
 
-function Compare_href_byParts(links) {
-	if (links[0].innerHTML.includes('span')) {//already done
-		return };
-
-	let parts0 = links[0].href.split(/\/|\?/);
-	let parts1 = links[1].href.split(/\/|\?/);
-
-	let equals_till = 0
-	for (let i = 0; i < Math.min(parts0.length, parts1.length); i++) {
-		if (parts0[i]==parts1[i]) {
-			equals_till = equals_till + parts0[i].length + 1
-		} else {
-			break };
-	}
-
-	if (equals_till>0) {
-		let colored_text1 = ''.concat('<span style="background-color:', '#ddd', ';">', links[0].href.slice(0, equals_till), '</span>', links[0].href.slice(equals_till));
-		let colored_text2 = ''.concat('<span style="background-color:', '#ddd', ';">', links[1].href.slice(0, equals_till), '</span>', links[1].href.slice(equals_till));
-		//console.log('Tw color', colored_text2);
-
-		links[0].innerHTML = colored_text1;
-		links[1].innerHTML = colored_text2;
-	}
-}
-
-function Compare_Titles() {
-	
-	let titles = document.getElementsByClassName('name');
-	
-	let title1 = titles[0];
-	let title2 = titles[1];
-	
-	if (title1.innerHTML.includes('<span')) return; //Already done
-	
-	let colorized1, colorized2;
-	[colorized1, colorized2] = Strings_CompareAndColor(title1.textContent, title2.textContent, colorRed='#ffcccc', colorGreen=null);
-
-	title1.innerHTML = colorized1;
-	title2.innerHTML = colorized2;
-
-	return;		
-}
-
-
-function DelicateComapreBrands(br1, br2) {
-	
-	//O'stin <-> O`stin
-	br1 = br1.replace("'", "").replace("`", "").replace("&", "");
-	br2 = br2.replace("'", "").replace("`", "").replace("&", "");
-	
-	//adidas == adidas original
-	if ((br1!="") && (br2!="")) {
-		if (br1.startsWith(br2) || br2.startsWith(br1)) return true;
-	}
-
-	return (br1==br2);
-}
-
-function Compare_Brands() {
-
-	let brands = document.getElementsByClassName('brand');
-
-	let brand1 = brands[0];
-	let brand2 = brands[1];
-	
-	if (brand1.innerHTML.includes('<span')) return; //Already done
-	
-	let txt1 = brand1.textContent.toLowerCase();
-	let txt2 = brand2.textContent.toLowerCase();
-
-	if (!DelicateComapreBrands(txt1,txt2)) {	
-		const DIFF_COLOR = '#ff0000';
-		
-		brand1.innerHTML = `<span style="background-color:${DIFF_COLOR};">${brand1.textContent}</span>`;
-		brand2.innerHTML = `<span style="background-color:${DIFF_COLOR};">${brand2.textContent}</span>`;
-	}
-	
-	let choice = -1;
-	if ((txt1!='') && (txt2!='') && (txt1!=txt2)) choice = 2; 'Abs differ'
-	
-	return choice;
-}
-
-function Compare_VendorCode(){
-		
-	// if (!document.links[0].href.startsWith('https://campioshop.ru/')) {
-	// return; }
-	
-	const GREEN_COLOR = '#ccffcc';
-	
-	// 'vendorCode: I029208.89.WI'	vendor|Code!!!
-	let nodes = document.getElementsByClassName('attributes');
-	if (nodes==null) return;
-
-	//Extract codes
-	let codeSearch = [null, null];
-	
-	for (let nodeId=0; nodeId<2; nodeId++) {
-		
-		for (let node of nodes[nodeId].childNodes){ 
-		
-			if (node.hasOwnProperty('innerHTML') && node.innerHTML.includes('GREEN_COLOR')) return; //already done			
-		
-			//console.log('Compare_VendorCode:', node.textContent);
-			codeSearch[nodeId] = LocateAfterAnchor(node.textContent, ['vendorCode:', 'Code:', 'Артикул:', 'Артикул производителя:', 'артикул:']);
-			//console.log('Compare_VendorCode:', nodeId, codeSearch[nodeId]);
-		
-		
-			if (codeSearch[nodeId]!=null) {
-				codeSearch[nodeId].node = node;
-				break;			
-				} //if()
-		
-			} //for(node)
-				
-			
-		} //for(nodeId)
-
-	if ((codeSearch[0]==null) || (codeSearch[1]==null)) return;
-	if (!codeSearch[0].hasOwnProperty('value') || !codeSearch[1].hasOwnProperty('value')) return;
-	
-	console.log('Compare_VendorCode:', codeSearch);	
-
-	//Compare and colorize
-	let colorized = Strings_CompareAndColor(codeSearch[0].value, codeSearch[1].value, colorRed=null, colorGreen=GREEN_COLOR, delim=/\-|\./);
-	
-	nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(codeSearch[0].value, colorized[0]);
-	nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(codeSearch[1].value, colorized[1]);
-	
-	return;
-}	
 
 
 
@@ -638,11 +507,11 @@ class Obuv {
 			window.scroll(0, (bound.top-REQUIRED_TOP));
 			}
 
-		Compare_href_byParts(document.links);
+		this.Compare_href_byParts(document.links);
 
-		Compare_Titles();
-		Compare_Brands();
-		Compare_VendorCode();
+		this.Compare_Titles();
+		this.Compare_Brands();
+		this.Compare_VendorCode();
 
 		//Auto-select
 		let choice = Obuv_AutoDecision_v2();
@@ -674,6 +543,135 @@ class Obuv {
 		window.scroll(0, 0); //scroll back to top
 	} //SelectDecision()
 	
+	Compare_href_byParts(links) {
+		if (links[0].innerHTML.includes('span')) {//already done
+			return };
+	
+		let parts0 = links[0].href.split(/\/|\?/);
+		let parts1 = links[1].href.split(/\/|\?/);
+	
+		let equals_till = 0
+		for (let i = 0; i < Math.min(parts0.length, parts1.length); i++) {
+			if (parts0[i]==parts1[i]) {
+				equals_till = equals_till + parts0[i].length + 1
+			} else {
+				break };
+		}
+	
+		if (equals_till>0) {
+			let colored_text1 = ''.concat('<span style="background-color:', '#ddd', ';">', links[0].href.slice(0, equals_till), '</span>', links[0].href.slice(equals_till));
+			let colored_text2 = ''.concat('<span style="background-color:', '#ddd', ';">', links[1].href.slice(0, equals_till), '</span>', links[1].href.slice(equals_till));
+			//console.log('Tw color', colored_text2);
+	
+			links[0].innerHTML = colored_text1;
+			links[1].innerHTML = colored_text2;
+		}
+	} //Compare_href_byParts()
+
+	Compare_Titles() {	
+		let titles = document.getElementsByClassName('name');
+		
+		let title1 = titles[0];
+		let title2 = titles[1];
+		
+		if (title1.innerHTML.includes('<span')) return; //Already done
+		
+		let colorized1, colorized2;
+		[colorized1, colorized2] = Strings_CompareAndColor(title1.textContent, title2.textContent, colorRed='#ffcccc', colorGreen=null);
+	
+		title1.innerHTML = colorized1;
+		title2.innerHTML = colorized2;
+	
+		return;		
+	} //Compare_Titles()
+
+
+	DelicateComapreBrands(br1, br2) {	
+		//O'stin <-> O`stin
+		br1 = br1.replace("'", "").replace("`", "").replace("&", "");
+		br2 = br2.replace("'", "").replace("`", "").replace("&", "");
+		
+		//adidas == adidas original
+		if ((br1!="") && (br2!="")) {
+			if (br1.startsWith(br2) || br2.startsWith(br1)) return true;
+		}
+
+		return (br1==br2);
+	} //DelicateComapreBrands
+
+	Compare_Brands() {
+
+		let brands = document.getElementsByClassName('brand');
+	
+		let brand1 = brands[0];
+		let brand2 = brands[1];
+		
+		if (brand1.innerHTML.includes('<span')) return; //Already done
+		
+		let txt1 = brand1.textContent.toLowerCase();
+		let txt2 = brand2.textContent.toLowerCase();
+	
+		if (!this.DelicateComapreBrands(txt1,txt2)) {	
+			const DIFF_COLOR = '#ff0000';
+			
+			brand1.innerHTML = `<span style="background-color:${DIFF_COLOR};">${brand1.textContent}</span>`;
+			brand2.innerHTML = `<span style="background-color:${DIFF_COLOR};">${brand2.textContent}</span>`;
+		}
+		
+		let choice = -1;
+		if ((txt1!='') && (txt2!='') && (txt1!=txt2)) choice = 2; 'Abs differ'
+		
+		return choice;
+	} //Compare_Brands
+
+	Compare_VendorCode() {
+			
+		// if (!document.links[0].href.startsWith('https://campioshop.ru/')) {
+		// return; }
+		
+		const GREEN_COLOR = '#ccffcc';
+		
+		// 'vendorCode: I029208.89.WI'	vendor|Code!!!
+		let nodes = document.getElementsByClassName('attributes');
+		if (nodes==null) return;
+	
+		//Extract codes
+		let codeSearch = [null, null];
+		
+		for (let nodeId=0; nodeId<2; nodeId++) {
+			
+			for (let node of nodes[nodeId].childNodes){ 
+			
+				if (node.hasOwnProperty('innerHTML') && node.innerHTML.includes('GREEN_COLOR')) return; //already done			
+			
+				//console.log('Compare_VendorCode:', node.textContent);
+				codeSearch[nodeId] = LocateAfterAnchor(node.textContent, ['vendorCode:', 'Code:', 'Артикул:', 'Артикул производителя:', 'артикул:']);
+				//console.log('Compare_VendorCode:', nodeId, codeSearch[nodeId]);
+			
+			
+				if (codeSearch[nodeId]!=null) {
+					codeSearch[nodeId].node = node;
+					break;			
+					} //if()
+			
+				} //for(node)
+					
+				
+			} //for(nodeId)
+	
+		if ((codeSearch[0]==null) || (codeSearch[1]==null)) return;
+		if (!codeSearch[0].hasOwnProperty('value') || !codeSearch[1].hasOwnProperty('value')) return;
+		
+		console.log('Compare_VendorCode:', codeSearch);	
+	
+		//Compare and colorize
+		let colorized = Strings_CompareAndColor(codeSearch[0].value, codeSearch[1].value, colorRed=null, colorGreen=GREEN_COLOR, delim=/\-|\./);
+		
+		nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(codeSearch[0].value, colorized[0]);
+		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(codeSearch[1].value, colorized[1]);
+		
+		return;
+	} //Compare_VendorCode	
 
 
 
