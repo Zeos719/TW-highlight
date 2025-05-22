@@ -667,7 +667,7 @@ class Obuv {
 	} //MainJob
 
 	//choice = 0,1,2 (see Obuv_AutoDecision() )
-	function SelectDecision(choice) {
+	SelectDecision(choice) {
 		if (RB_alreadySet()) { return }
 	
 		RB_set(choice)	
