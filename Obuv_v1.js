@@ -75,67 +75,16 @@ function Obuv_SendToServer() {
 
 //********************* Два товара (обувь)	********************************
 
-let brands = null;
+let obv = null;
 
 function DoObuv() {
 	
 	console.log('DoObuv() starts');
+
+	if (obv==null) obv = new Obuv();
 	
 	if (document.links.length==2) {
-		//scrooll down to links
-		// https://javascript.info/size-and-scroll-window
-		// SEE elem.scrollIntoView(true) 
-		
-		// Attach handlers to track exit 
-		let completeBtn = document.querySelector("#completeBtn");
-		completeBtn.addEventListener("click", Obuv_onBtnClick);
-		
-		document.addEventListener("keydown", Obuv_onCtrlEnter);
-		
-		//Preset default
-		Obuv_SelectDecision(2); //'Abs differ' by deffault
-					
-		let bound = document.links[0].getBoundingClientRect();
-		const REQUIRED_TOP = 600; //80
-		//console.log('Tw bound:', bound.top);
-		if (window.pageYOffset==0) {
-			window.scroll(0, (bound.top-REQUIRED_TOP));
-			}
-
-		//Preload list of brands
-		if (brands==null) {
-			brands = new ValidBrands();
-		}
-
-		if (!brands.HasData()) {
-			brands.Load();
-		}	
-
-		Compare_href_byParts(document.links);
-
-		Compare_Titles();
-		Compare_Brands();
-		Compare_VendorCode();
-
-		//Auto-select
-		let choice = Obuv_AutoDecision_v2();
-		//console.log('Obuv_AutoDecision: ', choice);
-		
-		if (choice!=-1) {
-			(choice) }
-
-		//Auto select for https://superstep.ru - 'недостаточно данных' и выход
-		/*
-		if (document.links[0].href.includes('superstep.ru') &&
-		   (document.links[0].href==document.links[1].href) ) {
-
-			RB_set(3); //Данных недостаточно
-
-			let completeBtn = document.querySelector("#completeBtn");
-			completeBtn.click();			
-		   } // superstep.ru
-		*/
-			
+		obv.MainJob();		
 	}
 
 	return;
@@ -690,3 +639,70 @@ class ValidBrands {
    
   
 } // *** class ValidBrands ***
+
+
+//********************* Class Obuv ********************************
+class Obuv {
+  //constructor(name) { this.name = name; }
+  //sayHi() { alert(this.name); }
+
+	constructor() {
+			// Preload brands
+			this.brands = new ValidBrands();
+			this.brands.Load();
+		}	
+		
+	MainJob() {		
+		// Attach handlers to track exit 
+		let completeBtn = document.querySelector("#completeBtn");
+		completeBtn.addEventListener("click", Obuv_onBtnClick);
+		
+		document.addEventListener("keydown", Obuv_onCtrlEnter);
+		
+		//Preset default
+		Obuv_SelectDecision(2); //'Abs differ' by deffault
+					
+		let bound = document.links[0].getBoundingClientRect();
+		const REQUIRED_TOP = 600; //80
+		//console.log('Tw bound:', bound.top);
+		if (window.pageYOffset==0) {
+			window.scroll(0, (bound.top-REQUIRED_TOP));
+			}
+
+		Compare_href_byParts(document.links);
+
+		Compare_Titles();
+		Compare_Brands();
+		Compare_VendorCode();
+
+		//Auto-select
+		let choice = Obuv_AutoDecision_v2();
+		//console.log('Obuv_AutoDecision: ', choice);
+		
+		if (choice!=-1) {
+			(choice) }
+
+		//Auto select for https://superstep.ru - 'недостаточно данных' и выход
+		/*
+		if (document.links[0].href.includes('superstep.ru') &&
+		   (document.links[0].href==document.links[1].href) ) {
+
+			RB_set(3); //Данных недостаточно
+
+			let completeBtn = document.querySelector("#completeBtn");
+			completeBtn.click();			
+		   } // superstep.ru
+		*/
+		
+	return;		
+	} //MainJob
+
+	
+
+
+
+		
+	} //class Obuv
+	
+}
+
