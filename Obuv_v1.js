@@ -586,7 +586,7 @@ class Obuv {
 	} //Compare_Titles()
 
 
-	DelicateComapreBrands(br1, br2) {	
+	DelicateCompareBrands(br1, br2) {	
 		//O'stin <-> O`stin
 		br1 = br1.replace("'", "").replace("`", "").replace("&", "");
 		br2 = br2.replace("'", "").replace("`", "").replace("&", "");
@@ -597,7 +597,7 @@ class Obuv {
 		}
 
 		return (br1==br2);
-	} //DelicateComapreBrands
+	} //DelicateCompareBrands
 
 	Compare_Brands() {
 
@@ -611,7 +611,7 @@ class Obuv {
 		let txt1 = brand1.textContent.toLowerCase();
 		let txt2 = brand2.textContent.toLowerCase();
 	
-		if (!this.DelicateComapreBrands(txt1,txt2)) {	
+		if (!this.DelicateCompareBrands(txt1,txt2)) {	
 			const DIFF_COLOR = '#ff0000';
 			
 			brand1.innerHTML = `<span style="background-color:${DIFF_COLOR};">${brand1.textContent}</span>`;
@@ -662,7 +662,7 @@ class Obuv {
 		if ((codeSearch[0]==null) || (codeSearch[1]==null)) return;
 		if (!codeSearch[0].hasOwnProperty('value') || !codeSearch[1].hasOwnProperty('value')) return;
 		
-		console.log('Compare_VendorCode:', codeSearch);	
+		//console.log('Compare_VendorCode:', codeSearch);	
 	
 		//Compare and colorize
 		let colorized = Strings_CompareAndColor(codeSearch[0].value, codeSearch[1].value, null, GREEN_COLOR, /\-|\./);
