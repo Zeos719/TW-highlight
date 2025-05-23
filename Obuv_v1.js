@@ -20,7 +20,8 @@ function DrawAutoIndicator(isOn) {
 		completeBtn.style.background = 'solid 2px green';
 	} else {
 		completeBtn.style.background = '';
-}
+	}
+} //DrawAutoIndicator()
 
 function Obuv_onCtrlEnter(e) {
 	//Ctrl-Enter
