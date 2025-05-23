@@ -730,7 +730,7 @@ class Obuv {
 			let tbl = nodes[nodeId].children[0];
 
 			for (let row in tbl.rows) {
-				if (row.contentText.includes('vendorCode'))
+				if (row.textContent.includes('vendorCode'))
 					console.log('Compare_VendorCode_table:', row);
 			}
 			
