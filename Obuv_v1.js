@@ -736,6 +736,7 @@ class Obuv {
 				if (row.cells[0].textContent.includes('vendorCode')) {
 				console.log('Compare_VendorCode_table:', row); 
 				}
+			}
 			
 			
 		} //for(nodeId)
