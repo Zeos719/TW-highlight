@@ -19,7 +19,7 @@ function DrawAutoIndicator(isOn) {
 	let autoMark = document.querySelector("#completeBtn");
 
 	console.log(autoMark);
-	completeBtn.append("<div id='autoRunMark'">AUTO</div>");
+	completeBtn.append('<div id="autoRunMark">AUTO</div>');
 
 	if (isOn) {
 		//completeBtn.style.background = 'solid 2px green';
