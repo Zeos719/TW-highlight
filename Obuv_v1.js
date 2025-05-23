@@ -734,12 +734,22 @@ class Obuv {
 			
 			for (let row of tbl.rows) {		
 				if (row.cells[0].textContent.includes('vendorCode')) {
-				console.log('Compare_VendorCode_table:', row); 
+					codeSearch[nodeId] = row.cells[1];
+					//console.log('Compare_VendorCode_table:', row); 
 				}
-			}
-			
-			
+			} //for(row)						
 		} //for(nodeId)
+
+		if ((codeSearch[0]==null) || (codeSearch[1]==null)) return;
+		console.log('Compare_VendorCode_table cs:', codeSearch);	
+	
+		//Compare and colorize
+		let colorized = Strings_CompareAndColor(codeSearch[0].textContent, codeSearch[1].textContent, null, GREEN_COLOR, /\-|\./);
+		console.log('Compare_VendorCode_table clr:', colorized);	
+		
+		//nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(codeSearch[0].value, colorized[0]);
+		//nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(codeSearch[1].value, colorized[1]);
+		
 
 	} //Compare_VendorCode_table
 	
