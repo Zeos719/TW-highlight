@@ -182,7 +182,7 @@ function Obuv_AutoDecision_v2() {
 
 	//if (links[0].href.startsWith('https://street-beat.ru/') && links[1].href.startsWith('https://street-beat.ru/'))
 	//	return StreetBeat_special(links);
-
+/*
 	if (links[0].href.startsWith('https://spinningline.ru/') && links[1].href.startsWith('https://spinningline.ru/'))
 		return SpinningLine_special();
 
@@ -191,19 +191,16 @@ function Obuv_AutoDecision_v2() {
 
 	if (links[0].href.startsWith('https://www.traektoria.ru/') && links[1].href.startsWith('https://www.traektoria.ru/'))
 		return Traektoria_special();
-	
-	if (links[0].href.startsWith('https://www.detmir.ru/') && links[1].href.startsWith('https://www.detmir.ru/')) {
-		let ret = DetMir_special();
-		console.log('DetMir_special:', ret);
-		return ret;
-	}
+*/	
+	if (links[0].href.startsWith('https://www.detmir.ru/') && links[1].href.startsWith('https://www.detmir.ru/'))
+		return DetMir_special();
 
 	if (links[0].href!=document.links[1].href) { return -1}; //After special cases!
-
+/*
 	let site_type = Sort_sites(links[0].href);
 	if (site_type==0) return 1; //if size is not defined
 	if (site_type==1) return 0; //if is not defined		
-	
+*/	
 	return -1;
 }	
 
@@ -693,6 +690,7 @@ class Obuv {
 		
 		// 'vendorCode: I029208.89.WI'	vendor|Code!!!
 		let nodes = document.getElementsByClassName('attributes');
+		console.log('Compare_VendorCode attr', nodes);
 		if (nodes==null) return;
 	
 		//Extract codes
