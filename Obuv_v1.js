@@ -16,7 +16,7 @@ var autoRun = false;
 
 function DrawAutoIndicator(isOn) {
 	let completeBtn = document.querySelector("#completeBtn");
-	if isOn {
+	if (isOn) {
 		completeBtn.style.background = 'solid 2px green';
 	} else {
 		completeBtn.style.background = '';
@@ -42,9 +42,9 @@ function Obuv_onCtrlEnter(e) {
 		autoRun = !autoRun;
 		DrawAutoIndicator(autoRun);		
 	}
-
-	if (e.ctrlKey && (e.keyCode == 192)) { // Ctrl ~
-	//if (e.ctrlKey) {
+/*
+	// Ctrl ~
+	if (e.ctrlKey && (e.keyCode == 192)) { 
 		console.log('Obuv_onCtrlEnter:', e.keyCode);
 		RB_set(1); //Незначительно отличаются
 
@@ -52,6 +52,7 @@ function Obuv_onCtrlEnter(e) {
 		completeBtn.click();
 		
 	}
+ */
 }
 
 function Obuv_SendToServer() {
