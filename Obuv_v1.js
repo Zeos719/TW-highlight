@@ -16,16 +16,13 @@ var autoRun = false;
 
 function DrawAutoIndicator(isOn) {
 	let completeBtn = document.querySelector("#completeBtn");
-	let autoMark = document.querySelector("#completeBtn");
-
-	console.log(autoMark);
-	completeBtn.append('<div id="autoRunMark">AUTO</div>');
 
 	if (isOn) {
 		//completeBtn.style.background = 'solid 2px green';
-		
+		completBtn.textContent = 'AUTO';
 	} else {
 		//completeBtn.style.background = '';
+		completBtn.textContent = 'Завершить';
 	} 
 
 	
