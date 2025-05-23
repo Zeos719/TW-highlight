@@ -19,10 +19,10 @@ function DrawAutoIndicator(isOn) {
 
 	if (isOn) {
 		//completeBtn.style.background = 'solid 2px green';
-		completBtn.textContent = 'AUTO';
+		completeBtn.textContent = 'AUTO';
 	} else {
 		//completeBtn.style.background = '';
-		completBtn.textContent = 'Завершить';
+		completeBtn.textContent = 'Завершить';
 	} 
 
 	
