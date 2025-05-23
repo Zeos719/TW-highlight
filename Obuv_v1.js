@@ -43,23 +43,13 @@ function Obuv_onCtrlEnter(e) {
 		}
 	}
 	
-	//Alt-Enter
-	if (e.altKey && (e.keyCode == 13 || e.keyCode == 10)) {
+	//Ctrl ~
+	//if (e.altKey && (e.keyCode == 13 || e.keyCode == 10)) {
+	if (e.ctrlKey && (e.keyCode == 192)) { 
 		console.log('Topggle autoRun');
 		autoRun = !autoRun;
 		DrawAutoIndicator(autoRun);		
 	}
-/*
-	// Ctrl ~
-	if (e.ctrlKey && (e.keyCode == 192)) { 
-		console.log('Obuv_onCtrlEnter:', e.keyCode);
-		RB_set(1); //Незначительно отличаются
-
-		let completeBtn = document.querySelector("#completeBtn");
-		completeBtn.click();
-		
-	}
- */
 }
 
 function Obuv_SendToServer() {
