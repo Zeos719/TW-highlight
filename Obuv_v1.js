@@ -12,7 +12,18 @@ function Obuv_onBtnClick(e) {
 	}
 }
 
+var autoRun = false;
+
+function DrawAutoIndicator(isOn) {
+	let completeBtn = document.querySelector("#completeBtn");
+	if isOn {
+		completeBtn.style.background = 'solid 2px green';
+	} else {
+		completeBtn.style.background = '';
+}
+
 function Obuv_onCtrlEnter(e) {
+	//Ctrl-Enter
 	if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
 		//console.log('Obuv_onCtrlEnter: CtrlEnter--');
 		let choice = Obuv_SendToServer();
@@ -24,6 +35,12 @@ function Obuv_onCtrlEnter(e) {
 			let completeBtn = document.querySelector("#completeBtn");
 			completeBtn.removeEventListener("click", Obuv_onBtnClick);	
 		}
+	}
+	
+	//Alt-Enter
+	if (e.altKey && (e.keyCode == 13 || e.keyCode == 10)) {
+		autoRun = !autoRun;
+		DrawAutoIndicator(autoRun);		
 	}
 
 	if (e.ctrlKey && (e.keyCode == 192)) { // Ctrl ~
@@ -499,6 +516,7 @@ class Obuv {
 		
 		//Preset default
 		this.SelectDecision(2); //'Abs differ' by deffault
+		DrawAutoIndicator(autoRun);
 					
 		let bound = document.links[0].getBoundingClientRect();
 		const REQUIRED_TOP = 600; //80
