@@ -423,7 +423,7 @@ function ParseName_DetMir(txt) {
   let sz = txt.slice(pos+1);
 	console.log('ParseName_DetMir:', name, sz);
 	
-  return {name:name.trim(), size:sz.trim()};
+  return {name:name.trim(), sz:sz.trim()};
 }
 
 function DetMir_special() {	
@@ -440,13 +440,16 @@ function DetMir_special() {
 
 	if (tvr1.name!=tvr2.name) return -1;
 
+	return -1;
+	/*
 	if((tvr1.size='') || (tvr2.size='')) return 3; //Недостаточно данных для решения
 
 	if(tvr1.size==tvr2.size) {
 	   	return 0; //Идентичны
 	} else {
 		return 1; //Частично отличаются
-	}	
+	}
+ */
 } //DetMir_special()
 
 
