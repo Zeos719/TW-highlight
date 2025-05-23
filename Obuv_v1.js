@@ -16,11 +16,19 @@ var autoRun = false;
 
 function DrawAutoIndicator(isOn) {
 	let completeBtn = document.querySelector("#completeBtn");
+	let autoMark = document.querySelector("#completeBtn");
+
+	console.log(autoMark);
+	completeBtn.append("<div id='autoRunMark'">AUTO</div>");
+
 	if (isOn) {
-		completeBtn.style.background = 'solid 2px green';
+		//completeBtn.style.background = 'solid 2px green';
+		
 	} else {
-		completeBtn.style.background = '';
-	}
+		//completeBtn.style.background = '';
+	} 
+
+	
 } //DrawAutoIndicator()
 
 function Obuv_onCtrlEnter(e) {
