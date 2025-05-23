@@ -434,7 +434,7 @@ function DetMir_special() {
 	let tvr1 = ParseName_DetMir(title1);
 	let tvr2 = ParseName_DetMir(title2);
 
-	console.log('DetMir_special ttl:', [title1, title2[);
+	console.log('DetMir_special ttl:', [title1, title2]);
 	console.log('DetMir_special tvr:', [tvr1, tvr2]);
 
 	if (tvr1.name!=tvr2.name) return -1;
