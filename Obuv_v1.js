@@ -741,23 +741,22 @@ class Obuv {
 		} //for(nodeId)
 
 		if ((codeSearch[0]==null) || (codeSearch[1]==null)) return;
-		console.log('Compare_VendorCode_table cs:', codeSearch);	
+		//console.log('Compare_VendorCode_table cs:', codeSearch);	
 	
 		//Compare and colorize
-		let colorized = Strings_CompareAndColor(codeSearch[0].textContent, codeSearch[1].textContent, null, GREEN_COLOR, /\-|\./);
+		let colorized = Strings_CompareAndColor(codeSearch[0].textContent.trim(), codeSearch[1].textContent.trim(), null, GREEN_COLOR, /\-|\./);
 		console.log('Compare_VendorCode_table clr:', colorized);	
 		
-		//nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(codeSearch[0].value, colorized[0]);
-		//nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(codeSearch[1].value, colorized[1]);
+		codeSearch[0].innerHTML = colorized[0];
+		codeSearch[1].innerHTML = colorized[1];
 		
-
 	} //Compare_VendorCode_table
 	
 	Compare_VendorCode() {
 					
 		// 'vendorCode: I029208.89.WI'	vendor|Code!!!
 		let nodes = document.getElementsByClassName('attributes');
-		console.log('Compare_VendorCode attr', nodes);
+		//console.log('Compare_VendorCode attr', nodes);
 		if (nodes==null) return;
 
 		if (nodes[0].innerHTML.includes('<table')) {
