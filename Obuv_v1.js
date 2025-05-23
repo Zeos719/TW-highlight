@@ -40,6 +40,7 @@ function Obuv_onCtrlEnter(e) {
 	
 	//Alt-Enter
 	if (e.altKey && (e.keyCode == 13 || e.keyCode == 10)) {
+		console.log('Topggle autoRun');
 		autoRun = !autoRun;
 		DrawAutoIndicator(autoRun);		
 	}
