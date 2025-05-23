@@ -416,7 +416,7 @@ function Traektoria_special() {
 //https://www.detmir.ru
 //' Комплект PlayToday:салатовый:104' -> ['Комплект PlayToday', '104']
 function ParseName_DetMir(txt) {
-	let pos = txt.шndexOf(':');
+	let pos = txt.indexOf(':');
 	if (pos==-1) return {name:txt.trim(), size:''};
 
 	let name = txt.slice(0, pos);	
