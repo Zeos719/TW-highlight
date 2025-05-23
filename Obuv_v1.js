@@ -727,7 +727,7 @@ class Obuv {
 		let codeSearch = [null, null];
 		
 		for (let nodeId=0; nodeId<2; nodeId++) {
-			let tbl = nodes[nodeId].querySelectorAll('table');
+			let tbl = nodes[nodeId][0];
 			console.log('Compare_VendorCode_table:'. tbl);
 			
 		} //for(nodeId)
