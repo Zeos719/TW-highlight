@@ -414,15 +414,17 @@ function Traektoria_special() {
 }
 
 //https://www.detmir.ru
-//' Комплект PlayToday:104' -> ['Комплект PlayToday', '104']
+//' Комплект PlayToday:салатовый:104' -> ['Комплект PlayToday', '104']
 function ParseName_DetMir(txt) {
-  let pos = txt.lastIndexOf(':');
-  if (pos==-1) return {name:txt.trim(), size:''};
+	let pos = txt.шndexOf(':');
+	if (pos==-1) return {name:txt.trim(), size:''};
 
-  let name = txt.slice(0, pos);
-  let sz = txt.slice(pos+1);
+	let name = txt.slice(0, pos);	
 	
-  return {name:name.trim(), sz:sz.trim()};
+	let pos = txt.lastIndexOf(':');
+	
+  	let sz = txt.slice(pos+1);	
+  	return {name:name.trim(), sz:sz.trim()};
 }
 
 function DetMir_special() {	
@@ -435,7 +437,7 @@ function DetMir_special() {
 	let tvr2 = ParseName_DetMir(title2);
 
 	//console.log('DetMir_special ttl:', [title1, title2]);
-	//console.log('DetMir_special tvr:', [tvr1, tvr2]);
+	console.log('DetMir_special tvr:', [tvr1, tvr2]);
 
 	if (tvr1.name!=tvr2.name) return -1;
 
