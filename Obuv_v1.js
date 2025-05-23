@@ -729,9 +729,11 @@ class Obuv {
 		for (let nodeId=0; nodeId<2; nodeId++) {
 			let tbl = nodes[nodeId].children[0];
 
-			for (let i=0; i<tbl.rows.length;i++) {
-				if (tbl.rows[i].textContent.includes('vendorCode'))
-					console.log('Compare_VendorCode_table:', tbl.rows[i]);
+			//for (let i=0; i<tbl.rows.length;i++) {
+			//	if (tbl.rows[i].textContent.includes('vendorCode'))
+			
+			for (let row of tbl.rows)				
+				console.log('Compare_VendorCode_table:', row);
 			}
 			
 			
