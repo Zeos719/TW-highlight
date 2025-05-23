@@ -191,6 +191,12 @@ function Obuv_AutoDecision_v2() {
 
 	if (links[0].href.startsWith('https://www.traektoria.ru/') && links[1].href.startsWith('https://www.traektoria.ru/'))
 		return Traektoria_special();
+	
+	if (links[0].href.startsWith('https://www.detmir.ru/') && links[1].href.startsWith('https://www.detmir.ru/')) {
+		let ret = DetMir_special();
+		console.log('DetMir_special:', ret);
+		return ret;
+	}
 
 	if (links[0].href!=document.links[1].href) { return -1}; //After special cases!
 
@@ -406,6 +412,38 @@ function Traektoria_special() {
 	
 	return (href1==href2)?1:-1;		
 }
+
+//https://www.detmir.ru
+//' Комплект PlayToday:104' -> ['Комплект PlayToday', '104']
+function ParseName_DetMir(txt) {
+  let pos = txt.lastIndexOf(':');
+  if (pos==-1) return {name:txt.trim(), size:''};
+
+  name = txt.slice(0, pos);
+  size = txt.slice(pos+1);
+
+  return {name:name.trim(), size:size.trim()};
+}
+
+function DetMir_special() {	
+	let titles = document.getElementsByClassName('name');
+		
+	let title1 = titles[0].textContent;
+	let title2 = titles[1].textContent;
+
+	let tvr1 = ParseName_DetMir(title1);
+	let tvr2 = ParseName_DetMir(title2);
+
+	if (tvr1.name!=tvr2.name) return -1;
+
+	if((tvr1.size='') || (tvr2.size='')) return 3; //Недостаточно данных для решения
+
+	if(tvr1.size==tvr2.size) {
+	   	return 0; //Идентичны
+	} else {
+		return 1; //частично отличаются
+	}	
+} //DetMir_special()
 
 
 //********************* class ValidBrands  ********************************
