@@ -22,7 +22,7 @@ function DrawAutoIndicator(isOn) {
 		completeBtn.textContent = 'AUTO';
 	} else {
 		//completeBtn.style.background = '';
-		completeBtn.textContent = 'Завершить';
+		completeBtn.textContent = 'Завершить задание';
 	} 
 
 	
