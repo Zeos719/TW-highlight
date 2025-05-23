@@ -434,6 +434,9 @@ function DetMir_special() {
 	let tvr1 = ParseName_DetMir(title1);
 	let tvr2 = ParseName_DetMir(title2);
 
+	console.log('DetMir_special ttl:', [title1, title2[);
+	console.log('DetMir_special tvr:', [tvr1, tvr2]);
+
 	if (tvr1.name!=tvr2.name) return -1;
 
 	if((tvr1.size='') || (tvr2.size='')) return 3; //Недостаточно данных для решения
@@ -441,7 +444,7 @@ function DetMir_special() {
 	if(tvr1.size==tvr2.size) {
 	   	return 0; //Идентичны
 	} else {
-		return 1; //частично отличаются
+		return 1; //Частично отличаются
 	}	
 } //DetMir_special()
 
