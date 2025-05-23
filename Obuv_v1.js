@@ -741,10 +741,10 @@ class Obuv {
 		console.log('Compare_VendorCode attr', nodes);
 		if (nodes==null) return;
 
-		if (nodes[0].innerHTML.includes('<table')) 
-			Compare_VendorCode_table(nodes)
-		else
-			Compare_VendorCode_old(nodes);
+		if (nodes[0].innerHTML.includes('<table')) {
+			this.Compare_VendorCode_table(nodes)
+		} else {
+			this.Compare_VendorCode_old(nodes) };
 	
 	} //Compare_VendorCode	
 
