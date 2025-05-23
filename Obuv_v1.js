@@ -421,7 +421,7 @@ function ParseName_DetMir(txt) {
 
 	let name = txt.slice(0, pos);	
 	
-	let pos = txt.lastIndexOf(':');
+	pos = txt.lastIndexOf(':');
 	
   	let sz = txt.slice(pos+1);	
   	return {name:name.trim(), sz:sz.trim()};
