@@ -681,18 +681,10 @@ class Obuv {
 		return choice;
 	} //Compare_Brands
 
-	Compare_VendorCode() {
-			
-		// if (!document.links[0].href.startsWith('https://campioshop.ru/')) {
-		// return; }
-		
+
+	Compare_VendorCode_old(nodes) {
 		const GREEN_COLOR = '#ccffcc';
 		
-		// 'vendorCode: I029208.89.WI'	vendor|Code!!!
-		let nodes = document.getElementsByClassName('attributes');
-		console.log('Compare_VendorCode attr', nodes);
-		if (nodes==null) return;
-	
 		//Extract codes
 		let codeSearch = [null, null];
 		
@@ -704,8 +696,6 @@ class Obuv {
 			
 				//console.log('Compare_VendorCode:', node.textContent);
 				codeSearch[nodeId] = LocateAfterAnchor(node.textContent, ['vendorCode:', 'Code:', 'Артикул:', 'Артикул производителя:', 'артикул:']);
-				//console.log('Compare_VendorCode:', nodeId, codeSearch[nodeId]);
-			
 			
 				if (codeSearch[nodeId]!=null) {
 					codeSearch[nodeId].node = node;
@@ -713,7 +703,6 @@ class Obuv {
 					} //if()
 			
 				} //for(node)
-					
 				
 			} //for(nodeId)
 	
@@ -729,6 +718,34 @@ class Obuv {
 		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(codeSearch[1].value, colorized[1]);
 		
 		return;
+	} //Compare_VendorCode_old()
+
+	Compare_VendorCode_table(nodes) {
+		const GREEN_COLOR = '#ccffcc';
+
+		//Extract codes
+		let codeSearch = [null, null];
+		
+		for (let nodeId=0; nodeId<2; nodeId++) {
+			let tbl = nodes[nodeId].querySelectorAll('table');
+			console.log('Compare_VendorCode_table:'. tbl);
+			
+		} //for(nodeId)
+
+	} //Compare_VendorCode_table
+	
+	Compare_VendorCode() {
+					
+		// 'vendorCode: I029208.89.WI'	vendor|Code!!!
+		let nodes = document.getElementsByClassName('attributes');
+		console.log('Compare_VendorCode attr', nodes);
+		if (nodes==null) return;
+
+		if (nodes[0].innerHTML.includes('<table')) 
+			Compare_VendorCode_table(nodes)
+		else
+			Compare_VendorCode_old(nodes);
+	
 	} //Compare_VendorCode	
 
 
