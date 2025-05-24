@@ -17,12 +17,15 @@ var autoRun = false;
 function DrawAutoIndicator(isOn) {
 	let completeBtn = document.querySelector("#completeBtn");
 
+	if (completeBtn && !Object.hasOwn(this, 'originalText')) this.originalText = completeBtn.textContent
+
+
 	if (isOn) {
 		//completeBtn.style.background = 'solid 2px green';
-		completeBtn.textContent = 'AUTO';
+		completeBtn.textContent = completeBtn.textContent + &nbsp + ☑ ▶💥😎✔✈; //☑ ▶💥😎✔✈
 	} else {
 		//completeBtn.style.background = '';
-		completeBtn.textContent = 'Завершить задание';
+		completeBtn.textContent = this.originalText; //'Завершить задание';
 	} 
 
 	
@@ -43,9 +46,9 @@ function Obuv_onCtrlEnter(e) {
 		}
 	}
 	
-	//Ctrl ~
-	//if (e.altKey && (e.keyCode == 13 || e.keyCode == 10)) {
-	if (e.ctrlKey && (e.keyCode == 192)) { 
+	//Toggle AutoRun	
+	//if (e.ctrlKey && (e.keyCode == 192)) { 
+	if (e.ctrlKey && e.altKey && (e.keyCode == 13 || e.keyCode == 10)) { //Ctrl + Alt + ENTER
 		console.log('Topggle autoRun');
 		autoRun = !autoRun;
 		DrawAutoIndicator(autoRun);		
