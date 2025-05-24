@@ -15,19 +15,20 @@ function Obuv_onBtnClick(e) {
 var autoRun = false;
 
 function DrawAutoIndicator(isOn) {
+	console.log('Toggle autoRun');
+	
 	let completeBtn = document.querySelector("#completeBtn");
 
 	if (completeBtn && !Object.hasOwn(this, 'originalText')) this.originalText = completeBtn.textContent;
 
 	if (isOn) {
 		//completeBtn.style.background = 'solid 2px green';
-		completeBtn.textContent = completeBtn.textContent + '\u00A0💥'; //☑ ▶💥😎✔✈
+		completeBtn.textContent = this.originalText + '\u00A0💥'; //☑ ▶💥😎✔✈
 	} else {
 		//completeBtn.style.background = '';
 		completeBtn.textContent = this.originalText; //'Завершить задание';
 	} 
 
-	
 } //DrawAutoIndicator()
 
 function Obuv_onCtrlEnter(e) {
@@ -47,8 +48,7 @@ function Obuv_onCtrlEnter(e) {
 	
 	//Toggle AutoRun	
 	if (e.ctrlKey && (e.keyCode == 192)) { //Ctrl + ~
-	//if (e.ctrlKey && e.altKey && (e.keyCode == 13 || e.keyCode == 10)) { //Ctrl + Alt + ENTER
-		console.log('Topggle autoRun');
+	//if (e.ctrlKey && e.altKey && (e.keyCode == 13 || e.keyCode == 10)) { //Ctrl + Alt + ENTER		
 		autoRun = !autoRun;
 		DrawAutoIndicator(autoRun);		
 	}
