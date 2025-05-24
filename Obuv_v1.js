@@ -17,12 +17,11 @@ var autoRun = false;
 function DrawAutoIndicator(isOn) {
 	let completeBtn = document.querySelector("#completeBtn");
 
-	if (completeBtn && !Object.hasOwn(this, 'originalText')) this.originalText = completeBtn.textContent
-
+	if (completeBtn && !Object.hasOwn(this, 'originalText')) this.originalText = completeBtn.textContent;
 
 	if (isOn) {
 		//completeBtn.style.background = 'solid 2px green';
-		completeBtn.textContent = completeBtn.textContent + '&nbsp☑ ▶💥😎✔✈'; //☑ ▶💥😎✔✈
+		completeBtn.textContent = completeBtn.textContent + '\u00A0💥'; //☑ ▶💥😎✔✈
 	} else {
 		//completeBtn.style.background = '';
 		completeBtn.textContent = this.originalText; //'Завершить задание';
