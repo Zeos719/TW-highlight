@@ -47,8 +47,8 @@ function Obuv_onCtrlEnter(e) {
 	}
 	
 	//Toggle AutoRun	
-	//if (e.ctrlKey && (e.keyCode == 192)) { 
-	if (e.ctrlKey && e.altKey && (e.keyCode == 13 || e.keyCode == 10)) { //Ctrl + Alt + ENTER
+	if (e.ctrlKey && (e.keyCode == 192)) { //Ctrl + ~
+	//if (e.ctrlKey && e.altKey && (e.keyCode == 13 || e.keyCode == 10)) { //Ctrl + Alt + ENTER
 		console.log('Topggle autoRun');
 		autoRun = !autoRun;
 		DrawAutoIndicator(autoRun);		
