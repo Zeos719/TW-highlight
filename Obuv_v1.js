@@ -22,7 +22,7 @@ function DrawAutoIndicator(isOn) {
 
 	if (isOn) {
 		//completeBtn.style.background = 'solid 2px green';
-		completeBtn.textContent = completeBtn.textContent + &nbsp + ☑ ▶💥😎✔✈; //☑ ▶💥😎✔✈
+		completeBtn.textContent = completeBtn.textContent + '&nbsp☑ ▶💥😎✔✈'; //☑ ▶💥😎✔✈
 	} else {
 		//completeBtn.style.background = '';
 		completeBtn.textContent = this.originalText; //'Завершить задание';
