@@ -545,24 +545,6 @@ class Obuv {
 	constructor() {
 			console.log('Obuv.constructor');
 		
-			//Insert myInfo fileds	
-			this.myInfo = [null, null];
-			//for (const link of document.links) {
-			for (let i=0;i<document.links.length;i++) {
-				let newNode;
-				newNode = document.createElement("div");
-				newNode.textContent = 'my info: before';
-
-				this.myInfo[i] = newNode;
-				console.log('Obuv.constructor-myInfo before', i);
-				document.links[i].before(newNode);
-
-				newNode = document.createElement("div");
-				newNode.textContent = 'my info: after';
-				console.log('Obuv.constructor-myInfo after', i);
-				document.links[i].after(newNode);
-			} //for
-		
 			// Preload brands
 			this.brands = new ValidBrands();
 			this.brands.Load();
@@ -795,14 +777,22 @@ class Obuv {
 
 		//for (const image of document.images) {
 		//} //for		
-/*
-		let myinfo;		
-		for (const link of document.links) {
-			myinfo = document.createElement("div");
-			myinfo.textContent = 'my info';
-			link.before(myinfo);
+
+		//Insert myInfo fileds	
+		this.myInfo = [null, null];
+		//for (const link of document.links) {
+		for (let i=0;i<document.links.length;i++) {
+			let newNode = document.createElement("div");
+			newNode.textContent = '*** my info ***';
+			newNode.style.border = 'thin green';
+
+			this.myInfo[i] = newNode;
+			console.log('Obuv.constructor-myInfo before', i);
+			document.links[i].before(newNode);
 		} //for
-*/		
+
+
+		
 	} //Reset()
 	
 
