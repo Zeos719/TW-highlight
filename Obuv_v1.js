@@ -738,7 +738,7 @@ class Obuv {
 			for (let row of tbl.rows) {		
 				if (row.cells[0].textContent.includes('vendorCode')) {
 					codeSearch[nodeId] = row.cells[1];
-					console.log('Compare_VendorCode_table td:', row.cells); 
+					//console.log('Compare_VendorCode_table td:', row.cells); 
 				}
 			} //for(row)						
 		} //for(nodeId)
@@ -748,7 +748,7 @@ class Obuv {
 	
 		//Compare and colorize
 		let colorized = Strings_CompareAndColor(codeSearch[0].textContent.trim(), codeSearch[1].textContent.trim(), null, GREEN_COLOR, /\-|\./);
-		console.log('Compare_VendorCode_table clr:', colorized);	
+		//console.log('Compare_VendorCode_table clr:', colorized);	
 		
 		codeSearch[0].innerHTML = colorized[0];
 		codeSearch[1].innerHTML = colorized[1];
@@ -770,9 +770,12 @@ class Obuv {
 	} //Compare_VendorCode()
 
 	Reset() {
-		let images = document.images;
-		console.log('Images:', images);
-		
+		cosole.log('Obuv.Reset()');
+		//console.log('Images:', document.images);
+
+		for (const image of document.images) {
+			image.border.style = 'thin green';
+		} //for		
 		
 	} //Reset()
 	
