@@ -770,7 +770,7 @@ class Obuv {
 	} //Compare_VendorCode()
 
 	Reset() {
-		cosole.log('Obuv.Reset()');
+		console.log('Obuv.Reset()');
 		//console.log('Images:', document.images);
 
 		for (const image of document.images) {
