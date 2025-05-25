@@ -58,7 +58,7 @@ function Obuv_SendToServer() {
 	
 	let titles = document.getElementsByClassName('name');
 	let brands = document.getElementsByClassName('brand');
-	links = document.links;
+	let links = document.links;
 
 	//get user choice
 	const radio_btns = document.querySelectorAll('input[type=radio]');
@@ -556,6 +556,7 @@ class Obuv {
 		document.addEventListener("keydown", Obuv_onCtrlEnter);
 		
 		//Preset default
+		this.Reset();
 		this.SelectDecision(2); //'Abs differ' by deffault
 		DrawAutoIndicator(autoRun);
 					
@@ -752,7 +753,7 @@ class Obuv {
 		codeSearch[0].innerHTML = colorized[0];
 		codeSearch[1].innerHTML = colorized[1];
 		
-	} //Compare_VendorCode_table
+	} //Compare_VendorCode_table()
 	
 	Compare_VendorCode() {
 					
@@ -766,9 +767,15 @@ class Obuv {
 		} else {
 			this.Compare_VendorCode_old(nodes) };
 	
-	} //Compare_VendorCode	
+	} //Compare_VendorCode()
 
-
+	Reset() {
+		let images = document.images();
+		console.log('Images:', images);
+		
+		
+	} //Reset()
+	
 
 		
 } //class Obuv
