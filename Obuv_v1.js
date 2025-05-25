@@ -549,10 +549,16 @@ class Obuv {
 			for (let i=0;i<document.links;i++) {
 				let newNode;
 				newNode = document.createElement("div");
-				newNode.textContent = 'my info';
+				newNode.textContent = 'my info: before';
 
 				this.myInfo[i] = newNode;
 				document.links[i].before(newNode);
+
+				newNode = document.createElement("div");
+				newNode.textContent = 'my info: after';
+				document.links[i].before(newNode);
+				console.log('Obuv.constructor:', i);
+				
 			} //for
 		
 			// Preload brands
