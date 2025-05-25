@@ -543,6 +543,17 @@ class Obuv {
   //sayHi() { alert(this.name); }
 
 	constructor() {
+			//Insert myInfo fileds	
+			this.myInfo = [null, null];
+			//for (const link of document.links) {
+			for (let i=0;i<document.links;i++) {
+				let newNode;
+				newNode = document.createElement("div");
+				newNode.textContent = 'my info';
+
+				this.myInfo[i] = newNode;
+				link.before(newNode);
+		
 			// Preload brands
 			this.brands = new ValidBrands();
 			this.brands.Load();
@@ -775,14 +786,14 @@ class Obuv {
 
 		//for (const image of document.images) {
 		//} //for		
-
+/*
 		let myinfo;		
 		for (const link of document.links) {
 			myinfo = document.createElement("div");
 			myinfo.textContent = 'my info';
-			link.after(myinfo);
+			link.before(myinfo);
 		} //for
-		
+*/		
 	} //Reset()
 	
 
