@@ -770,7 +770,7 @@ class Obuv {
 	} //Compare_VendorCode()
 
 	Reset() {
-		let images = document.images();
+		let images = document.images;
 		console.log('Images:', images);
 		
 		
