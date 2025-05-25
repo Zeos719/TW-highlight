@@ -773,8 +773,8 @@ class Obuv {
 		console.log('Obuv.Reset()');
 		//console.log('Images:', document.images);
 
-		\\for (const image of document.images) {
-		\\} //for		
+		//for (const image of document.images) {
+		//} //for		
 
 		let myinfo;		
 		for (const link of document.links) {
