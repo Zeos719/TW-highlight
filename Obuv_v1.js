@@ -552,7 +552,7 @@ class Obuv {
 				newNode.textContent = 'my info';
 
 				this.myInfo[i] = newNode;
-				link.before(newNode);
+				document.links[i].before(newNode);
 			} //for
 		
 			// Preload brands
