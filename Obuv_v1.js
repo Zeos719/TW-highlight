@@ -774,7 +774,7 @@ class Obuv {
 		//console.log('Images:', document.images);
 
 		for (const image of document.images) {
-			image.border.style = 'thin green';
+			image.style.border = 'thin green';
 		} //for		
 		
 	} //Reset()
