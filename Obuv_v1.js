@@ -554,12 +554,13 @@ class Obuv {
 				newNode.textContent = 'my info: before';
 
 				this.myInfo[i] = newNode;
+				console.log('Obuv.constructor-myInfo before', i);
 				document.links[i].before(newNode);
 
 				newNode = document.createElement("div");
 				newNode.textContent = 'my info: after';
+				console.log('Obuv.constructor-myInfo after', i);
 				document.links[i].after(newNode);
-				console.log('Obuv.constructor-myInfo', i);
 				
 			} //for
 		
