@@ -773,11 +773,15 @@ class Obuv {
 		console.log('Obuv.Reset()');
 		//console.log('Images:', document.images);
 
-		for (const image of document.images) {
-			console.log('image-style:', image.style.border);
-			image.style.border = 'thin green';
-			//image.parent.style.border = 'thin green';
-		} //for		
+		\\for (const image of document.images) {
+		\\} //for		
+
+		let myinfo;		
+		for (const link of document.links) {
+			myinfo = document.createElement("div");
+			myinfo.textContent = 'my info';
+			link.after(myinfo);
+		} //for
 		
 	} //Reset()
 	
