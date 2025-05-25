@@ -553,6 +553,7 @@ class Obuv {
 
 				this.myInfo[i] = newNode;
 				link.before(newNode);
+			} //for
 		
 			// Preload brands
 			this.brands = new ValidBrands();
