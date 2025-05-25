@@ -543,14 +543,12 @@ class Obuv {
   //sayHi() { alert(this.name); }
 
 	constructor() {
-			console.log(Obuv.constructor');
+			console.log('Obuv.constructor');
 		
 			//Insert myInfo fileds	
 			this.myInfo = [null, null];
 			//for (const link of document.links) {
 			for (let i=0;i<document.links.length;i++) {
-console.log('Obuv.constructor-myInfo', i);				
-/*				
 				let newNode;
 				newNode = document.createElement("div");
 				newNode.textContent = 'my info: before';
@@ -563,7 +561,6 @@ console.log('Obuv.constructor-myInfo', i);
 				newNode.textContent = 'my info: after';
 				console.log('Obuv.constructor-myInfo after', i);
 				document.links[i].after(newNode);
-*/				
 			} //for
 		
 			// Preload brands
