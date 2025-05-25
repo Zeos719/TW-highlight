@@ -558,7 +558,7 @@ class Obuv {
 
 				newNode = document.createElement("div");
 				newNode.textContent = 'my info: after';
-				document.links[i].before(newNode);
+				document.links[i].after(newNode);
 				console.log('Obuv.constructor-myInfo', i);
 				
 			} //for
