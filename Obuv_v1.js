@@ -1,5 +1,6 @@
 //Навигация DOM: https://learn.javascript.ru/dom-navigation
 
+
 function Obuv_onBtnClick(e) {
 	let choice = Obuv_SendToServer();
 	
@@ -177,34 +178,15 @@ function Sort_sites(href){
  1 = partialy equals
  2 = abs different
 */
-function Obuv_AutoDecision_v2() {
-	let links = document.links;
+
+function StartWith_both(links, pref) {
+	let ret = true;
+	for (let i=0;i<links.length;i++)
+		ret = ret && links[i].href.startsWith(pref);
 	
-	if (links.length!=2 ) {return -1};
+	return ret;
+}
 
-	//if (links[0].href.startsWith('https://street-beat.ru/') && links[1].href.startsWith('https://street-beat.ru/'))
-	//	return StreetBeat_special(links);
-/*
-	if (links[0].href.startsWith('https://spinningline.ru/') && links[1].href.startsWith('https://spinningline.ru/'))
-		return SpinningLine_special();
-
-	if (links[0].href.startsWith('https://leoking.ru/') && links[1].href.startsWith('https://leoking.ru/'))
-		return 2;
-
-	if (links[0].href.startsWith('https://www.traektoria.ru/') && links[1].href.startsWith('https://www.traektoria.ru/'))
-		return Traektoria_special();
-*/	
-	if (links[0].href.startsWith('https://www.detmir.ru/') && links[1].href.startsWith('https://www.detmir.ru/'))
-		return DetMir_special();
-
-	if (links[0].href!=document.links[1].href) { return -1}; //After special cases!
-/*
-	let site_type = Sort_sites(links[0].href);
-	if (site_type==0) return 1; //if size is not defined
-	if (site_type==1) return 0; //if is not defined		
-*/	
-	return -1;
-}	
 
 //*****************************
 //	Mark string with colors
@@ -321,134 +303,6 @@ function LocateAfterAnchor(txt, anchors) {
 
 //*****************************
 
-//https://street-beat.ru/d/krossovki-adidas-originals-ih2156/42%2C5/?k=4516164
-/* Return:
- -1 = unknown
- 0 = equal
- 1 = partialy equals
- 2 = abs different
-*/
-function StreetBeat_special(links) {
-/* Нужно учитывать не только размер, но и модель!
-
-	function _StreetBeat_getsize(href){
-		let regExp = /\/[\d|C%]+\//gm
-		let m = href.match(regExp);	
-
-	//console.log('size:', m[0]);	
-		if (m==null) {return 'unknown'} else {return m[0]}			
-	}
-		
-	if (_StreetBeat_getsize(links[0].href)==_StreetBeat_getsize(links[1].href)) { return 0 } else { return 1 };
-*/	
-
-	//console.log('StreetBeat_special+');
-	
-	const regExp = /\/|\?/;
-	let parts0 = links[0].href.split(regExp);
-	let parts1 = links[1].href.split(regExp);
-	
-	let mdl0 = parts0[4];
-	let sz0 = parts0[5];
-
-	let mdl1 = parts1[4];
-	let sz1 = parts1[5];
-		
-	//console.log('StreetBeat_special:', mdl0, mdl1, sz0, sz1);	
-
-	if (mdl0!=mdl1) {
-		return -1
-	} else {
-		if (sz0==sz1) {return 0} else {return 1};
-	}
-	
-	return -1;
-}
-
-//https://spinningline.ru/
-/* Return:
- -1 = unknown
- 0 = equal
- 1 = partialy equals
- 2 = abs different
-*/
-function SpinningLine_special() {
-	let name1 = document.querySelector("#klecks-app > tui-root > tui-dropdown-host > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(2) > flex-horizontal-comparator > div > div:nth-child(1) > flex-element:nth-child(2) > flex-text > tui-editor-socket > span.name")	
-	let name2 = document.querySelector("#klecks-app > tui-root > tui-dropdown-host > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(2) > flex-horizontal-comparator > div > div:nth-child(2) > flex-element:nth-child(2) > flex-text > tui-editor-socket > span.name")
-	
-	if (!name1 || ! name2) return -1;
-	
-	let wrds = [name1.textContent.split(' '), name2.textContent.split(' ')];
-	
-	//console.log('SpinningLine:', wrds[0], wrds[1]);
-	
-	let num_wrds = Math.min(wrds[0].length, wrds[1].length);
-	
-	let count_diff = 0;
-	for (let i=0; i<num_wrds; i++) {
-		if (wrds[0][i]!=wrds[1][i]) count_diff++
-		}
-
-	//console.log('SpinningLine:', count_diff);
-	
-	if (count_diff==0){
-		return 0
-	} else if (count_diff<=2) {return 1} else {return 2};
-	
-	return -1;
-}	
-
-//https://www.traektoria.ru/product/1307402_kurtka-686-mns-hydra-thermagraph-jacket/?SKU=1776012
-/* Return:
- -1 = unknown
- 0 = equal
- 1 = partialy equals
- 2 = abs different
-*/
-function Traektoria_special() {	
-	let href1 = document.links[0].href.split('?')[0];
-	let href2 = document.links[1].href.split('?')[0];
-	
-	return (href1==href2)?1:-1;		
-}
-
-//https://www.detmir.ru
-//' Комплект PlayToday:салатовый:104' -> ['Комплект PlayToday', '104']
-function ParseName_DetMir(txt) {
-	let pos = txt.indexOf(':');
-	if (pos==-1) return {name:txt.trim(), size:''};
-
-	let name = txt.slice(0, pos);	
-	
-	pos = txt.lastIndexOf(':');
-	
-  	let sz = txt.slice(pos+1);	
-  	return {name:name.trim(), sz:sz.trim()};
-}
-
-function DetMir_special() {	
-	let titles = document.getElementsByClassName('name');
-		
-	let title1 = titles[0].textContent;
-	let title2 = titles[1].textContent;
-
-	let tvr1 = ParseName_DetMir(title1);
-	let tvr2 = ParseName_DetMir(title2);
-
-	//console.log('DetMir_special ttl:', [title1, title2]);
-	console.log('DetMir_special tvr:', [tvr1, tvr2]);
-
-	if (tvr1.name!=tvr2.name) return -1;
-
-	if((tvr1.size='') || (tvr2.size='')) return 3; //Недостаточно данных для решения
-
-	if(tvr1.sz==tvr2.sz) {
-	   	return 0; //Идентичны
-	} else {
-		return 1; //Частично отличаются
-	}
-
-} //DetMir_special()
 
 
 //********************* class ValidBrands  ********************************
@@ -576,11 +430,27 @@ class Obuv {
 		this.Compare_VendorCode();
 
 		//Auto-select
-		let choice = Obuv_AutoDecision_v2();
-		//console.log('Obuv_AutoDecision: ', choice);
+		let choice = this.AutoDecision_v2();
+		console.log('AutoDecision: ', choice);
 		
 		if (choice!=-1) {
-			(choice) }
+			
+			//setTimeout(RB_set, 1000, choice);
+			
+			setTimeout((choice) => {
+					//console.log("AutoDecision fired:", choice);
+					RB_set(choice);
+					
+					if (autoRun)
+					{
+						let completeBtn = document.querySelector("#completeBtn");
+						completeBtn.click();
+					}
+				
+				}, "2000", choice);
+				
+			
+			}
 
 		//Auto select for https://superstep.ru - 'недостаточно данных' и выход
 		/*
@@ -715,6 +585,11 @@ class Obuv {
 		if (!codeSearch[0].hasOwnProperty('value') || !codeSearch[1].hasOwnProperty('value')) return;
 		
 		//console.log('Compare_VendorCode:', codeSearch);	
+
+		//Show in myInfo
+		this.vendorCodes = [codeSearch[0].value, codeSearch[1].value];
+		this.UpdateMyInfo();
+
 	
 		//Compare and colorize
 		let colorized = Strings_CompareAndColor(codeSearch[0].value, codeSearch[1].value, null, GREEN_COLOR, /\-|\./);
@@ -748,6 +623,10 @@ class Obuv {
 		if ((codeSearch[0]==null) || (codeSearch[1]==null)) return;
 		//console.log('Compare_VendorCode_table cs:', codeSearch);	
 	
+		//Show in myInfo
+		this.vendorCodes = [codeSearch[0].textContent.trim(), codeSearch[1].textContent.trim()];
+		this.UpdateMyInfo();
+	
 		//Compare and colorize
 		let colorized = Strings_CompareAndColor(codeSearch[0].textContent.trim(), codeSearch[1].textContent.trim(), null, GREEN_COLOR, /\-|\./);
 		//console.log('Compare_VendorCode_table clr:', colorized);	
@@ -779,22 +658,137 @@ class Obuv {
 		//} //for		
 
 		//Insert myInfo fileds	
-		this.myInfo = [null, null];
-		//for (const link of document.links) {
-		for (let i=0;i<document.links.length;i++) {
-			let newNode = document.createElement("div");
-			newNode.textContent = '*** my info ***';
-			newNode.style.border = 'thin green';
+		const infos = document.querySelectorAll('.twinfo');	//select by class
+		
+		if (infos.length==0)				
+			for (let i=0;i<document.links.length;i++) {
+				let newNode = document.createElement("div");
+				newNode.textContent = '*** my info 2 ***';
+				newNode.className = "twinfo";
 
-			this.myInfo[i] = newNode;
-			console.log('Obuv.constructor-myInfo before', i);
-			document.links[i].before(newNode);
-		} //for
+				document.links[i].parentNode.prepend(newNode);
+			} //for
 
-
+		//Reset vars
+		this.vendorCodes = [];
+		
 		
 	} //Reset()
 	
 
+	UpdateMyInfo() {
+		const infos = document.querySelectorAll('.twinfo');	//select by class
+		
+		let txt;
+		//Vendor codes
+		if (this.vendorCodes && (this.vendorCodes.length==2)) {
+			txt = 'vendor: ' + this.vendorCodes[0] + ' / ' + this.vendorCodes[1];
+			infos[0].textContent = txt;
+			infos[1].textContent = txt;
+		}
+	} //UpdateMyInfo
+	
+	
+	AutoDecision_v2() {
+		let links = document.links;
+		
+		if (links.length!=2 ) {return -1};
+
+		if ( StartWith_both(links, 'https://www.detmir.ru/') )
+			return this.DecideBy_Size_VCode( /:(\d+)$/ug );
+			//return this.DetMir_special();
+		
+		if ( StartWith_both(links, 'https://sport-marafon.ru/') )
+			return this.DecideBy_Size_VCode( /р\.\s(\S+)$/ug );
+		
+		if ( StartWith_both(links, 'https://campioshop.ru/') )
+			return this.DecideBy_Size_VCode( /\((.+)\)$/ug );
+		
+		
+
+		if (links[0].href!=document.links[1].href) { return -1}; //After special cases!
+	/*
+		let site_type = Sort_sites(links[0].href);
+		if (site_type==0) return 1; //if size is not defined
+		if (site_type==1) return 0; //if is not defined		
+	*/	
+		return -1;
+	} //buv_AutoDecision_v2	
+
+/*		
+	//https://www.detmir.ru
+	//' Комплект PlayToday:салатовый:104' -> ['Комплект PlayToday', '104']
+	ParseName_DetMir(txt) {
+		let pos = txt.indexOf(':');
+		if (pos==-1) return {name:txt.trim(), size:''};
+
+		let name = txt.slice(0, pos);	
+		
+		pos = txt.lastIndexOf(':');
+		
+		let sz = txt.slice(pos+1);	
+		return {name:name.trim(), sz:sz.trim()};
+	}
+
+	DetMir_special() {	
+		console.log('DetMir_special()');
+		
+		let titles = document.getElementsByClassName('name');
+			
+		let title1 = titles[0].textContent;
+		let title2 = titles[1].textContent;
+
+		let tvr1 = this.ParseName_DetMir(title1);
+		let tvr2 = this.ParseName_DetMir(title2);
+
+		console.log('DetMir_special tvr:', [tvr1, tvr2]);
+
+		if (tvr1.name!=tvr2.name) return -1;
+
+		if((tvr1.size='') || (tvr2.size='')) return 3; //Недостаточно данных для решения
+
+		if(tvr1.sz==tvr2.sz) {
+			return 0; //Идентичны
+		} else {
+			return 1; //Частично отличаются
+		}
+
+	} //DetMir_special()
+*/
+		
+	//Comparte by sizes and vendor codes	
+	DecideBy_Size_VCode(regEx) {		
+		let titles = document.getElementsByClassName('name');
+			
+		let title1 = titles[0].textContent;
+		let title2 = titles[1].textContent;
+
+		//let re = /р\.\s(\S+)$/ug;
+		//let re = new RegExp('р\.\s(\S+)$', 'ug');			
+		
+		let mt1 = title1.matchAll(regEx);
+		let mt2 = title2.matchAll(regEx);
+
+		let ar1 = Array.from(mt1);	
+		let ar2 = Array.from(mt2);
+		//console.log('DecideBy_Size_VCode ar:', ar1, ar2);
+		
+		if (!ar1.length || !ar2.length) return -1; //Failed to extract size
+		
+		let sizes = [ar1[0][1], ar2[0][1]];
+
+		console.log('DecideBy_Size_VCode:', sizes);
+		
+		if (!this.vendorCodes || (this.vendorCodes[0]!=this.vendorCodes[1]) ) return -1; 
+		
+		if (sizes[0]==sizes[1]) { 
+			return 0; //Идентичны
+		} else {
+			return 1; //Частично отличаются
+		}		
+		
+		return -1;
+	}
+		
 		
 } //class Obuv

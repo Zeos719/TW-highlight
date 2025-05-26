@@ -11,10 +11,18 @@
 // @run-at       document-end
 // @require      https://code.jquery.com/jquery-3.7.1.min.js
 // @require      https://zeos719.github.io/TW-highlight/Goods_in_check.js
-// @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
+// @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/Obuv_v1.js
 // @require      https://zeos719.github.io/TW-highlight/Call_027.js
 // @require      https://zeos719.github.io/TW-highlight/Preset_defaults.js
+
 // ==/UserScript==
+
+// @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
+
+
+//Красивые символы UTF-8
+// https://www.drive2.ru/b/463440578768535663/
+
 
 console.log('Monkey very begin!');
 
@@ -75,11 +83,12 @@ if (window!=window.top) {
             console.log('detectTask:', taskCode, taskVersion);
 
             if (taskCode==tc_Banki) DoBanki();
-console.log('detectTask2:', taskCode, taskVersion);
+
             if (taskCode==tc_Obuv) {
                 //AskHttpHelper('obuv', document.links);
                 DoObuv();
-                OpenPreviewTabs(document.links[0].href, document.links[1].href);
+                if (!autoRun)
+                    OpenPreviewTabs(document.links[0].href, document.links[1].href);
             }
 
             if (taskCode==tc_Brand) {DoBrandCorrespond()};
@@ -112,6 +121,10 @@ console.log('detectTask2:', taskCode, taskVersion);
                 DoCheckImage(taskVersion);
             }
 
+            if (taskCode==-1) {
+                PresetCommonDefaults();
+            }
+
 
 
             this.connect();
@@ -129,9 +142,12 @@ else {
 
 //Multiple items
 function OpenPreviewTabs(link0, link1) {
-    if (!Object.hasOwn(this, 'linkTabs')) this.linkTabs = [];
+    if (!Object.hasOwn(this, 'linkTabs')) {
+        this.linkTabs = [];
+        this.epoch = 0;
+    }
 
-    console.log('OpenPreviewTabs start', this.linkTabs)
+    //console.log('OpenPreviewTabs start', this.linkTabs)
 
     //Close last pre-view tabs
     for (let i=this.linkTabs.length-1;i>=0;i--) {
@@ -149,6 +165,20 @@ function OpenPreviewTabs(link0, link1) {
         }
     } //for
 
+    //Delete old 'hanging' items
+    const OLD_TRESHOLD = 10
+
+    for (let i=this.linkTabs.length-1;i>=0;i--) {
+        let item_age = this.linkTabs[i][2]
+
+        if ((this.epoch-item_age)>OLD_TRESHOLD) {
+            this.linkTabs.splice(i,1); //remove very old
+            console.log('OpenPreviewTabs delete hanging')
+        }
+
+        } //for
+
+
     // May new links are already in list?
     for (let i=0;i<this.linkTabs.length;i++) {
         let item = this.linkTabs[i]
@@ -162,7 +192,8 @@ function OpenPreviewTabs(link0, link1) {
     let v1 = {tab:GM_openInTab(link1), href: link1}
     let v0 = {tab:GM_openInTab(link0), href: link0}
     
-    this.linkTabs.push( [v0, v1] );
+    this.linkTabs.push( [v0, v1, this.epoch] );
+    this.epoch++;
 
     //console.log('OpenPreviewTabs end', this.linkTabs)
     return true
@@ -312,4 +343,17 @@ function DoBanki() {
     //if ((item!=null) && (!item.innerHTML.includes('<a')) ) {
         item.innerHTML = `<a href="${item.textContent}">${item.textContent}</a>`
     }
-};
+}
+
+
+function PresetCommonDefaults() {
+    console.log('PresetCommonDefaults');
+
+    //Focus on text area
+	const edits = document.querySelectorAll('textarea');
+    if (edits.length>0) {
+        edits[0].focus();
+    }
+
+}
+
