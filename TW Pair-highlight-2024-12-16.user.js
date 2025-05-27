@@ -36,7 +36,14 @@ const tc_Call027 = 5;
 const tc_CallType = 6;
 const tc_CheckImage = 7;
 
-var SubWindows = [null, null];
+//var SubWindows = [null, null];
+
+//Global and control vars
+var autoRun = false;
+const SEND_TO_SERVER = false;
+
+
+
 
 if (window!=window.top) {
     /* I'm in a frame! */
@@ -78,6 +85,13 @@ if (window!=window.top) {
                 return;
             };
 
+            //Check for error
+            if (docText.includes('Не удалось')) {
+                console.log('DoObuv-error! Canceled');
+                return;
+            }
+
+
             let taskCode, taskVersion;
             [taskCode, taskVersion] = detectTask(docText);
             console.log('detectTask:', taskCode, taskVersion);
@@ -87,8 +101,8 @@ if (window!=window.top) {
             if (taskCode==tc_Obuv) {
                 //AskHttpHelper('obuv', document.links);
                 DoObuv();
-                if (!autoRun)
-                    OpenPreviewTabs(document.links[0].href, document.links[1].href);
+                //if (!autoRun)
+                //    OpenPreviewTabs(document.links[0].href, document.links[1].href);
             }
 
             if (taskCode==tc_Brand) {DoBrandCorrespond()};
