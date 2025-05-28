@@ -102,6 +102,47 @@ function Obuv_SendToServer() {
 }
 
 
+// Convert <table> to a list of rows. tbl is a node! tbl = node.firstElementChild
+function Parse_table(tbl) {
+
+		let tbl_list = [];
+		for (let row of tbl.rows) {
+			row_list = [];
+
+			for(let cell of row.cells)
+				row_list.push(cell.textContent.trim());
+
+			tbl_list.push(row_list);
+		} //for(row)
+
+	return tbl_list;
+
+} //Parse_table
+
+
+//Parse string like '.. key1:value1. key2:value2. ' Delimiter = '. '
+function Parse_text(txt) {
+		let attr = [];
+
+		for(let i=0;i<nodes.length; i++) {
+
+			let items = nodes[i].textContent.split(/\.\ /);
+
+			let pairs = [];
+			for (let it of items) {
+				let pos = it.indexOf(':');
+				if (pos >= 0)
+					pairs.push([it.slice(0, pos).trim(), it.slice(pos+1).trim()]);
+			} //for(it)
+
+			attr[i] = pairs;
+
+		} //for(i)
+
+	return attr;
+} //Parse_text
+
+
 //********************* Два товара (обувь)	********************************
 
 let obv = null;
@@ -339,7 +380,7 @@ class ValidBrands {
 			//console.log('ValidBrands.get', data);
 
 			myself.brandsList = JSON.parse(data);
-			
+
 			//console.log('ValidBrands', myself.brandsList);
 
 			myself.NamesToUpper();
@@ -349,7 +390,7 @@ class ValidBrands {
 
 	NamesToUpper() {
 		if (!this.HasData()) return;
-		
+
 		//To upper - Lamoda
 		let list = this.brandsList['lamoda'];
 		for(let i=0;i<list.length;i++) {
@@ -373,7 +414,7 @@ class ValidBrands {
 
 	Includes(name) {
 		if (!this.HasData()) return false;
-			
+
 		let ret;
 
 		name = name.toUpperCase();
@@ -386,7 +427,7 @@ class ValidBrands {
 
 		if (letu.hasOwnProperty(first_ltr)) {
 			ret = letu[first_ltr].includes(name);
-			if (ret) return true;			
+			if (ret) return true;
 			};
 
 		if (letu.hasOwnProperty('0-9')) {
@@ -422,13 +463,14 @@ class Obuv {
 
 	constructor() {
 			console.log('Obuv.constructor');
+			this.GREEN_COLOR_LIGHT = '#ccffcc';
 
 			// Preload brands
 			this.brands = new ValidBrands();
 			this.brands.Load();
 		}
 
-	MainJob() {				
+	MainJob() {
 		// Attach handlers to track exit
 		let completeBtn = document.querySelector("#completeBtn");
 		completeBtn.addEventListener("click", Obuv_onBtnClick);
@@ -451,7 +493,7 @@ class Obuv {
 			window.scroll(0, (bound.top-REQUIRED_TOP));
 			}
 
-		//Main 
+		//Main
 		this.attr = this.Parse_Attributes();
 		console.log('attr', this.attr);
 
@@ -469,20 +511,17 @@ class Obuv {
 
 			//setTimeout(RB_set, 1000, choice);
 
-			setTimeout((choice) => {
+			if (autoRun) {
+				setTimeout((choice) => {
 					//console.log("AutoDecision fired:", choice);
 					RB_set(choice);
 
-					if (autoRun)
-					{
-						let completeBtn = document.querySelector("#completeBtn");
-						completeBtn.click();
-					}
+					let completeBtn = document.querySelector("#completeBtn");
+					completeBtn.click();
 
 				}, "2000", choice);
-
-
-			}
+			} //if(autoRun)
+		}// if(choice)
 
 		//Auto select for https://superstep.ru - 'недостаточно данных' и выход
 		/*
@@ -670,19 +709,52 @@ class Obuv {
 
 	} //Compare_VendorCode_table()
 
+/*
 	Compare_VendorCode() {
 
 		// 'vendorCode: I029208.89.WI'	vendor|Code!!!
-		let nodes = document.getElementsByClassName('attributes');//console.log('Compare_VendorCode attr', nodes);
+		let nodes = document.getElementsByClassName('attributes');
+
+		//console.log('Compare_VendorCode attr', nodes[0].firstElementChild.tagName );
+
 		if (nodes==null) return;
 
-		if (nodes[0].innerHTML.includes('<table')) {
+		//if (nodes[0].innerHTML.includes('<table')) {
+		if (nodes[0].firstElementChild.tagName=='TABLE') {
 			this.Compare_VendorCode_table(nodes)
 		} else {
 			this.Compare_VendorCode_old(nodes) };
 
 	} //Compare_VendorCode()
+*/
 
+	Compare_VendorCode() {
+		if (this.attr.length==0) return;
+		
+		//Get vendor codes
+		let vendorCodes = [null, null];
+		
+		for (let i=0;i<2;i++) {
+			this.attr[i].forEach((elem)=>{if (elem[0]=='vendorCode') vendorCodes[i]=elem[1]} );			
+		}		
+		console.log('Compare_VendorCode', vendorCodes)
+		
+		//Compare and colorize
+		if ((vendorCodes[0]==null) || (vendorCodes[1]==null)) return;
+
+		let colorized = Strings_CompareAndColor(vendorCodes[0], vendorCodes[1], null, this.GREEN_COLOR_LIGHT, /\-|\./);
+		//console.log('Compare_VendorCode_table clr:', colorized);
+
+		let nodes = document.getElementsByClassName('attributes');
+
+		nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(vendorCodes[0].value, colorized[0]);
+		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(vendorCodes[1].value, colorized[1]);
+		
+		//Display
+		this.UpdateMyInfo();
+	}//Compare_VendorCode()
+	
+	
 	Reset() {
 		console.log('Obuv.Reset()');
 		//console.log('Images:', document.images);
@@ -801,19 +873,19 @@ class Obuv {
 			{mark:'Не красота', value:OT_PARFUM},
 			{mark:'Не одежда', value:OT_CLOTHES}
 		];
-		
-		
+
+
 		const checkBox = document.querySelectorAll('flex-checkbox');
-		
-		if (checkBox.length==0) return OT_CLOTHES; //В режиме 'Одежда' нет checkbox'a	
-		
+
+		if (checkBox.length==0) return OT_CLOTHES; //В режиме 'Одежда' нет checkbox'a
+
 		//console.log('Obuv-checkBox', checkBox[0].textContent, '^');
-		
+
 		let ret = -1;
 		let checkText = checkBox[0].textContent.trim();
-		
+
 		st_marks.forEach(  function(elem) { if (checkText==elem.mark) ret=elem.value } );
-		
+
 		return ret;
 	} //DetectSubTask
 
@@ -858,7 +930,7 @@ class Obuv {
 		if (nodes.length!=2) return -1;
 
 		let brand1 = nodes[0].textContent.toUpperCase();
-		let brand2 = nodes[1].textContent.toUpperCase();	
+		let brand2 = nodes[1].textContent.toUpperCase();
 
 		//console.log('DecideBy_Brand:', brand1, brand2, this.brands.Includes(brand1), this.brands.Includes(brand2));
 
@@ -866,38 +938,29 @@ class Obuv {
 			console.log('DecideBy_Brand: unknown brand(s)');
 			return -1;
 			};
-	
+
 		//Ok, verified brands
 		if (brand1!=brand2) {
 			//console.log('DecideBy_Brand: ABS DIFF');
 			return 2; //Abs diff
 		}
-	
+
 		return -1;
 	} //DecideBy_Brand
 
 	Parse_Attributes() {
+
 		let nodes = document.getElementsByClassName('attributes');
 		if (nodes.length!=2) return null;
 
-		let attr = [[], []];
-		for(let i=0;i<nodes.length; i++) {
-			
-			let items = nodes[i].textContent.split(/\.\ /);
-			
-			let pairs = [];
-			for (let it of items) {
-				let pos = it.indexOf(':');
-				if (pos >= 0) 
-					pairs.push([it.slice(0, pos).trim(), it.slice(pos+1).trim()]);
-			} //for(it)			
-				
-			attr[i] = pairs;
-			
-		} //for(i)		
-	
-		return attr;
-		
+		//console.log('Parse_Attributes-isTable', nodes);		
+
+		if (nodes[0].firstElementChild.nodeName=='TABLE') {
+			return [Parse_table(nodes[0].firstElementChild), Parse_table(nodes[1].firstElementChild)]
+		} else {
+			return [Parse_text(nodes[0].textContent), Parse_text(nodes[1].textContent)]
+		}
+
 	} //Parse_Attributes
-	
+
 } //class Obuv
