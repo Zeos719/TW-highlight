@@ -17,9 +17,24 @@
     'use strict';
 
 //Прмер страницы
-//https://www.letu.ru/product/bobbi-brown-tush-dlya-brovei-natural-brow-shaper-hair-touch-up/133100097/sku/152100010
+// https://www.letu.ru/product/bobbi-brown-tush-dlya-brovei-natural-brow-shaper-hair-touch-up/133100097/sku/152100010
+// https://www.letu.ru/product/l-etual-tonalnoe-sredstvo-sovershenstvo-obnazhennoi-kozhi-decollete/20800019/sku/22800035?reqsku=LT0290213
 
 var letu = null;
+
+function global_Get_ReqSKU(){
+        let sku = null;
+
+        let idx = window.location.href.indexOf('reqsku');
+
+        if (idx>0) {
+            sku = window.location.href.slice(idx+7); //  https://www.letu.ru/product/pupa-karandash/44300389/sku/58400613?reqsku=PUP244013
+        }
+
+    return sku;
+} //global_Get_ReqSKU()
+
+
 
     // Your code here...
     console.log('Monkey very begin!');
@@ -28,7 +43,6 @@ if (window==window.top) { //!!! Отличается от Pair highlight
     /* I'm in a frame! */
     console.log('Tw: top window');
 
-
     $(document).ready(function() {
         // желаемый код jQuer
         console.log('Tw: ready');
@@ -36,7 +50,7 @@ if (window==window.top) { //!!! Отличается от Pair highlight
         var observer = new customObserver(document,false,function(observer,mutations){
             this.disconnect();
 
-            console.log('TW-inside oserver');
+            console.log('TW: inside observer');
 
             if (letu==null) letu = new Letu();
 
@@ -85,75 +99,99 @@ class Letu {
   //sayHi() { alert(this.name); }
 
 	constructor() {
-			console.log('** Letu.constructor **');
+		console.log('** Letu.constructor **');
+
+        //Page data
+        this.data = {date: null,
+                     base_URL: null,
+                     req_vCode: null,
+                     prev_vCode: null,
+                     prev_vDescr: null,
+                     status: 'created', idx:0};
 		}
 
 	MainJob() {
         console.log('** Letu.MainJob **');
 
-        //Extract values from page
-        let links = document.querySelectorAll('.product-detail-sku-regular-v2');
-        links = this.Resort_links(links);
-        console.log('Letu.MainJob.links', links);
+         //Extract values from page
+        let req_vCode = this.Get_ReqSKU();
+
+        let base_URL = this.Get_Trim_ReqSKU();
+        //console.log('Letu.MainJob.URL', base_URL);
 
         let vCode = this.Get_vCode();
-        console.log('Letu.MainJob.vCode', vCode);
+        if (!vCode) {
+            console.log('Letu.MainJob.vCode=null, exit'); //страница еще загружена полностью
+            return;
+        }
+        console.log('Letu.MainJob.vCode', vCode, this.data.req_vCode);
+
+        let links = document.querySelectorAll('.product-detail-sku-regular-v2');
+        links = this.Resort_links(links);
+        if (links.length<2) {
+            console.log('Letu.MainJob.links too short, exit', links.length);
+        }
+        //console.log('Letu.MainJob.links', links);
 
         let vDescr = this.Get_Descr();
-        console.log('Letu.MainJob.vDescr', vDescr);
+        //console.log('Letu.MainJob.vDescr', vDescr);
 
-        let base_sku = this.Get_BaseSKU();
-        console.log('Letu.MainJob.base_sku', base_sku);
 
-        //Storage
-        let letuStorage;
-        let now = new Date();
+        //Initiate new job
+        if (req_vCode) {
+            if (this.data.base_URL!=base_URL) { //Got a request for new job
 
-        if (!sessionStorage.getItem('letu')) {
+                this.data.base_URL = base_URL;
+                this.data.req_vCode = req_vCode;
+                this.data.date = new Date();
+                this.data.status = 'run';
 
-            letuStorage = {date: now, base_sku: base_sku, last_idx: null};
-            sessionStorage.setItem('letu', JSON.stringify(letuStorage) );
-        }
+                console.log('Letu.MainJob: new job', req_vCode, vCode)
+            }
+        } else { //Пустой req_vCode - это заходы после a.click(), воостанавливаем req_vCode из сохраненного в первом вызове
+                req_vCode = this.data.req_vCode;
+        } //if(req_vCode)
 
-        //Main part
-        let req_vCode = this.Get_ReqSKU();
-        if (req_vCode) { //Got a request for new job
-            letuStorage = {date: now, base_sku: base_sku, req_vCode: req_vCode, last_idx: null};
-            sessionStorage.setItem('letu', JSON.stringify(letuStorage) );
-            console.log('Letu.MainJob: new job', req_vCode)
+        //Если код на текущей странице совпал с требуемым - всё отлично, заканчиваем
+        if (vCode==req_vCode) {
+            if (this.data.status=='run') {
+                console.log('Letu.MainJob: got it!', vCode, vDescr);
+
+                this.data.status = 'done,success';
+            }
+
+            this.data.prev_vDescr = vDescr; //всегда обновляем vDescr с правильной страницы - вдруг еще подгрузился?
+            return;
+        } //if(vCode)
+
+        //Подготовка к следующему клику - ждем, когда прогрузится страница после предыдущего клика (должен измениться vCode)
+        if (vCode==this.data.prev_vCode) {
+            return; // код без изменений
         } else {
-            letuStorage = JSON.parse( sessionStorage.getItem('letu') );
-            req_vCode = letuStorage.req_vCode;
-            console.log('Letu.MainJob: continue', req_vCode);
+            this.data.prev_vCode = vCode; //код изменился
         }
 
-        if (vCode==req_vCode) {
-            console.log('Letu.MainJob.equals!', vCode, req_vCode);
+        //Клик на следующей опции
+        if (this.data.idx<links.length) {
+            console.log('Letu.MainJob.click', this.data.idx, links.length);
+
+            this.data.prev_vCode = vCode;
+            this.data.prev_vDescr = vDescr;
+
+            links[ this.data.idx ].click();
+            this.data.idx += 1;
+
+            if (this.data.idx==links.length) { // вышли за пределы списка, а результатат нет
+                this.data.status = 'done,failed';
+                this.data.base_URL = null;
+                console.log('Letu.MainJob - FAILED!');
+            }
+
         }
 
-        let idx = letuStorage.last_idx;
-        idx = (idx==null)?0:idx+1;
 
-/*
-        if (window.location.href.includes(156601627)) {
-            console.log('Letu.MainJob 156601627', idx, vCode, req_vCode, vCode==req_vCode)
-        }
-*/
 
-        if ((idx<links.length) && (vCode!=req_vCode)) {
-            letuStorage = {date: now, base_sku: base_sku, req_vCode: req_vCode, last_idx: idx};
-            sessionStorage.setItem('letu', JSON.stringify(letuStorage) );
-
-            //Fire!
-            //console.log('Letu.MainJob.click', idx, links[idx]);
-            links[idx].click();
-        }
-/*
-        if (vCode==req_vCode) {
-            console.log('Letu.MainJob.success!', vCode, req_vCode);
-        }
-*/
-
+        return;
     } //MainJob
 
     Resort_links(links) {
@@ -186,10 +224,11 @@ class Letu {
                 let vc_node = it.querySelector('.product-group-characteristics__item-value');
 
                 vCode = vc_node && vc_node.textContent.trim();
+                return vCode;
             }
         } //for(items)
 
-        return vCode;
+        return null;
     } //Get_vCode()
 
     Get_Descr() {
@@ -217,6 +256,18 @@ class Letu {
 
         return sku;
     } //Get_ReqSKU
+
+    Get_Trim_ReqSKU(){
+        let sku = null;
+
+        let idx = window.location.href.indexOf('reqsku');
+
+        if (idx>0) {
+            sku = window.location.href.slice(0, idx-1); //  https://www.letu.ru/product/pupa-karandash/44300389/sku/58400613?reqsku=PUP244013
+        }
+
+        return sku;
+    } //Get_Trim_ReqSKU(){
 
 
 } //class Letu
