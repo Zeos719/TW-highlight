@@ -88,6 +88,7 @@ if (window!=window.top) {
             //Check for error
             if (docText.includes('Не удалось')) {
                 console.log('DoObuv-error! Canceled');
+                this.connect();
                 return;
             }
 

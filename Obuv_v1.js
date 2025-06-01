@@ -64,6 +64,17 @@ function Obuv_onCtrlEnter(e) {
 		autoRun = !autoRun;
 		DrawAutoIndicator(autoRun);
 	}
+	
+	//Reset focus
+	/*
+	if (event.key == 'ArrowUp') { //Up
+		//console.log('KeyUp');
+		const radio_btns = document.querySelectorAll('input[type=radio]');
+		if (radio_btns && radio_btns.length)
+			radio_btns[0].focus();
+	}
+	*/
+	
 }
 
 function Obuv_SendToServer() {
@@ -122,24 +133,17 @@ function Parse_table(tbl) {
 
 //Parse string like '.. key1:value1. key2:value2. ' Delimiter = '. '
 function Parse_text(txt) {
-		let attr = [];
 
-		for(let i=0;i<nodes.length; i++) {
+	let items = txt.split(/\.\ /);
 
-			let items = nodes[i].textContent.split(/\.\ /);
+	let pairs = [];
+	for (let it of items) {
+		let pos = it.indexOf(':');
+		if (pos >= 0)
+			pairs.push([it.slice(0, pos).trim(), it.slice(pos+1).trim()]);
+	} //for(it)
 
-			let pairs = [];
-			for (let it of items) {
-				let pos = it.indexOf(':');
-				if (pos >= 0)
-					pairs.push([it.slice(0, pos).trim(), it.slice(pos+1).trim()]);
-			} //for(it)
-
-			attr[i] = pairs;
-
-		} //for(i)
-
-	return attr;
+	return pairs;
 } //Parse_text
 
 
@@ -497,6 +501,10 @@ class Obuv {
 		this.attr = this.Parse_Attributes();
 		console.log('attr', this.attr);
 
+		for (let idx=0;idx<2;idx++)
+			if (document.links[idx].href.startsWith('https://www.letu.ru/'))
+				this.Letu_add_sku(idx);
+
 		this.Compare_href_byParts(document.links);
 
 		this.Compare_Titles();
@@ -506,6 +514,7 @@ class Obuv {
 		//Auto-select
 		let choice = this.AutoDecision_v2();
 		console.log('AutoDecision: ', choice);
+		this.AutoDecision_choice = choice; //For UpdateMyInfo
 
 		if (choice!=-1) {
 
@@ -522,6 +531,10 @@ class Obuv {
 				}, "2000", choice);
 			} //if(autoRun)
 		}// if(choice)
+
+		//Display
+		this.UpdateMyInfo();
+
 
 		//Auto select for https://superstep.ru - 'недостаточно данных' и выход
 		/*
@@ -629,129 +642,30 @@ class Obuv {
 	} //Compare_Brands
 
 
-	Compare_VendorCode_old(nodes) {
-		const GREEN_COLOR = '#ccffcc';
-
-		//Extract codes
-		let codeSearch = [null, null];
-
-		for (let nodeId=0; nodeId<2; nodeId++) {
-
-			for (let node of nodes[nodeId].childNodes){
-
-				if (node.hasOwnProperty('innerHTML') && node.innerHTML.includes('GREEN_COLOR')) return; //already done
-
-				//console.log('Compare_VendorCode:', node.textContent);
-				codeSearch[nodeId] = LocateAfterAnchor(node.textContent, ['vendorCode:', 'Code:', 'Артикул:', 'Артикул производителя:', 'артикул:']);
-
-				if (codeSearch[nodeId]!=null) {
-					codeSearch[nodeId].node = node;
-					break;
-					} //if()
-
-				} //for(node)
-
-			} //for(nodeId)
-
-		if ((codeSearch[0]==null) || (codeSearch[1]==null)) return;
-		if (!codeSearch[0].hasOwnProperty('value') || !codeSearch[1].hasOwnProperty('value')) return;
-
-		//console.log('Compare_VendorCode:', codeSearch);
-
-		//Show in myInfo
-		this.vendorCodes = [codeSearch[0].value, codeSearch[1].value];
-		this.UpdateMyInfo();
-
-
-		//Compare and colorize
-		let colorized = Strings_CompareAndColor(codeSearch[0].value, codeSearch[1].value, null, GREEN_COLOR, /\-|\./);
-
-		nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(codeSearch[0].value, colorized[0]);
-		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(codeSearch[1].value, colorized[1]);
-
-		return;
-	} //Compare_VendorCode_old()
-
-
-	Compare_VendorCode_table(nodes) {
-		const GREEN_COLOR = '#ccffcc';
-
-		//Extract codes
-		let codeSearch = [null, null];
-
-		for (let nodeId=0; nodeId<2; nodeId++) {
-			let tbl = nodes[nodeId].children[0];
-
-			//for (let i=0; i<tbl.rows.length;i++) {
-			//	if (tbl.rows[i].textContent.includes('vendorCode'))
-
-			for (let row of tbl.rows) {
-				if (row.cells[0].textContent.includes('vendorCode')) {
-					codeSearch[nodeId] = row.cells[1];
-					//console.log('Compare_VendorCode_table td:', row.cells);
-				}
-			} //for(row)
-		} //for(nodeId)
-
-		if ((codeSearch[0]==null) || (codeSearch[1]==null)) return;
-		//console.log('Compare_VendorCode_table cs:', codeSearch);
-
-		//Show in myInfo
-		this.vendorCodes = [codeSearch[0].textContent.trim(), codeSearch[1].textContent.trim()];
-		this.UpdateMyInfo();
-
-		//Compare and colorize
-		let colorized = Strings_CompareAndColor(codeSearch[0].textContent.trim(), codeSearch[1].textContent.trim(), null, GREEN_COLOR, /\-|\./);
-		//console.log('Compare_VendorCode_table clr:', colorized);
-
-		codeSearch[0].innerHTML = colorized[0];
-		codeSearch[1].innerHTML = colorized[1];
-
-	} //Compare_VendorCode_table()
-
-/*
-	Compare_VendorCode() {
-
-		// 'vendorCode: I029208.89.WI'	vendor|Code!!!
-		let nodes = document.getElementsByClassName('attributes');
-
-		//console.log('Compare_VendorCode attr', nodes[0].firstElementChild.tagName );
-
-		if (nodes==null) return;
-
-		//if (nodes[0].innerHTML.includes('<table')) {
-		if (nodes[0].firstElementChild.tagName=='TABLE') {
-			this.Compare_VendorCode_table(nodes)
-		} else {
-			this.Compare_VendorCode_old(nodes) };
-
-	} //Compare_VendorCode()
-*/
-
 	Compare_VendorCode() {
 		if (this.attr.length==0) return;
 		
 		//Get vendor codes
-		let vendorCodes = [null, null];
+		this.vendorCodes = [null, null];
 		
 		for (let i=0;i<2;i++) {
-			this.attr[i].forEach((elem)=>{if (elem[0]=='vendorCode') vendorCodes[i]=elem[1]} );			
+			this.attr[i].forEach((elem)=>{if (elem[0]=='vendorCode') this.vendorCodes[i]=elem[1]} );			
 		}		
-		console.log('Compare_VendorCode', vendorCodes)
+		console.log('Compare_VendorCode', this.vendorCodes);
 		
 		//Compare and colorize
-		if ((vendorCodes[0]==null) || (vendorCodes[1]==null)) return;
-
-		let colorized = Strings_CompareAndColor(vendorCodes[0], vendorCodes[1], null, this.GREEN_COLOR_LIGHT, /\-|\./);
+		//if ((this.vendorCodes[0]==null) || (this.vendorCodes[1]==null)) return;
+		for(let i=0;i<2;i++)
+			this.vendorCodes[i] = this.vendorCodes[i] || '?';
+	
+		let colorized = Strings_CompareAndColor(this.vendorCodes[0], this.vendorCodes[1], null, this.GREEN_COLOR_LIGHT, /\-|\./);
 		//console.log('Compare_VendorCode_table clr:', colorized);
 
 		let nodes = document.getElementsByClassName('attributes');
 
-		nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(vendorCodes[0].value, colorized[0]);
-		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(vendorCodes[1].value, colorized[1]);
+		nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(this.vendorCodes[0].value, colorized[0]);
+		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(this.vendorCodes[1].value, colorized[1]);
 		
-		//Display
-		this.UpdateMyInfo();
 	}//Compare_VendorCode()
 	
 	
@@ -768,7 +682,7 @@ class Obuv {
 		if (infos.length==0)
 			for (let i=0;i<document.links.length;i++) {
 				let newNode = document.createElement("div");
-				newNode.textContent = '*** my info 2 ***';
+				//newNode.textContent = '*** my info 2 ***';
 				newNode.className = "twinfo";
 
 				document.links[i].parentNode.prepend(newNode);
@@ -782,17 +696,140 @@ class Obuv {
 
 	} //Reset()
 
-
+/*
 	UpdateMyInfo() {
 		const infos = document.querySelectorAll('.twinfo');	//select by class
 
 		let txt;
 		//Vendor codes
-		if (this.vendorCodes && (this.vendorCodes.length==2)) {
-			txt = 'vendor: ' + this.vendorCodes[0] + ' / ' + this.vendorCodes[1];
-			infos[0].textContent = txt;
-			infos[1].textContent = txt;
+		txt = 'vendor: ' + (this.vendorCodes[0]  || '?')  + ' / ' + (this.vendorCodes[1]  || '?');
+		this.MyInfo_AddLine(txt);
+		
+		//Оттенок
+		let color = [null, null];
+		for (let i=0;i<2;i++) 
+			this.attr[i].forEach((elem)=>{if (elem[0]=='Оттенок') color[i]=elem[1]} );			
+		
+		if (color[0] || color[1]){
+			txt = 'Оттенок: ' + (color[0]  || '?')  + ' / ' + (color[1]  || '?');
+			this.MyInfo_AddLine(txt);
 		}
+		
+		//Объем
+		let vol = [null, null];
+		for (let i=0;i<2;i++) 
+			this.attr[i].forEach((elem)=>{if (elem[0].startsWith('Объем')) vol[i]=elem[1]} );			
+		
+		if (vol[0] || vol[1]){
+			txt = 'Объем: ' + (vol[0]  || '?')  + ' / ' + (vol[1]  || '?');
+			this.MyInfo_AddLine(txt);
+		}
+
+		//Auto desicion
+		if(autoRun) {
+			if(this.AutoDecision_choice=-1) {
+				txt=`Auto: <span style="color:#ff0000;">PAUSED</span>`; //background-color
+			} else {
+				txt=`Auto: <span style="color:#00ff00;">RUN</span>`;
+			}
+			this.MyInfo_AddLine(txt);
+				
+		}
+
+		
+		//this.MyInfo_AddLine('<strong>Line 2</strong>');
+		
+	} //UpdateMyInfo
+*/
+
+	tableCreate(parent_node, tbl_data) {
+	  
+		var tbl = document.createElement('table');
+		tbl.style.width = '100%';
+		tbl.setAttribute('border', '1');
+			  
+		  //Table header
+		var thdr = document.createElement('thead');
+		var tr = document.createElement('tr');
+			for (var j = 0; j < 2; j++) {
+				var th = document.createElement('th')
+				th.appendChild(document.createTextNode( document.links[j].host ));			
+				tr.appendChild(th);
+			}
+		thdr.appendChild(tr);
+		tbl.appendChild(thdr);
+		  
+		  
+		  //Table rows
+		var tbdy = document.createElement('tbody');
+			  
+		for (var i = 0; i<tbl_data.length; i++) {
+			var tr = document.createElement('tr');
+			
+			for (var j = 0; j < 2; j++) {
+				var td = document.createElement('td');
+				td.appendChild(document.createTextNode(tbl_data[i][j]));			
+				tr.appendChild(td);
+			} //for(j)
+				
+			tbdy.appendChild(tr);
+		} //for(i)
+		
+		
+		tbl.appendChild(tbdy);
+		parent_node.appendChild(tbl)
+		
+	} //tableCreate
+	  
+	  
+	
+
+
+	UpdateMyInfo() {
+		const infos = document.querySelectorAll('.twinfo');	//select by class
+
+		if (infos[0].firstElementChild && (infos[0].firstElementChild.tagName=='TABLE')) { //Table Already exists
+			return;
+		}
+
+		//Prepare data` for tabel
+
+		let tbl_rows = [];
+		
+		let vCodes = [ this.vendorCodes[0], this.vendorCodes[1] ];
+		tbl_rows.push(vCodes);
+		
+		let color = [null, null];
+		for (let i=0;i<2;i++) 
+			this.attr[i].forEach((elem)=>{if (elem[0]=='Оттенок') color[i]=elem[1]} );			
+		if (color[0] || color[1])
+			tbl_rows.push(color);
+
+		let vol = [null, null];
+		for (let i=0;i<2;i++) 
+			this.attr[i].forEach((elem)=>{if (elem[0].startsWith('Объем')) vol[i]=elem[1]} );			
+		if (vol[0] || vol[1])
+			tbl_rows.push(vol);
+
+		//Correct null items
+		for(let i=0;i<tbl_rows.length;i++)
+			for(let j=0;j<2;j++)
+				if (tbl_rows[i][j]==null) 
+					tbl_rows[i][j] = ' ';
+		
+			
+		console.log('tbl_rows', tbl_rows);
+		
+		//Create table
+		this.tableCreate(infos[0], tbl_rows);
+		
+		
+		//Normalize height of infos[0]
+		let div = document.createElement('div');
+		div.style.height = infos[0].offsetHeight + 'px';
+		//console.log('offsetHeight', infos[0].offsetHeight);
+		infos[1].appendChild(div);
+
 	} //UpdateMyInfo
 
 
@@ -824,47 +861,6 @@ class Obuv {
 	*/
 		return -1;
 	} //buv_AutoDecision_v2
-
-/*
-	//https://www.detmir.ru
-	//' Комплект PlayToday:салатовый:104' -> ['Комплект PlayToday', '104']
-	ParseName_DetMir(txt) {
-		let pos = txt.indexOf(':');
-		if (pos==-1) return {name:txt.trim(), size:''};
-
-		let name = txt.slice(0, pos);
-
-		pos = txt.lastIndexOf(':');
-
-		let sz = txt.slice(pos+1);
-		return {name:name.trim(), sz:sz.trim()};
-	}
-
-	DetMir_special() {
-		console.log('DetMir_special()');
-
-		let titles = document.getElementsByClassName('name');
-
-		let title1 = titles[0].textContent;
-		let title2 = titles[1].textContent;
-
-		let tvr1 = this.ParseName_DetMir(title1);
-		let tvr2 = this.ParseName_DetMir(title2);
-
-		console.log('DetMir_special tvr:', [tvr1, tvr2]);
-
-		if (tvr1.name!=tvr2.name) return -1;
-
-		if((tvr1.size='') || (tvr2.size='')) return 3; //Недостаточно данных для решения
-
-		if(tvr1.sz==tvr2.sz) {
-			return 0; //Идентичны
-		} else {
-			return 1; //Частично отличаются
-		}
-
-	} //DetMir_special()
-*/
 
 	DetectSubTask() {
 
@@ -953,14 +949,83 @@ class Obuv {
 		let nodes = document.getElementsByClassName('attributes');
 		if (nodes.length!=2) return null;
 
-		//console.log('Parse_Attributes-isTable', nodes);		
+		//console.log('Parse_Attributes', nodes);		
 
-		if (nodes[0].firstElementChild.nodeName=='TABLE') {
+		//if (nodes[0].firstElementChild &&
+		//	Object.hasOwn(nodes[0].firstElementChild, 'nodeName') && 
+		//	(nodes[0].firstElementChild.nodeName=='TABLE')) {
+			
+		if (nodes[0].innerHTML.includes('<table')) {
 			return [Parse_table(nodes[0].firstElementChild), Parse_table(nodes[1].firstElementChild)]
 		} else {
 			return [Parse_text(nodes[0].textContent), Parse_text(nodes[1].textContent)]
 		}
 
 	} //Parse_Attributes
+	
+	MyInfo_AddLine(innerHTML) {
+		const infos = document.querySelectorAll('.twinfo');	//select by class
+		
+		if (infos[0].innerHTML.includes( innerHTML )) return;
+		
+		//let textNode = document.createTextNode(innerHTML + '</br>');
+		let div = document.createElement('div');
+		div.innerHTML = innerHTML;			
+		infos[0].append(div);
+		
+		//div = div.cloneNode(true);
+		div = document.createElement('div');
+		div.innerHTML = '&nbsp'; //'*'; 			
+		infos[1].append(div);
+
+	} //MyInfo_AddLine()
+	
+	
+	Letu_add_sku(idx) {
+		//console.log('Letu_add_sku', idx);
+		if (document.links[idx].href.includes('reqsku')) //Already done
+			return;
+				
+		let vCode = null;
+		this.attr[idx].forEach((elem)=>{if (elem[0]=='vendorCode') vCode=elem[1]} );			
+		
+		if (vCode)
+		{
+			document.links[idx].href = document.links[idx].href + '?reqsku=' + vCode;
+			document.links[idx].textContent = document.links[idx].href;			
+		}	
+		
+	} //Letu_add_sku()
 
 } //class Obuv
+
+/*
+https://stackoverflow.com/questions/14643617/create-table-using-javascript
+
+function tableCreate() {
+  var body = document.getElementsByTagName('body')[0];
+  var tbl = document.createElement('table');
+  tbl.style.width = '100%';
+  tbl.setAttribute('border', '1');
+  var tbdy = document.createElement('tbody');
+  for (var i = 0; i < 3; i++) {
+    var tr = document.createElement('tr');
+    for (var j = 0; j < 2; j++) {
+      if (i == 2 && j == 1) {
+        break
+      } else {
+        var td = document.createElement('td');
+        td.appendChild(document.createTextNode('\u0020'))
+        i == 1 && j == 1 ? td.setAttribute('rowSpan', '2') : null;
+        tr.appendChild(td)
+      }
+    }
+    tbdy.appendChild(tr);
+  }
+  tbl.appendChild(tbdy);
+  body.appendChild(tbl)
+}
+tableCreate();
+*/
+
+
