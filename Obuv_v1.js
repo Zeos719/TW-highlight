@@ -375,8 +375,8 @@ class ValidBrands {
 	  return this.brandsList!=null;
 	} //HasData
 
-	Load() {
-		//console.log('ValidBrands.Load');
+	Load_JSON() {
+		//console.log('ValidBrands.Load_JSON');
 
 		let myself = this;  //save 'this' for use inside callback!!!
 
@@ -390,7 +390,50 @@ class ValidBrands {
 			myself.NamesToUpper();
 			});
 
-	} //Load
+	} //Load_JSON
+	
+	Load_TXT() {
+		console.log('ValidBrands.Load_TXT');
+
+		let myself = this;  //save 'this' for use inside callback!!!
+		
+		//Lamoda
+		//let url = 'https://www.phonewarez.ru/files/TW-brands/Lamoda/Lamoda-brands.txt';
+		let url = 'https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt';
+		
+/*		
+		$.get(url, '', function(data){
+			console.log('ValidBrands.get-Lamoda', 'Accept: text/html;charset=US-ASCII, text/html;charset=UTF-8, text/plain; charset=US-ASCII,text/plain;charset=UTF-8',data.slice(0,20));
+*/			
+			
+		let get_set = {
+			method: "GET",
+			url: 'https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt',
+			
+			success: function(data, stat, jqXHR){
+				//console.log('ValidBrands.Load_TXT success', data.slice(0,20), jqXHR.getAllResponseHeaders() );
+
+				//let uint8Array = new Uint8Array([0xC0, 0xC4, 0xCC, 0xC8, 0xD0, 0xC0, 0xCB, 0xDA ]);
+				
+				let buf = str2ab8(data);
+				
+				let tdec = new TextDecoder('cp1251');				
+				let str = tdec.decode( buf );
+				
+				
+				console.log('ValidBrands.Load_TXT success', str.slice(0,20), buf );
+				},
+				
+			dataType: 'text',
+			headers: {Accept: 'text/plain; charset=UTF-8', 'Accept-Charset': 'utf-8', 'Accept-Encoding':'identity' },
+			processData: false 
+  
+		}
+
+		$.get(get_set);
+
+	} //Load_TXT()
+		
 
 	NamesToUpper() {
 		if (!this.HasData()) return;
@@ -471,7 +514,7 @@ class Obuv {
 
 			// Preload brands
 			this.brands = new ValidBrands();
-			this.brands.Load();
+			this.brands.Load_TXT();
 		}
 
 	MainJob() {
@@ -782,7 +825,23 @@ class Obuv {
 	} //tableCreate
 	  
 	  
-	
+	Subset_of_attr() {
+		
+		let id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Объем', 'Размер'];
+		
+		let val_list = [];
+		
+		id_list.forEach((id)=>{
+			let values = ['', ''];
+			for (let i=0;i<2;i++) 
+				this.attr[i].forEach((elem)=>{if (elem[0].startsWith(id)) values[i]=elem[1]} );			
+					if (values[0] || values[1])
+						val_list.push(values);
+			
+		}) //forEach()
+		
+		return val_list;
+	} //Subset_of_attr()
 
 
 	UpdateMyInfo() {
@@ -793,7 +852,7 @@ class Obuv {
 		}
 
 		//Prepare data` for tabel
-
+/*
 		let tbl_rows = [];
 		
 		let vCodes = [ this.vendorCodes[0], this.vendorCodes[1] ];
@@ -819,8 +878,9 @@ class Obuv {
 		
 			
 		console.log('tbl_rows', tbl_rows);
-		
+*/	
 		//Create table
+		let tbl_rows = this.Subset_of_attr();
 		this.tableCreate(infos[0], tbl_rows);
 		
 		
@@ -1028,4 +1088,26 @@ function tableCreate() {
 tableCreate();
 */
 
+
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+function str2ab16(str) {
+  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+  var bufView = new Uint16Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
+function str2ab8(str) {
+  var buf = new ArrayBuffer(str.length); // 1 byte for each char
+  var bufView = new Uint8Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
 
