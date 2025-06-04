@@ -359,9 +359,20 @@ function LocateAfterAnchor(txt, anchors) {
 
 //*****************************
 
+function IsDigit(c) {
+	let charCode = c.charCodeAt(0);
+	return (charCode>=0x30) && (charCode>=0x3A);	
+}
 
+function IsCyrrilic(c) {
+	c = c.toUpperCase()
+	let charCode = c.charCodeAt(0);
+	return (c=='Ё') || ((charCode>=0x0410) && (charCode<=0x42F));	
+}
 
 //********************* class ValidBrands  ********************************
+var vbd_receivedData = [];
+
 class ValidBrands {
   //constructor(name) { this.name = name; }
   //sayHi() { alert(this.name); }
@@ -372,7 +383,9 @@ class ValidBrands {
 	} //constructor
 
 	HasData() {
-	  return this.brandsList!=null;
+	  return (this.brandsList!=null);
+	  //return (this.brandsList && this.brandsList['letu'] && this.brandsList['lamoda']);
+	  
 	} //HasData
 
 	Load_JSON() {
@@ -392,46 +405,76 @@ class ValidBrands {
 
 	} //Load_JSON
 	
+	SaveServerAnswer(url, data) {
+		//console.log('ValidBrands.SaveServerAnswer', url, this.brandsList, data.slice(0,20));
+		
+		//Parse url: https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt
+		let tokens = url.split('/');
+		let fileNameWithExt  = tokens[ tokens.length-1 ];  // 'А-Я.cp1251.txt'
+		let fileName  = fileNameWithExt.split('.')[0].toUpperCase(); // 'А-Я'
+		
+		let folder  = tokens[ tokens.length-2 ].toLowerCase(); // 'letu'
+		
+		//Split data to lines and pre-process them
+		let dataLines = data.split('\r');
+		
+		for (let i=0;i<dataLines.length;i++)
+			dataLines[i] = dataLines[i].trim().toUpperCase();
+						
+		let dataLines_notEmpty = [];
+		dataLines.forEach(function(s) {if(s) dataLines_notEmpty.push(s)});
+		
+		//Attach to brandsList
+		if (folder=='letu') {
+			if (this.brandsList['letu']==undefined)
+				this.brandsList['letu'] = {};
+			
+			this.brandsList['letu'][fileName] = dataLines_notEmpty;			
+		} else {			
+			this.brandsList[folder] = dataLines_notEmpty;
+		}	
+	
+		vbd_receivedData.push([folder, fileName, dataLines_notEmpty]);
+	
+		return		
+	} //SaveReceivedFile
+	
 	Load_TXT() {
 		console.log('ValidBrands.Load_TXT');
 
 		let myself = this;  //save 'this' for use inside callback!!!
 		
+		this.brandsList = {}; //Empty dictionary
+				
+		let rootUrl = 'https://www.phonewarez.ru/files/TW-brands/';
+	
 		//Lamoda
-		//let url = 'https://www.phonewarez.ru/files/TW-brands/Lamoda/Lamoda-brands.txt';
-		let url = 'https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt';
+		let url = rootUrl + 'Lamoda/Lamoda-brands.txt';
 		
-/*		
 		$.get(url, '', function(data){
-			console.log('ValidBrands.get-Lamoda', 'Accept: text/html;charset=US-ASCII, text/html;charset=UTF-8, text/plain; charset=US-ASCII,text/plain;charset=UTF-8',data.slice(0,20));
-*/			
+				myself.SaveServerAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
+		} );
+
+		//Letu
+		const CODE_A = 65;
+		const CODE_Z = 90;
+		
+		let letu_files = ['0-9.txt', 'А-Я.cp1251.txt'];
+		
+		for (let charCode=CODE_A;charCode<=CODE_Z;charCode++) {
+			let fileName  = String.fromCharCode(charCode) + '.txt'; 'A.txt'
+			letu_files.push(fileName);			
+		} //for(charCode)
+				
+		letu_files.forEach(function(fileName) {
+			url = rootUrl + 'Letu/' + fileName;
 			
-		let get_set = {
-			method: "GET",
-			url: 'https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt',
-			
-			success: function(data, stat, jqXHR){
-				//console.log('ValidBrands.Load_TXT success', data.slice(0,20), jqXHR.getAllResponseHeaders() );
-
-				//let uint8Array = new Uint8Array([0xC0, 0xC4, 0xCC, 0xC8, 0xD0, 0xC0, 0xCB, 0xDA ]);
-				
-				let buf = str2ab8(data);
-				
-				let tdec = new TextDecoder('cp1251');				
-				let str = tdec.decode( buf );
-				
-				
-				console.log('ValidBrands.Load_TXT success', str.slice(0,20), buf );
-				},
-				
-			dataType: 'text',
-			headers: {Accept: 'text/plain; charset=UTF-8', 'Accept-Charset': 'utf-8', 'Accept-Encoding':'identity' },
-			processData: false 
-  
-		}
-
-		$.get(get_set);
-
+			$.get(url, '', function(data){
+					//console.log('Load_TXT-GET', this.url);
+					myself.SaveServerAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
+			} );
+		} ); //forEach
+		
 	} //Load_TXT()
 		
 
@@ -462,14 +505,17 @@ class ValidBrands {
 	Includes(name) {
 		if (!this.HasData()) return false;
 
-		let ret;
-
 		name = name.toUpperCase();
 
-		if ((name==null) || (name.length==0)) return false;
+		if ((name==null) || (name=='')) return false;
+
+		let ret;
+
+		//console.log('ValidBrands.Includes brandsList', this.brandsList, this.brandsList['letu'], vbd_receivedData, vbd_receivedData[1]);
+		console.log('ValidBrands.Includes brandsList', vbd_receivedData, vbd_receivedData[1]);
 
 		//Check Letu
-		let letu = this.brandsList['letu']
+		let letu = this.brandsList['letu'];
 		let first_ltr = name[0];
 
 		if (letu.hasOwnProperty(first_ltr)) {
@@ -477,12 +523,12 @@ class ValidBrands {
 			if (ret) return true;
 			};
 
-		if (letu.hasOwnProperty('0-9')) {
+		if (letu.hasOwnProperty('0-9') && IsDigit(first_ltr)) {
 			ret = letu['0-9'].includes(name);
 			if (ret) return true;
 			};
 
-		if (letu.hasOwnProperty('А-Я')) {
+		if (letu.hasOwnProperty('А-Я') && IsCyrilic(first_ltr)) {
 			ret = letu['А-Я'].includes(name);
 			if (ret) return true;
 			};
@@ -785,49 +831,62 @@ class Obuv {
 	} //UpdateMyInfo
 */
 
+	// For format tbl_data see Subset_of_attr()
 	tableCreate(parent_node, tbl_data) {
 	  
-		var tbl = document.createElement('table');
+		let tbl = document.createElement('table');
 		tbl.style.width = '100%';
 		tbl.setAttribute('border', '1');
 			  
 		  //Table header
-		var thdr = document.createElement('thead');
-		var tr = document.createElement('tr');
-			for (var j = 0; j < 2; j++) {
-				var th = document.createElement('th')
-				th.appendChild(document.createTextNode( document.links[j].host ));			
-				tr.appendChild(th);
-			}
+		let thdr = document.createElement('thead');
+		let tr = document.createElement('tr');
+		
+		let th = document.createElement('th');
+		th.width = '25%';
+		//th.appendChild(document.createTextNode('');			
+		tr.appendChild(th);
+		
+		for (let j = 0; j < 2; j++) {
+			th = document.createElement('th')
+			th.appendChild(document.createTextNode( document.links[j].host ));			
+			tr.appendChild(th);
+		}
 		thdr.appendChild(tr);
 		tbl.appendChild(thdr);
 		  
 		  
 		  //Table rows
-		var tbdy = document.createElement('tbody');
+		let tbdy = document.createElement('tbody');
 			  
-		for (var i = 0; i<tbl_data.length; i++) {
-			var tr = document.createElement('tr');
+		for (let i = 0; i<tbl_data.length; i++) {
+			let tr = document.createElement('tr');
 			
-			for (var j = 0; j < 2; j++) {
-				var td = document.createElement('td');
-				td.appendChild(document.createTextNode(tbl_data[i][j]));			
+			let td;
+			td = document.createElement('td');
+			td.appendChild(document.createTextNode(tbl_data[i].id));			
+			td.style.color = 'DarkGray'; //'silver';
+			tr.appendChild(td);
+			
+			
+			for (let j = 0; j < 2; j++) {
+				td = document.createElement('td');
+				td.appendChild(document.createTextNode(tbl_data[i].values[j]));			
 				tr.appendChild(td);
 			} //for(j)
 				
 			tbdy.appendChild(tr);
 		} //for(i)
-		
-		
+				
 		tbl.appendChild(tbdy);
 		parent_node.appendChild(tbl)
 		
 	} //tableCreate
 	  
-	  
+	// Return list of elem like: {id:'vendorCode', values:['123', '159']};  
 	Subset_of_attr() {
 		
-		let id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Объем', 'Размер'];
+		let id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер'];
 		
 		let val_list = [];
 		
@@ -836,7 +895,7 @@ class Obuv {
 			for (let i=0;i<2;i++) 
 				this.attr[i].forEach((elem)=>{if (elem[0].startsWith(id)) values[i]=elem[1]} );			
 					if (values[0] || values[1])
-						val_list.push(values);
+						val_list.push({id:id, values:values});
 			
 		}) //forEach()
 		
@@ -851,39 +910,28 @@ class Obuv {
 			return;
 		}
 
-		//Prepare data` for tabel
-/*
-		let tbl_rows = [];
-		
-		let vCodes = [ this.vendorCodes[0], this.vendorCodes[1] ];
-		tbl_rows.push(vCodes);
-		
-		let color = [null, null];
-		for (let i=0;i<2;i++) 
-			this.attr[i].forEach((elem)=>{if (elem[0]=='Оттенок') color[i]=elem[1]} );			
-		if (color[0] || color[1])
-			tbl_rows.push(color);
-
-		let vol = [null, null];
-		for (let i=0;i<2;i++) 
-			this.attr[i].forEach((elem)=>{if (elem[0].startsWith('Объем')) vol[i]=elem[1]} );			
-		if (vol[0] || vol[1])
-			tbl_rows.push(vol);
-
-		//Correct null items
-		for(let i=0;i<tbl_rows.length;i++)
-			for(let j=0;j<2;j++)
-				if (tbl_rows[i][j]==null) 
-					tbl_rows[i][j] = ' ';
-		
-			
-		console.log('tbl_rows', tbl_rows);
-*/	
 		//Create table
 		let tbl_rows = this.Subset_of_attr();
 		this.tableCreate(infos[0], tbl_rows);
 		
-		
+		//Auto desicion
+		if(autoRun) {
+			let txt, color;
+			
+			if(this.AutoDecision_choice=-1) {
+				txt = 'Auto: PAUSED'; 
+				color = 'Crimson'; // see https://colorscheme.ru/html-colors.html
+			} else {
+				txt = 'Auto: RUN';
+				color = 'Lime'; // see https://colorscheme.ru/html-colors.html
+			}
+			
+			let tn = document.createElement('div');
+			tn.appendChild( document.createTextNode(txt) );			
+			tn.style.color = color;
+			infos[0].appendChild(tn);									
+		}
+
 		//Normalize height of infos[0]
 		let div = document.createElement('div');
 		div.style.height = infos[0].offsetHeight + 'px';

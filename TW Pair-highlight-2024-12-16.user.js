@@ -42,7 +42,7 @@ const tc_CheckImage = 7;
 var autoRun = false;
 const SEND_TO_SERVER = false;
 
-
+var vbd = null;
 
 
 if (window!=window.top) {
@@ -91,6 +91,32 @@ if (window!=window.top) {
                 this.connect();
                 return;
             }
+/*
+        let url = 'https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt';
+
+		$.get(url, '', function(data) {
+this.saveUrl = url;
+			console.log('ValidBrands.get-Lamoda', this.saveUrl, data.slice(0,22));
+		} );
+*/
+
+            if (!vbd) {
+                vbd = new ValidBrands();
+                vbd.Load_TXT();
+
+                if (vbd.HasData()) {
+                    let brName = '1TOY';
+                    console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
+
+                    brName = '1TAY';
+                    console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
+
+
+                }
+
+            }
+
+
 
 
             let taskCode, taskVersion;
