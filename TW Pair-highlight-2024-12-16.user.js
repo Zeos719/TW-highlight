@@ -103,18 +103,23 @@ this.saveUrl = url;
             if (!vbd) {
                 vbd = new ValidBrands();
                 vbd.Load_TXT();
+            }
 
-                if (vbd.HasData()) {
+            if (vbd.HasData()) {
                     let brName = '1TOY';
                     console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
 
                     brName = '1TAY';
                     console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
 
+                    brName = 'Baby balance';
+                    console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
 
-                }
+                    brName = 'адмиралЪ';
+                    console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
 
             }
+
 
 
 

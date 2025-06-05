@@ -132,9 +132,10 @@ function Parse_table(tbl) {
 
 
 //Parse string like '.. key1:value1. key2:value2. ' Delimiter = '. '
-function Parse_text(txt) {
+function Parse_text(txt, delim) {
 
-	let items = txt.split(/\.\ /);
+	let items = txt.split(delim);
+	//console.log('Parse_text', items);
 
 	let pairs = [];
 	for (let it of items) {
@@ -371,21 +372,27 @@ function IsCyrrilic(c) {
 }
 
 //********************* class ValidBrands  ********************************
-var vbd_receivedData = [];
+var vbd_count = 0;
 
 class ValidBrands {
   //constructor(name) { this.name = name; }
   //sayHi() { alert(this.name); }
 
 	constructor() {
-		console.log('ValidBrands.constructor');
+		//console.log('ValidBrands.constructor');
 		this.brandsList = null;
 	} //constructor
 
 	HasData() {
-	  return (this.brandsList!=null);
-	  //return (this.brandsList && this.brandsList['letu'] && this.brandsList['lamoda']);
-	  
+		//let ret = (this.brandsList!=null);
+		let ret = (this.brandsList && 
+				this.brandsList.hasOwnProperty('letu') &&
+				this.brandsList.hasOwnProperty('lamoda') );
+				
+		if (!ret)
+				console.log('ValidBrands.HasData - no data loaded!');
+				
+		return ret;
 	} //HasData
 
 	Load_JSON() {
@@ -422,7 +429,9 @@ class ValidBrands {
 			dataLines[i] = dataLines[i].trim().toUpperCase();
 						
 		let dataLines_notEmpty = [];
-		dataLines.forEach(function(s) {if(s) dataLines_notEmpty.push(s)});
+		//dataLines.forEach(function(s) {if(s) dataLines_notEmpty.push(s)});
+		dataLines_notEmpty = dataLines.filter(function(s) {return (s!='')});
+		
 		
 		//Attach to brandsList
 		if (folder=='letu') {
@@ -433,9 +442,7 @@ class ValidBrands {
 		} else {			
 			this.brandsList[folder] = dataLines_notEmpty;
 		}	
-	
-		vbd_receivedData.push([folder, fileName, dataLines_notEmpty]);
-	
+			
 		return		
 	} //SaveReceivedFile
 	
@@ -453,6 +460,7 @@ class ValidBrands {
 		
 		$.get(url, '', function(data){
 				myself.SaveServerAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
+				vbd_count += 1;
 		} );
 
 		//Letu
@@ -472,6 +480,7 @@ class ValidBrands {
 			$.get(url, '', function(data){
 					//console.log('Load_TXT-GET', this.url);
 					myself.SaveServerAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
+					vbd_count += 1;
 			} );
 		} ); //forEach
 		
@@ -510,10 +519,9 @@ class ValidBrands {
 		if ((name==null) || (name=='')) return false;
 
 		let ret;
-
-		//console.log('ValidBrands.Includes brandsList', this.brandsList, this.brandsList['letu'], vbd_receivedData, vbd_receivedData[1]);
-		console.log('ValidBrands.Includes brandsList', vbd_receivedData, vbd_receivedData[1]);
-
+		
+		//console.log('ValidBrands.Includes brandsList', this.brandsList, this.brandsList['letu']);
+		
 		//Check Letu
 		let letu = this.brandsList['letu'];
 		let first_ltr = name[0];
@@ -528,7 +536,7 @@ class ValidBrands {
 			if (ret) return true;
 			};
 
-		if (letu.hasOwnProperty('А-Я') && IsCyrilic(first_ltr)) {
+		if (letu.hasOwnProperty('А-Я') && IsCyrrilic(first_ltr)) {
 			ret = letu['А-Я'].includes(name);
 			if (ret) return true;
 			};
@@ -1057,7 +1065,7 @@ class Obuv {
 		let nodes = document.getElementsByClassName('attributes');
 		if (nodes.length!=2) return null;
 
-		//console.log('Parse_Attributes', nodes);		
+		console.log('Parse_Attributes', nodes);		
 
 		//if (nodes[0].firstElementChild &&
 		//	Object.hasOwn(nodes[0].firstElementChild, 'nodeName') && 
@@ -1066,7 +1074,16 @@ class Obuv {
 		if (nodes[0].innerHTML.includes('<table')) {
 			return [Parse_table(nodes[0].firstElementChild), Parse_table(nodes[1].firstElementChild)]
 		} else {
-			return [Parse_text(nodes[0].textContent), Parse_text(nodes[1].textContent)]
+			
+			let delim;	
+			if ((nodes[0].innerHTML.includes('<br>')) || (nodes[1].innerHTML.includes('<br>'))) {
+				delim = /\<br\>/;
+				return [Parse_text(nodes[0].innerHTML, delim), Parse_text(nodes[1].innerHTML, delim)]				
+			} else {
+				let delim = /\.\ /;			
+				return [Parse_text(nodes[0].textContent, delim), Parse_text(nodes[1].textContent, delim)]				
+			}
+						
 		}
 
 	} //Parse_Attributes
