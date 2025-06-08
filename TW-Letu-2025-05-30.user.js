@@ -18,23 +18,9 @@
 
 //Прмер страницы
 // https://www.letu.ru/product/bobbi-brown-tush-dlya-brovei-natural-brow-shaper-hair-touch-up/133100097/sku/152100010
-// https://www.letu.ru/product/l-etual-tonalnoe-sredstvo-sovershenstvo-obnazhennoi-kozhi-decollete/20800019/sku/22800035?reqsku=LT0290213
+// https://www.letu.ru/product/l-etual-tonalnoe-sredstvo-sovershenstvo-obnazhennoi-kozhi-decollete/20800019/sku/22800035?vendorCode=LT0290213
 
 var letu = null;
-
-function global_Get_ReqSKU(){
-        let sku = null;
-
-        let idx = window.location.href.indexOf('reqsku');
-
-        if (idx>0) {
-            sku = window.location.href.slice(idx+7); //  https://www.letu.ru/product/pupa-karandash/44300389/sku/58400613?reqsku=PUP244013
-        }
-
-    return sku;
-} //global_Get_ReqSKU()
-
-
 
     // Your code here...
     console.log('Monkey very begin!');
@@ -55,7 +41,7 @@ if (window==window.top) { //!!! Отличается от Pair highlight
             if (letu==null) letu = new Letu();
 
             letu.MainJob();
-         
+
             this.connect();
         });
 
@@ -107,6 +93,7 @@ class Letu {
                      req_vCode: null,
                      prev_vCode: null,
                      prev_vDescr: null,
+                     clickedLink: null,
                      status: 'created', idx:0};
 		}
 
@@ -126,15 +113,25 @@ class Letu {
         }
         console.log('Letu.MainJob.vCode', vCode, this.data.req_vCode);
 
-        let links = document.querySelectorAll('.product-detail-sku-regular-v2');
+
+        //Classes:
+        //Obuv:    product-detail-sku-volume sku-view-table__item-volume product-detail-sku-volume--active
+        //Krasota: product-detail-sku-regular-v2
+        //let links = document.querySelectorAll('.product-detail-sku-regular-v2');
+
+        let links = Array.from(document.links);
+        links = links.filter((x)=>x.className.startsWith('product-detail-sku'))
+
+        console.log('Letu.MainJob.links', links);
+
         links = this.Resort_links(links);
         if (links.length<2) {
             console.log('Letu.MainJob.links too short, exit', links.length);
+            return;
         }
-        //console.log('Letu.MainJob.links', links);
 
         let vDescr = this.Get_Descr();
-        //console.log('Letu.MainJob.vDescr', vDescr);
+        console.log('Letu.MainJob.vDescr', vDescr);
 
 
         //Initiate new job
@@ -155,7 +152,10 @@ class Letu {
         //Если код на текущей странице совпал с требуемым - всё отлично, заканчиваем
         if (vCode==req_vCode) {
             if (this.data.status=='run') {
-                console.log('Letu.MainJob: got it!', vCode, vDescr);
+                console.log('Letu.MainJob: got it!', vCode, vDescr, this.data.clickedLink);
+
+                if (!document.title.includes('|'))
+                    document.title = vDescr + '|' + document.title;
 
                 this.data.status = 'done,success';
             }
@@ -177,14 +177,20 @@ class Letu {
 
             this.data.prev_vCode = vCode;
             this.data.prev_vDescr = vDescr;
+            this.data.clickedLink = links[ this.data.idx ].textContent;
 
             links[ this.data.idx ].click();
+            links[ this.data.idx ].blur(); //Simulate mouseOut event
+
+
+
             this.data.idx += 1;
 
             if (this.data.idx==links.length) { // вышли за пределы списка, а результатат нет
                 this.data.status = 'done,failed';
                 this.data.base_URL = null;
                 console.log('Letu.MainJob - FAILED!');
+                alert('TW.Letu - FAILED!')
             }
 
         }
@@ -243,15 +249,15 @@ class Letu {
     Get_BaseSKU() {
         //return document.baseURL.split('/')[5];
         return window.location.href.split('\/')[5];
-    } //Get_Descr()
+    } //Get_BaseSKU()
 
     Get_ReqSKU(){
         let sku = null;
 
-        let idx = window.location.href.indexOf('reqsku');
+        let idx = window.location.href.indexOf('vendorCode');
 
         if (idx>0) {
-            sku = window.location.href.slice(idx+7); //  https://www.letu.ru/product/pupa-karandash/44300389/sku/58400613?reqsku=PUP244013
+            sku = window.location.href.slice(idx+10+1); //  https://www.letu.ru/product/pupa-karandash/44300389/sku/58400613?vendorCode=PUP244013
         }
 
         return sku;
@@ -260,10 +266,10 @@ class Letu {
     Get_Trim_ReqSKU(){
         let sku = null;
 
-        let idx = window.location.href.indexOf('reqsku');
+        let idx = window.location.href.indexOf('vendorCode');
 
         if (idx>0) {
-            sku = window.location.href.slice(0, idx-1); //  https://www.letu.ru/product/pupa-karandash/44300389/sku/58400613?reqsku=PUP244013
+            sku = window.location.href.slice(0, idx-1); //  https://www.letu.ru/product/pupa-karandash/44300389/sku/58400613?vendorCode=PUP244013
         }
 
         return sku;

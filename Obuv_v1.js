@@ -619,10 +619,11 @@ class Obuv {
 
 			if (autoRun) {
 				setTimeout((choice) => {
-					//console.log("AutoDecision fired:", choice);
+					console.log("AutoDecision fired:", choice);
 					RB_set(choice);
 
 					let completeBtn = document.querySelector("#completeBtn");
+					completeBtn.focus();
 					completeBtn.click();
 
 				}, "2000", choice);
@@ -963,6 +964,9 @@ class Obuv {
 
 		if ( Links_start_with(links, 'https://campioshop.ru/') )
 			return this.DecideBy_Size_VCode( /\((.+)\)$/ug );
+		
+		if ( (this.subTask==OT_OBUV) && Links_start_with(links, 'https://www.letu.ru/') )
+			return this.Special_Letu();
 
 
 		if (this.subTask==OT_CLOTHES)
@@ -1108,7 +1112,7 @@ class Obuv {
 	
 	Letu_add_sku(idx) {
 		//console.log('Letu_add_sku', idx);
-		if (document.links[idx].href.includes('reqsku')) //Already done
+		if (document.links[idx].href.includes('vendorCode')) //Already done
 			return;
 				
 		let vCode = null;
@@ -1116,11 +1120,28 @@ class Obuv {
 		
 		if (vCode)
 		{
-			document.links[idx].href = document.links[idx].href + '?reqsku=' + vCode;
+			document.links[idx].href = document.links[idx].href + '?vendorCode=' + vCode;
 			document.links[idx].textContent = document.links[idx].href;			
 		}	
 		
 	} //Letu_add_sku()
+
+	Special_Letu() {
+		//console.log('Obuv.Special_Letu', this.vendorCodes);
+		
+		if (!this.vendorCodes || !this.vendorCodes[0] || !this.vendorCodes[1])
+			return -1;
+		
+		if (this.vendorCodes[0]==this.vendorCodes[1]) {
+			return 0
+		} else {
+			return 1
+		}				
+		
+		return -1;
+	}
+
+
 
 } //class Obuv
 
