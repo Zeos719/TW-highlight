@@ -81,6 +81,8 @@ function Obuv_SendToServer() {
 
 	let titles = document.getElementsByClassName('name');
 	let brands = document.getElementsByClassName('brand');
+	let category = document.getElementsByClassName('category');
+	
 	let links = document.links;
 
 	//get user choice
@@ -98,7 +100,8 @@ function Obuv_SendToServer() {
 		links: [links[0].href, links[1].href],
 		descr: [titles[0].textContent, titles[1].textContent],
 		brand: [brands[0].textContent, brands[1].textContent],
-		choice: user_choice
+		choice: user_choice,
+		category: category[0].textContent
 	};
 
 	console.log('Obuv_SendToServer-1: ', payload);
@@ -115,6 +118,11 @@ function Obuv_SendToServer() {
 
 // Convert <table> to a list of rows. tbl is a node! tbl = node.firstElementChild
 function Parse_table(tbl) {
+	
+		if (tbl==null) {
+			console.log('Obuv.Parse_table null!');
+			return [];
+		}
 
 		let tbl_list = [];
 		for (let row of tbl.rows) {
@@ -146,6 +154,14 @@ function Parse_text(txt, delim) {
 
 	return pairs;
 } //Parse_text
+
+function GetTaskId() {
+	if (document.links.length==1) {
+		return document.links[0];
+	} else {
+		return document.links[0] + document.links[1];		
+	}	
+} //GetTaskId()
 
 
 //********************* Два товара (обувь)	********************************
@@ -371,6 +387,86 @@ function IsCyrrilic(c) {
 	return (c=='Ё') || ((charCode>=0x0410) && (charCode<=0x42F));	
 }
 
+// Извлекаем подстроку строку с размером из описания вида
+//'abc 123/8 Gb defg'
+//'abc 123+8 Гб defg'
+//'abc 123Гб defg'
+//
+// returns [start, end] or null
+/*
+function Parse_MemSize(str) {
+  str = str.toUpperCase();
+
+  const GB_marks = ['GB ', 'TB ', 'ГБ ', 'ТБ '];
+  let gb_pos = -1;
+
+  for (mrk of GB_marks) {
+    gb_pos = str.indexOf(mrk);
+    if (gb_pos!=-1) 
+      break;
+  } //for(mrk)
+
+  if (gb_pos==-1) return null;
+
+  let end = gb_pos+2; //2 = length('GB')
+
+  let dgts_end = gb_pos; 
+  let start = str.lastIndexOf(' ', gb_pos);
+  if (start == (gb_pos-1)) { // если пробел перед 'GB': '123 GB'
+    dgts_end = gb_pos-1;
+    start = str.lastIndexOf(' ', start-1);
+
+    if (start==-1)
+      return null;
+  }
+
+  start += 1; //skip space              
+
+  // between [start,end] only gidits or '/' and '+'
+  let sizeStr = str.slice(start, dgts_end);
+  if (sizeStr.match( /([\d\+\/]+)/gm )==null)
+    return null;
+
+  return [start, end];
+}
+*/
+
+/* 
+Примеры строк:
+
+abc 12/256Gb def
+abc 12/256 Gb def
+abc 12+256 ГБ def
+abc 256GB def
+*/
+function Parse_MemSize(str) {
+	//let regExp = /\s(\d+)[\/|\+]\s*(\d+)\s*(GB|ГБ)\s/gm;
+	let regExp = /\s((\d+)[\/|\+]\s*)*(\d+)\s*(GB|ГБ)\s/gm;
+	
+	let matchAll = str.toUpperCase().matchAll(regExp);
+	matchAll = Array.from(matchAll);
+	
+	//console.log('Obuv.Parse_MemSize', str, matchAll);
+	
+	if (matchAll.length==0) {
+		return null;
+	} else {
+		let start = matchAll[0].index+1; //1 - for leading space
+		let end = start + (matchAll[0][0].length-2) //2 - for leading and trailing space
+
+		let pref = str.slice(0, start);
+		let memSize = str.slice(start, end);
+		let suff = str.slice(end);
+
+		//console.log('Parse_MemSize', str, start, end);
+			
+		return [pref, memSize, suff];	
+	}
+	
+} //Parse_MemSize	
+
+
+
 //********************* class ValidBrands  ********************************
 var vbd_count = 0;
 
@@ -557,6 +653,7 @@ class ValidBrands {
 const OT_OBUV = 0;
 const OT_PARFUM = 1;
 const OT_CLOTHES = 2;
+const OT_ELECTRONICS = 3;
 
 class Obuv {
   //constructor(name) { this.name = name; }
@@ -569,6 +666,11 @@ class Obuv {
 			// Preload brands
 			this.brands = new ValidBrands();
 			this.brands.Load_TXT();
+			
+			this.taskId = null;
+			this.clicked = false;
+			
+			
 		}
 
 	MainJob() {
@@ -583,6 +685,14 @@ class Obuv {
 		this.SelectDecision(2); //'Abs differ' by deffault
 		this.subTask = this.DetectSubTask();
 		console.log('Obuv subTask:', this.subTask);
+		
+		//Reset for new task
+		let newTaskId = GetTaskId();
+		if (this.taskId!=newTaskId) {
+			this.taskId!=newTaskId;			
+			this.clicked = false;
+		}
+		
 
 		DrawAutoIndicator(autoRun);
 
@@ -597,6 +707,8 @@ class Obuv {
 		//Main
 		this.attr = this.Parse_Attributes();
 		console.log('attr', this.attr);
+		
+		this.attrEx = [ ];
 
 		for (let idx=0;idx<2;idx++)
 			if (document.links[idx].href.startsWith('https://www.letu.ru/'))
@@ -614,10 +726,9 @@ class Obuv {
 		this.AutoDecision_choice = choice; //For UpdateMyInfo
 
 		if (choice!=-1) {
-
-			//setTimeout(RB_set, 1000, choice);
-
-			if (autoRun) {
+			if (autoRun && !this.clicked) {
+				this.clicked = true;
+				
 				setTimeout((choice) => {
 					console.log("AutoDecision fired:", choice);
 					RB_set(choice);
@@ -688,7 +799,14 @@ class Obuv {
 
 		let title1 = titles[0];
 		let title2 = titles[1];
-
+		
+		let mem1 = Parse_MemSize(title1.textContent);
+		let mem2 = Parse_MemSize(title2.textContent);
+		if (mem1 && mem2)		
+		{			
+			this.attrEx.push( {id:'memSize', values:[mem1[1], mem2[1]]} );
+		}	
+		
 		if (title1.innerHTML.includes('<span')) return; //Already done
 
 		let colorized1, colorized2;
@@ -794,54 +912,35 @@ class Obuv {
 
 	} //Reset()
 
-/*
-	UpdateMyInfo() {
-		const infos = document.querySelectorAll('.twinfo');	//select by class
-
-		let txt;
-		//Vendor codes
-		txt = 'vendor: ' + (this.vendorCodes[0]  || '?')  + ' / ' + (this.vendorCodes[1]  || '?');
-		this.MyInfo_AddLine(txt);
-		
-		//Оттенок
-		let color = [null, null];
-		for (let i=0;i<2;i++) 
-			this.attr[i].forEach((elem)=>{if (elem[0]=='Оттенок') color[i]=elem[1]} );			
-		
-		if (color[0] || color[1]){
-			txt = 'Оттенок: ' + (color[0]  || '?')  + ' / ' + (color[1]  || '?');
-			this.MyInfo_AddLine(txt);
-		}
-		
-		//Объем
-		let vol = [null, null];
-		for (let i=0;i<2;i++) 
-			this.attr[i].forEach((elem)=>{if (elem[0].startsWith('Объем')) vol[i]=elem[1]} );			
-		
-		if (vol[0] || vol[1]){
-			txt = 'Объем: ' + (vol[0]  || '?')  + ' / ' + (vol[1]  || '?');
-			this.MyInfo_AddLine(txt);
-		}
-
-		//Auto desicion
-		if(autoRun) {
-			if(this.AutoDecision_choice=-1) {
-				txt=`Auto: <span style="color:#ff0000;">PAUSED</span>`; //background-color
-			} else {
-				txt=`Auto: <span style="color:#00ff00;">RUN</span>`;
-			}
-			this.MyInfo_AddLine(txt);
-				
-		}
-
-		
-		//this.MyInfo_AddLine('<strong>Line 2</strong>');
-		
-	} //UpdateMyInfo
-*/
 
 	// For format tbl_data see Subset_of_attr()
 	tableCreate(parent_node, tbl_data) {
+		
+		function AppendRows(tbdy, data) {
+			
+			for (let i = 0; i<data.length; i++) {
+				let tr = document.createElement('tr');
+				
+				let td;
+				td = document.createElement('td');
+				td.appendChild(document.createTextNode(data[i].id));			
+				td.style.color = 'DarkGray'; //'silver';
+				tr.appendChild(td);
+				
+				
+				for (let j = 0; j < 2; j++) {
+					td = document.createElement('td');
+					td.appendChild(document.createTextNode(data[i].values[j]));			
+					tr.appendChild(td);
+				} //for(j)
+					
+				tbdy.appendChild(tr);
+			} //for(i)
+
+			return tbdy;		
+		} //AppendRows()
+		
+		
 	  
 		let tbl = document.createElement('table');
 		tbl.style.width = '100%';
@@ -864,29 +963,13 @@ class Obuv {
 		thdr.appendChild(tr);
 		tbl.appendChild(thdr);
 		  
-		  
-		  //Table rows
+		//Build table
 		let tbdy = document.createElement('tbody');
+		
+		AppendRows(tbdy, tbl_data);
+		AppendRows(tbdy, this.attrEx);
 			  
-		for (let i = 0; i<tbl_data.length; i++) {
-			let tr = document.createElement('tr');
 			
-			let td;
-			td = document.createElement('td');
-			td.appendChild(document.createTextNode(tbl_data[i].id));			
-			td.style.color = 'DarkGray'; //'silver';
-			tr.appendChild(td);
-			
-			
-			for (let j = 0; j < 2; j++) {
-				td = document.createElement('td');
-				td.appendChild(document.createTextNode(tbl_data[i].values[j]));			
-				tr.appendChild(td);
-			} //for(j)
-				
-			tbdy.appendChild(tr);
-		} //for(i)
-				
 		tbl.appendChild(tbdy);
 		parent_node.appendChild(tbl)
 		
@@ -922,17 +1005,17 @@ class Obuv {
 		//Create table
 		let tbl_rows = this.Subset_of_attr();
 		this.tableCreate(infos[0], tbl_rows);
-		
-		//Auto desicion
+			
+		//Auto decision
 		if(autoRun) {
 			let txt, color;
 			
-			if(this.AutoDecision_choice=-1) {
-				txt = 'Auto: PAUSED'; 
+			if(this.AutoDecision_choice==-1) {
+				txt = `Auto: PAUSED ${this.AutoDecision_choice}`; 
 				color = 'Crimson'; // see https://colorscheme.ru/html-colors.html
 			} else {
-				txt = 'Auto: RUN';
-				color = 'Lime'; // see https://colorscheme.ru/html-colors.html
+				txt = `Auto: RUN ${this.AutoDecision_choice}`;
+				color = 'ForestGreen'; // see https://colorscheme.ru/html-colors.html
 			}
 			
 			let tn = document.createElement('div');
@@ -965,7 +1048,8 @@ class Obuv {
 		if ( Links_start_with(links, 'https://campioshop.ru/') )
 			return this.DecideBy_Size_VCode( /\((.+)\)$/ug );
 		
-		if ( (this.subTask==OT_OBUV) && Links_start_with(links, 'https://www.letu.ru/') )
+		//if ( (this.subTask==OT_OBUV) && Links_start_with(links, 'https://www.letu.ru/') )
+		if (  Links_start_with(links, 'https://www.letu.ru/') )			
 			return this.Special_Letu();
 
 
@@ -1092,23 +1176,6 @@ class Obuv {
 
 	} //Parse_Attributes
 	
-	MyInfo_AddLine(innerHTML) {
-		const infos = document.querySelectorAll('.twinfo');	//select by class
-		
-		if (infos[0].innerHTML.includes( innerHTML )) return;
-		
-		//let textNode = document.createTextNode(innerHTML + '</br>');
-		let div = document.createElement('div');
-		div.innerHTML = innerHTML;			
-		infos[0].append(div);
-		
-		//div = div.cloneNode(true);
-		div = document.createElement('div');
-		div.innerHTML = '&nbsp'; //'*'; 			
-		infos[1].append(div);
-
-	} //MyInfo_AddLine()
-	
 	
 	Letu_add_sku(idx) {
 		//console.log('Letu_add_sku', idx);
@@ -1127,11 +1194,32 @@ class Obuv {
 	} //Letu_add_sku()
 
 	Special_Letu() {
+		
+		function Compare_links_prefs(hrefArr) {
+
+			let prefs = ['', ''];
+			for(let i=0;i<2;i++) {    
+				let ipos = hrefArr[i].indexOf('sku');
+				if (ipos==-1)
+				  return false;
+
+				prefs[i] = hrefArr[i].slice(0, ipos);
+			} //for(i)
+
+			return (prefs[0]==prefs[1]);
+		} //Compare_links_pre		
+		
 		//console.log('Obuv.Special_Letu', this.vendorCodes);
 		
+		//На всякий случай сравним префиксы до подстроки 'sku'
+		if (!Compare_links_prefs( [document.links[0].href, document.links[1].href] ))
+			return -1;
+				
+		//valid vendorCodes sholud be available
 		if (!this.vendorCodes || !this.vendorCodes[0] || !this.vendorCodes[1])
 			return -1;
 		
+		//Decision
 		if (this.vendorCodes[0]==this.vendorCodes[1]) {
 			return 0
 		} else {
