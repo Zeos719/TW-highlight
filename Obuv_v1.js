@@ -689,7 +689,7 @@ class Obuv {
 		//Reset for new task
 		let newTaskId = GetTaskId();
 		if (this.taskId!=newTaskId) {
-			this.taskId!=newTaskId;			
+			this.taskId = newTaskId;			
 			this.clicked = false;
 		}
 		
