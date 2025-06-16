@@ -210,16 +210,19 @@ class Letu {
             this.data.prev_vDescr = vDescr;
             this.data.clickedLink = links[ this.data.idx ].textContent;
 
-            links[ this.data.idx ].click();
+            let theLink = links[ this.data.idx ];
+            theLink.click();
 
             //To remove tooltip
-            //links[ this.data.idx ].blur(); //Simulate mouseOut event
-/*
-            let descr_node = document.querySelector('.sku-block__info'); //click on description div
-            if (descr_node) {
-                descr_node.click();
-            }
-*/
+            let clickEvent = new MouseEvent('mouseleave', {
+                bubbles: false,
+                cancelable: true,
+                view: window
+            });
+
+            theLink.dispatchEvent(clickEvent);
+
+            //Incremet idx
             this.data.idx += 1;
 
             if (this.data.idx==links.length) { // вышли за пределы списка, а результатат нет
