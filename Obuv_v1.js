@@ -58,6 +58,8 @@ function Obuv_onCtrlEnter(e) {
 		}
 	}
 
+	//console.log('Obuv_onCtrlEnter-key', e.key, e.keyCode, e.code);
+
 	//Toggle AutoRun
 	if (e.ctrlKey && (e.keyCode == 192)) { //Ctrl + ~
 	//if (e.ctrlKey && e.altKey && (e.keyCode == 13 || e.keyCode == 10)) { //Ctrl + Alt + ENTER
@@ -74,8 +76,74 @@ function Obuv_onCtrlEnter(e) {
 			radio_btns[0].focus();
 	}
 	*/
+
+	//Open links
+	if (e.ctrlKey && (e.code == "KeyM")) { //Ctrl + M
+		
+		OpenPreviewTabs(document.links[0].href, document.links[1].href);
+	}
 	
 }
+
+//Open links in preview tabs
+function OpenPreviewTabs(link0, link1) {
+    if (!Object.hasOwn(this, 'linkTabs')) {
+        this.linkTabs = [];
+        this.epoch = 0;
+    }
+
+    //console.log('OpenPreviewTabs start', this.linkTabs)
+
+    //Close last pre-view tabs
+    for (let i=this.linkTabs.length-1;i>=0;i--) {
+        let item = this.linkTabs[i]
+
+        let closed_0 = ((item[0].tab!=null) && item[0].tab.closed) || (item[0].tab==null)
+        let closed_1 = ((item[1].tab!=null) && item[1].tab.closed) || (item[1].tab==null)
+
+        if ( (item[0].tab!=null) && !item[0].tab.closed ) item[0].tab.close(); //better before splice because item then will be deleted
+        if ( (item[1].tab!=null) && !item[1].tab.closed ) item[1].tab.close();
+
+        if ( closed_0 && closed_1 ) { //delete closed
+            this.linkTabs.splice(i,1); //remove closed
+            continue;
+        }
+    } //for
+
+    //Delete old 'hanging' items
+    const OLD_TRESHOLD = 10
+
+    for (let i=this.linkTabs.length-1;i>=0;i--) {
+        let item_age = this.linkTabs[i][2]
+
+        if ((this.epoch-item_age)>OLD_TRESHOLD) {
+            this.linkTabs.splice(i,1); //remove very old
+            console.log('OpenPreviewTabs delete hanging')
+        }
+
+        } //for
+
+
+    // May new links are already in list?
+    for (let i=0;i<this.linkTabs.length;i++) {
+        let item = this.linkTabs[i]
+
+        if ((item[0].href==link0) && (item[1].href==link1)) {
+            return false;
+            }
+    } //for
+
+    //Add new item to list and open previews
+    let v1 = {tab:GM_openInTab(link1), href: link1}
+    let v0 = {tab:GM_openInTab(link0), href: link0}
+    
+    this.linkTabs.push( [v0, v1, this.epoch] );
+    this.epoch++;
+
+    //console.log('OpenPreviewTabs end', this.linkTabs)
+    return true
+}
+
 
 function Obuv_SendToServer() {
 
@@ -698,7 +766,7 @@ class Obuv {
 
 		//Scrool to view main part
 		let bound = document.links[0].getBoundingClientRect();
-		const REQUIRED_TOP = 600; //80
+		const REQUIRED_TOP = 500; //600
 		//console.log('Tw bound:', bound.top);
 		if (window.pageYOffset==0) {
 			window.scroll(0, (bound.top-REQUIRED_TOP));
@@ -729,7 +797,7 @@ class Obuv {
 			if (autoRun && !this.clicked) {
 				this.clicked = true;
 				
-				setTimeout((choice) => {
+				setTimeout(function (choice){
 					console.log("AutoDecision fired:", choice);
 					RB_set(choice);
 
@@ -978,7 +1046,7 @@ class Obuv {
 	// Return list of elem like: {id:'vendorCode', values:['123', '159']};  
 	Subset_of_attr() {
 		
-		let id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер'];
+		let id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD'];
 		
 		let val_list = [];
 		
@@ -1034,6 +1102,7 @@ class Obuv {
 
 
 	AutoDecision_v2() {
+		let ret;
 		let links = document.links;
 
 		if (links.length!=2 ) {return -1};
@@ -1051,6 +1120,15 @@ class Obuv {
 		//if ( (this.subTask==OT_OBUV) && Links_start_with(links, 'https://www.letu.ru/') )
 		if (  Links_start_with(links, 'https://www.letu.ru/') )			
 			return this.Special_Letu();
+
+		if (links[0].href==links[1].href) {
+			ret = this.DecideBy_Size();
+			if (ret!=-1)
+			{
+				//console.log('Obuv.DecideBy_Size', ret);
+				return ret;
+			}	
+		}
 
 
 		if (this.subTask==OT_CLOTHES)
@@ -1147,6 +1225,25 @@ class Obuv {
 
 		return -1;
 	} //DecideBy_Brand
+
+	DecideBy_Size() {
+		
+		let sizes = ['', ''];
+		for (let i=0;i<2;i++) 
+			this.attr[i].forEach((elem)=>{if (elem[0].startsWith('Размер')) sizes[i]=elem[1]} );	
+
+		let ret = -1;
+		if (sizes[0] && sizes[1]) {						
+			if (sizes[0]==sizes[1]) {
+				ret = 0; //Совпадают
+			} else {
+				ret = 1; //Отличаются				
+			}				
+		}
+		
+		return ret;
+	} //DecideBy_Size()
+
 
 	Parse_Attributes() {
 
