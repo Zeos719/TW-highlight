@@ -83,6 +83,16 @@ function Obuv_onCtrlEnter(e) {
 		OpenPreviewTabs(document.links[0].href, document.links[1].href);
 	}
 	
+	//1..4 -> Radio buttons
+	const RB_keys  = ["Digit1", "Digit2", "Digit3", "Digit4"];
+	for (let i=0;i<RB_keys.length;i++) {
+		if (e.code==RB_keys[i]) {
+			RB_set(i);
+			break;
+		}
+	} //for(RB_keys[])
+	
+	
 }
 
 //Open links in preview tabs
