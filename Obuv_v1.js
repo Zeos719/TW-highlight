@@ -78,9 +78,8 @@ function Obuv_onCtrlEnter(e) {
 	*/
 
 	//Open links
-	if (e.ctrlKey && (e.code == "KeyM")) { //Ctrl + M
-		
-		OpenPreviewTabs(document.links[0].href, document.links[1].href);
+	if (e.ctrlKey && (e.code == "KeyM")) { //Ctrl + M		
+		preview.OpenPreviewTabs(document.links[0].href, document.links[1].href);
 	}
 	
 	//1..4 -> Radio buttons
@@ -95,64 +94,90 @@ function Obuv_onCtrlEnter(e) {
 	
 }
 
-//Open links in preview tabs
-function OpenPreviewTabs(link0, link1) {
-    if (!Object.hasOwn(this, 'linkTabs')) {
-        this.linkTabs = [];
-        this.epoch = 0;
-    }
+//********************* class PreviewWindows ********************************
 
-    //console.log('OpenPreviewTabs start', this.linkTabs)
+class PreviewWindows {
+  //constructor(name) { this.name = name; }
+  //sayHi() { alert(this.name); }
 
-    //Close last pre-view tabs
-    for (let i=this.linkTabs.length-1;i>=0;i--) {
-        let item = this.linkTabs[i]
-
-        let closed_0 = ((item[0].tab!=null) && item[0].tab.closed) || (item[0].tab==null)
-        let closed_1 = ((item[1].tab!=null) && item[1].tab.closed) || (item[1].tab==null)
-
-        if ( (item[0].tab!=null) && !item[0].tab.closed ) item[0].tab.close(); //better before splice because item then will be deleted
-        if ( (item[1].tab!=null) && !item[1].tab.closed ) item[1].tab.close();
-
-        if ( closed_0 && closed_1 ) { //delete closed
-            this.linkTabs.splice(i,1); //remove closed
-            continue;
-        }
-    } //for
-
-    //Delete old 'hanging' items
-    const OLD_TRESHOLD = 10
-
-    for (let i=this.linkTabs.length-1;i>=0;i--) {
-        let item_age = this.linkTabs[i][2]
-
-        if ((this.epoch-item_age)>OLD_TRESHOLD) {
-            this.linkTabs.splice(i,1); //remove very old
-            console.log('OpenPreviewTabs delete hanging')
-        }
-
-        } //for
+	constructor() {
+		//console.log('PreviewWindows.constructor');
+		
+		this.linkTabs = [];
+		this.epoch = 0;
+	} //constructor
 
 
-    // May new links are already in list?
-    for (let i=0;i<this.linkTabs.length;i++) {
-        let item = this.linkTabs[i]
+	//Close preview tabs
+	ClosePreviewTabs() {
+		//Close last pre-view tabs
+		for (let i=this.linkTabs.length-1;i>=0;i--) {
+			let item = this.linkTabs[i]
 
-        if ((item[0].href==link0) && (item[1].href==link1)) {
-            return false;
-            }
-    } //for
+			let closed_0 = ((item[0].tab!=null) && item[0].tab.closed) || (item[0].tab==null)
+			let closed_1 = ((item[1].tab!=null) && item[1].tab.closed) || (item[1].tab==null)
 
-    //Add new item to list and open previews
-    let v1 = {tab:GM_openInTab(link1), href: link1}
-    let v0 = {tab:GM_openInTab(link0), href: link0}
-    
-    this.linkTabs.push( [v0, v1, this.epoch] );
-    this.epoch++;
+			if ( (item[0].tab!=null) && !item[0].tab.closed ) item[0].tab.close(); //better before splice because item then will be deleted
+			if ( (item[1].tab!=null) && !item[1].tab.closed ) item[1].tab.close();
 
-    //console.log('OpenPreviewTabs end', this.linkTabs)
-    return true
-}
+			if ( closed_0 && closed_1 ) { //delete closed
+				this.linkTabs.splice(i,1); //remove closed
+				continue;
+			}
+		} //for
+
+		//Delete old 'hanging' items
+		const OLD_TRESHOLD = 10
+
+		for (let i=this.linkTabs.length-1;i>=0;i--) {
+			let item_age = this.linkTabs[i][2]
+
+			if ((this.epoch-item_age)>OLD_TRESHOLD) {
+				this.linkTabs.splice(i,1); //remove very old
+				console.log('OpenPreviewTabs delete hanging')
+			}
+
+			} //for
+		
+		return;
+	} //ClosePreviewTabs()
+
+
+	//Open links in preview tabs
+	OpenPreviewTabs(link0, link1) {
+		/*
+		if (!Object.hasOwn(this, 'linkTabs')) {
+			this.linkTabs = [];
+			this.epoch = 0;
+		}
+		*/
+
+		//console.log('OpenPreviewTabs start', this.linkTabs)
+		
+		// May new links are already in list?
+		for (let i=0;i<this.linkTabs.length;i++) {
+			let item = this.linkTabs[i]
+
+			if ((item[0].href==link0) && (item[1].href==link1)) {
+				return false;
+				}
+		} //for
+
+		//Add new item to list and open previews
+		let v1 = {tab:GM_openInTab(link1), href: link1}
+		let v0 = {tab:GM_openInTab(link0), href: link0}
+		
+		this.linkTabs.push( [v0, v1, this.epoch] );
+		this.epoch++;
+
+		console.log('Obuv OpenPreviewTabs', this.linkTabs.length);
+		return;
+	} //OpenPreviewTabs()
+
+
+} //PreviewWindows
+
+var preview = new PreviewWindows();
 
 
 function Obuv_SendToServer() {
@@ -234,10 +259,17 @@ function Parse_text(txt, delim) {
 } //Parse_text
 
 function GetTaskId() {
+	function StripVendorCode(str) {
+		let ipos = str.indexOf('?vendorCode=');
+		if (ipos>=0) str = str.slice(0, ipos);
+		
+		return str;		
+	}
+	
 	if (document.links.length==1) {
-		return document.links[0];
+		return StripVendorCode(document.links[0].href);
 	} else {
-		return document.links[0] + document.links[1];		
+		return StripVendorCode(document.links[0].href) + StripVendorCode(document.links[1].href);		
 	}	
 } //GetTaskId()
 
@@ -762,13 +794,17 @@ class Obuv {
 		this.Reset();
 		this.SelectDecision(2); //'Abs differ' by deffault
 		this.subTask = this.DetectSubTask();
-		console.log('Obuv subTask:', this.subTask);
+		//console.log('Obuv subTask:', this.subTask);
 		
 		//Reset for new task
 		let newTaskId = GetTaskId();
 		if (this.taskId!=newTaskId) {
 			this.taskId = newTaskId;			
 			this.clicked = false;
+			
+			preview.ClosePreviewTabs();
+			
+			console.log('Obuv new task:', this.taskId.length, this.taskId.slice(-10));
 		}
 		
 
@@ -776,7 +812,7 @@ class Obuv {
 
 		//Scrool to view main part
 		let bound = document.links[0].getBoundingClientRect();
-		const REQUIRED_TOP = 500; //600
+		const REQUIRED_TOP = 600; //600
 		//console.log('Tw bound:', bound.top);
 		if (window.pageYOffset==0) {
 			window.scroll(0, (bound.top-REQUIRED_TOP));
@@ -805,6 +841,7 @@ class Obuv {
 
 		if (choice!=-1) {
 			if (autoRun && !this.clicked) {
+				console.log('Obuv before clicked:', this.taskId.length, this.taskId.slice(-10));
 				this.clicked = true;
 				
 				setTimeout(function (choice){
@@ -1092,7 +1129,7 @@ class Obuv {
 				txt = `Auto: PAUSED ${this.AutoDecision_choice}`; 
 				color = 'Crimson'; // see https://colorscheme.ru/html-colors.html
 			} else {
-				txt = `Auto: RUN ${this.AutoDecision_choice}`;
+				txt = `Auto: RUN ${this.AutoDecision_choice+1}`;
 				color = 'ForestGreen'; // see https://colorscheme.ru/html-colors.html
 			}
 			
