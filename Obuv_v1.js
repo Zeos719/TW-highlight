@@ -993,6 +993,9 @@ class Obuv {
 		//console.log('Compare_VendorCode_table clr:', colorized);
 
 		let nodes = document.getElementsByClassName('attributes');
+		
+		if ( nodes[0].innerHTML.includes(colorized[0]) ) // already done
+			return;
 
 		nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(this.vendorCodes[0].value, colorized[0]);
 		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(this.vendorCodes[1].value, colorized[1]);
@@ -1155,14 +1158,14 @@ class Obuv {
 		if (links.length!=2 ) {return -1};
 
 		if ( Links_start_with(links, 'https://www.detmir.ru/') )
-			return this.DecideBy_Size_VCode( /:(\d+)$/ug );
+			return this.DecideBy_Size_VCode( /:(\d+)$/ug, true );
 			//return this.DetMir_special();
 
 		if ( Links_start_with(links, 'https://sport-marafon.ru/') )
-			return this.DecideBy_Size_VCode( /р\.\s(\S+)$/ug );
+			return this.DecideBy_Size_VCode( /р\.\s(\S+)$/ug, false );
 
 		if ( Links_start_with(links, 'https://campioshop.ru/') )
-			return this.DecideBy_Size_VCode( /\((.+)\)$/ug );
+			return this.DecideBy_Size_VCode( /\((.+)\)$/ug, false );
 		
 		//if ( (this.subTask==OT_OBUV) && Links_start_with(links, 'https://www.letu.ru/') )
 		if (  Links_start_with(links, 'https://www.letu.ru/') )			
@@ -1216,7 +1219,7 @@ class Obuv {
 
 
 	//Comparte by sizes and vendor codes
-	DecideBy_Size_VCode(regEx) {
+	DecideBy_Size_VCode(regEx, noData_if_noSize) {
 		let titles = document.getElementsByClassName('name');
 
 		let title1 = titles[0].textContent;
@@ -1230,9 +1233,33 @@ class Obuv {
 
 		let ar1 = Array.from(mt1);
 		let ar2 = Array.from(mt2);
-		//console.log('DecideBy_Size_VCode ar:', ar1, ar2);
+		console.log('DecideBy_Size_VCode ar:', ar1, ar2);
 
-		if (!ar1.length || !ar2.length) return -1; //Failed to extract size
+		//Failed to extract size
+		if (!ar1.length || !ar2.length) {
+			if (noData_if_noSize) {
+				//return 3; //'Недостаточно данных для принятия решения' - DetMir
+				
+				//DetMir - встречаются случаи с размером формата 'XXL'. Пока их обходим				
+				let xls_size1 = false;
+				let xls_size2 = false;
+				
+				SML = ['S', 'M', 'L'];
+				for (i=0;i<sizes.length;i++) {
+					xls_size1 = xls_size1 || title1.endsWith(SML[i]);
+					xls_size2 = xls_size1 || title2.endsWith(SML[i]);
+				}
+				
+				if (xls_size1 || xls_size2) {
+					return -1; //XXL
+				} else {
+					return 3;
+				}	
+									
+			} else {
+				return -1; 	
+			}							
+		} 
 
 		let sizes = [ar1[0][1], ar2[0][1]];
 
