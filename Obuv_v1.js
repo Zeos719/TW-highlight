@@ -66,7 +66,7 @@ function Obuv_onCtrlEnter(e) {
 		autoRun = !autoRun;
 		DrawAutoIndicator(autoRun);
 	}
-	
+
 	//Reset focus
 	/*
 	if (event.key == 'ArrowUp') { //Up
@@ -78,10 +78,10 @@ function Obuv_onCtrlEnter(e) {
 	*/
 
 	//Open links
-	if (e.ctrlKey && (e.code == "KeyM")) { //Ctrl + M		
+	if (e.ctrlKey && (e.code == "KeyM")) { //Ctrl + M
 		preview.OpenPreviewTabs(document.links[0].href, document.links[1].href);
 	}
-	
+
 	//1..4 -> Radio buttons
 	const RB_keys  = ["Digit1", "Digit2", "Digit3", "Digit4"];
 	for (let i=0;i<RB_keys.length;i++) {
@@ -90,8 +90,8 @@ function Obuv_onCtrlEnter(e) {
 			break;
 		}
 	} //for(RB_keys[])
-	
-	
+
+
 }
 
 //********************* class PreviewWindows ********************************
@@ -102,7 +102,7 @@ class PreviewWindows {
 
 	constructor() {
 		//console.log('PreviewWindows.constructor');
-		
+
 		this.linkTabs = [];
 		this.epoch = 0;
 	} //constructor
@@ -138,7 +138,7 @@ class PreviewWindows {
 			}
 
 			} //for
-		
+
 		return;
 	} //ClosePreviewTabs()
 
@@ -153,7 +153,7 @@ class PreviewWindows {
 		*/
 
 		//console.log('OpenPreviewTabs start', this.linkTabs)
-		
+
 		// May new links are already in list?
 		for (let i=0;i<this.linkTabs.length;i++) {
 			let item = this.linkTabs[i]
@@ -166,7 +166,7 @@ class PreviewWindows {
 		//Add new item to list and open previews
 		let v1 = {tab:GM_openInTab(link1), href: link1}
 		let v0 = {tab:GM_openInTab(link0), href: link0}
-		
+
 		this.linkTabs.push( [v0, v1, this.epoch] );
 		this.epoch++;
 
@@ -185,7 +185,7 @@ function Obuv_SendToServer() {
 	let titles = document.getElementsByClassName('name');
 	let brands = document.getElementsByClassName('brand');
 	let category = document.getElementsByClassName('category');
-	
+
 	let links = document.links;
 
 	//get user choice
@@ -221,7 +221,7 @@ function Obuv_SendToServer() {
 
 // Convert <table> to a list of rows. tbl is a node! tbl = node.firstElementChild
 function Parse_table(tbl) {
-	
+
 		if (tbl==null) {
 			console.log('Obuv.Parse_table null!');
 			return [];
@@ -262,15 +262,15 @@ function GetTaskId() {
 	function StripVendorCode(str) {
 		let ipos = str.indexOf('?vendorCode=');
 		if (ipos>=0) str = str.slice(0, ipos);
-		
-		return str;		
+
+		return str;
 	}
-	
+
 	if (document.links.length==1) {
 		return StripVendorCode(document.links[0].href);
 	} else {
-		return StripVendorCode(document.links[0].href) + StripVendorCode(document.links[1].href);		
-	}	
+		return StripVendorCode(document.links[0].href) + StripVendorCode(document.links[1].href);
+	}
 } //GetTaskId()
 
 
@@ -285,7 +285,7 @@ function DoObuv() {
 	if (obv==null) obv = new Obuv();
 
 	if (document.links.length==2) {
-		obv.MainJob();
+		obv.Run();
 	}
 
 	return;
@@ -488,13 +488,13 @@ function LocateAfterAnchor(txt, anchors) {
 
 function IsDigit(c) {
 	let charCode = c.charCodeAt(0);
-	return (charCode>=0x30) && (charCode>=0x3A);	
+	return (charCode>=0x30) && (charCode>=0x3A);
 }
 
 function IsCyrrilic(c) {
 	c = c.toUpperCase()
 	let charCode = c.charCodeAt(0);
-	return (c=='Ё') || ((charCode>=0x0410) && (charCode<=0x42F));	
+	return (c=='Ё') || ((charCode>=0x0410) && (charCode<=0x42F));
 }
 
 // Извлекаем подстроку строку с размером из описания вида
@@ -512,7 +512,7 @@ function Parse_MemSize(str) {
 
   for (mrk of GB_marks) {
     gb_pos = str.indexOf(mrk);
-    if (gb_pos!=-1) 
+    if (gb_pos!=-1)
       break;
   } //for(mrk)
 
@@ -520,7 +520,7 @@ function Parse_MemSize(str) {
 
   let end = gb_pos+2; //2 = length('GB')
 
-  let dgts_end = gb_pos; 
+  let dgts_end = gb_pos;
   let start = str.lastIndexOf(' ', gb_pos);
   if (start == (gb_pos-1)) { // если пробел перед 'GB': '123 GB'
     dgts_end = gb_pos-1;
@@ -530,7 +530,7 @@ function Parse_MemSize(str) {
       return null;
   }
 
-  start += 1; //skip space              
+  start += 1; //skip space
 
   // between [start,end] only gidits or '/' and '+'
   let sizeStr = str.slice(start, dgts_end);
@@ -541,7 +541,7 @@ function Parse_MemSize(str) {
 }
 */
 
-/* 
+/*
 Примеры строк:
 
 abc 12/256Gb def
@@ -552,12 +552,12 @@ abc 256GB def
 function Parse_MemSize(str) {
 	//let regExp = /\s(\d+)[\/|\+]\s*(\d+)\s*(GB|ГБ)\s/gm;
 	let regExp = /\s((\d+)[\/|\+]\s*)*(\d+)\s*(GB|ГБ)\s/gm;
-	
+
 	let matchAll = str.toUpperCase().matchAll(regExp);
 	matchAll = Array.from(matchAll);
-	
+
 	//console.log('Obuv.Parse_MemSize', str, matchAll);
-	
+
 	if (matchAll.length==0) {
 		return null;
 	} else {
@@ -569,11 +569,11 @@ function Parse_MemSize(str) {
 		let suff = str.slice(end);
 
 		//console.log('Parse_MemSize', str, start, end);
-			
-		return [pref, memSize, suff];	
+
+		return [pref, memSize, suff];
 	}
-	
-} //Parse_MemSize	
+
+} //Parse_MemSize
 
 
 
@@ -591,13 +591,13 @@ class ValidBrands {
 
 	HasData() {
 		//let ret = (this.brandsList!=null);
-		let ret = (this.brandsList && 
+		let ret = (this.brandsList &&
 				this.brandsList.hasOwnProperty('letu') &&
 				this.brandsList.hasOwnProperty('lamoda') );
-				
+
 		if (!ret)
 				console.log('ValidBrands.HasData - no data loaded!');
-				
+
 		return ret;
 	} //HasData
 
@@ -617,53 +617,53 @@ class ValidBrands {
 			});
 
 	} //Load_JSON
-	
+
 	SaveServerAnswer(url, data) {
 		//console.log('ValidBrands.SaveServerAnswer', url, this.brandsList, data.slice(0,20));
-		
+
 		//Parse url: https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt
 		let tokens = url.split('/');
 		let fileNameWithExt  = tokens[ tokens.length-1 ];  // 'А-Я.cp1251.txt'
 		let fileName  = fileNameWithExt.split('.')[0].toUpperCase(); // 'А-Я'
-		
+
 		let folder  = tokens[ tokens.length-2 ].toLowerCase(); // 'letu'
-		
+
 		//Split data to lines and pre-process them
 		let dataLines = data.split('\r');
-		
+
 		for (let i=0;i<dataLines.length;i++)
 			dataLines[i] = dataLines[i].trim().toUpperCase();
-						
+
 		let dataLines_notEmpty = [];
 		//dataLines.forEach(function(s) {if(s) dataLines_notEmpty.push(s)});
 		dataLines_notEmpty = dataLines.filter(function(s) {return (s!='')});
-		
-		
+
+
 		//Attach to brandsList
 		if (folder=='letu') {
 			if (this.brandsList['letu']==undefined)
 				this.brandsList['letu'] = {};
-			
-			this.brandsList['letu'][fileName] = dataLines_notEmpty;			
-		} else {			
+
+			this.brandsList['letu'][fileName] = dataLines_notEmpty;
+		} else {
 			this.brandsList[folder] = dataLines_notEmpty;
-		}	
-			
-		return		
+		}
+
+		return
 	} //SaveReceivedFile
-	
+
 	Load_TXT() {
 		console.log('ValidBrands.Load_TXT');
 
 		let myself = this;  //save 'this' for use inside callback!!!
-		
+
 		this.brandsList = {}; //Empty dictionary
-				
+
 		let rootUrl = 'https://www.phonewarez.ru/files/TW-brands/';
-	
+
 		//Lamoda
 		let url = rootUrl + 'Lamoda/Lamoda-brands.txt';
-		
+
 		$.get(url, '', function(data){
 				myself.SaveServerAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
 				vbd_count += 1;
@@ -672,26 +672,26 @@ class ValidBrands {
 		//Letu
 		const CODE_A = 65;
 		const CODE_Z = 90;
-		
+
 		let letu_files = ['0-9.txt', 'А-Я.cp1251.txt'];
-		
+
 		for (let charCode=CODE_A;charCode<=CODE_Z;charCode++) {
 			let fileName  = String.fromCharCode(charCode) + '.txt'; 'A.txt'
-			letu_files.push(fileName);			
+			letu_files.push(fileName);
 		} //for(charCode)
-				
+
 		letu_files.forEach(function(fileName) {
 			url = rootUrl + 'Letu/' + fileName;
-			
+
 			$.get(url, '', function(data){
 					//console.log('Load_TXT-GET', this.url);
 					myself.SaveServerAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
 					vbd_count += 1;
 			} );
 		} ); //forEach
-		
+
 	} //Load_TXT()
-		
+
 
 	NamesToUpper() {
 		if (!this.HasData()) return;
@@ -725,9 +725,9 @@ class ValidBrands {
 		if ((name==null) || (name=='')) return false;
 
 		let ret;
-		
+
 		//console.log('ValidBrands.Includes brandsList', this.brandsList, this.brandsList['letu']);
-		
+
 		//Check Letu
 		let letu = this.brandsList['letu'];
 		let first_ltr = name[0];
@@ -776,14 +776,14 @@ class Obuv {
 			// Preload brands
 			this.brands = new ValidBrands();
 			this.brands.Load_TXT();
-			
+
 			this.taskId = null;
 			this.clicked = false;
-			
-			
+
+
 		}
 
-	MainJob() {
+	Run() {
 		// Attach handlers to track exit
 		let completeBtn = document.querySelector("#completeBtn");
 		completeBtn.addEventListener("click", Obuv_onBtnClick);
@@ -795,18 +795,18 @@ class Obuv {
 		this.SelectDecision(2); //'Abs differ' by deffault
 		this.subTask = this.DetectSubTask();
 		//console.log('Obuv subTask:', this.subTask);
-		
+
 		//Reset for new task
 		let newTaskId = GetTaskId();
 		if (this.taskId!=newTaskId) {
-			this.taskId = newTaskId;			
+			this.taskId = newTaskId;
 			this.clicked = false;
-			
+
 			preview.ClosePreviewTabs();
-			
+
 			console.log('Obuv new task:', this.taskId.length, this.taskId.slice(-10));
 		}
-		
+
 
 		DrawAutoIndicator(autoRun);
 
@@ -821,7 +821,7 @@ class Obuv {
 		//Main
 		this.attr = this.Parse_Attributes();
 		console.log('attr', this.attr);
-		
+
 		this.attrEx = [ ];
 
 		for (let idx=0;idx<2;idx++)
@@ -843,7 +843,7 @@ class Obuv {
 			if (autoRun && !this.clicked) {
 				console.log('Obuv before clicked:', this.taskId.length, this.taskId.slice(-10));
 				this.clicked = true;
-				
+
 				setTimeout(function (choice){
 					console.log("AutoDecision fired:", choice);
 					RB_set(choice);
@@ -873,7 +873,7 @@ class Obuv {
 		*/
 
 	return;
-	} //MainJob
+	} //Run()
 
 	//choice = 0,1,2 (see Obuv_AutoDecision() )
 	SelectDecision(choice) {
@@ -914,14 +914,14 @@ class Obuv {
 
 		let title1 = titles[0];
 		let title2 = titles[1];
-		
+
 		let mem1 = Parse_MemSize(title1.textContent);
 		let mem2 = Parse_MemSize(title2.textContent);
-		if (mem1 && mem2)		
-		{			
+		if (mem1 && mem2)
+		{
 			this.attrEx.push( {id:'memSize', values:[mem1[1], mem2[1]]} );
-		}	
-		
+		}
+
 		if (title1.innerHTML.includes('<span')) return; //Already done
 
 		let colorized1, colorized2;
@@ -975,34 +975,34 @@ class Obuv {
 
 	Compare_VendorCode() {
 		if (this.attr.length==0) return;
-		
+
 		//Get vendor codes
 		this.vendorCodes = [null, null];
-		
+
 		for (let i=0;i<2;i++) {
-			this.attr[i].forEach((elem)=>{if (elem[0]=='vendorCode') this.vendorCodes[i]=elem[1]} );			
-		}		
+			this.attr[i].forEach((elem)=>{if (elem[0]=='vendorCode') this.vendorCodes[i]=elem[1]} );
+		}
 		console.log('Compare_VendorCode', this.vendorCodes);
-		
+
 		//Compare and colorize
 		//if ((this.vendorCodes[0]==null) || (this.vendorCodes[1]==null)) return;
 		for(let i=0;i<2;i++)
 			this.vendorCodes[i] = this.vendorCodes[i] || '?';
-	
+
 		let colorized = Strings_CompareAndColor(this.vendorCodes[0], this.vendorCodes[1], null, this.GREEN_COLOR_LIGHT, /\-|\./);
 		//console.log('Compare_VendorCode_table clr:', colorized);
 
 		let nodes = document.getElementsByClassName('attributes');
-		
+
 		if ( nodes[0].innerHTML.includes(colorized[0]) ) // already done
 			return;
 
 		nodes[0].innerHTML = nodes[0].innerHTML.replaceAll(this.vendorCodes[0].value, colorized[0]);
 		nodes[1].innerHTML = nodes[1].innerHTML.replaceAll(this.vendorCodes[1].value, colorized[1]);
-		
+
 	}//Compare_VendorCode()
-	
-	
+
+
 	Reset() {
 		console.log('Obuv.Reset()');
 		//console.log('Images:', document.images);
@@ -1033,82 +1033,82 @@ class Obuv {
 
 	// For format tbl_data see Subset_of_attr()
 	tableCreate(parent_node, tbl_data) {
-		
+
 		function AppendRows(tbdy, data) {
-			
+
 			for (let i = 0; i<data.length; i++) {
 				let tr = document.createElement('tr');
-				
+
 				let td;
 				td = document.createElement('td');
-				td.appendChild(document.createTextNode(data[i].id));			
+				td.appendChild(document.createTextNode(data[i].id));
 				td.style.color = 'DarkGray'; //'silver';
 				tr.appendChild(td);
-				
-				
+
+
 				for (let j = 0; j < 2; j++) {
 					td = document.createElement('td');
-					td.appendChild(document.createTextNode(data[i].values[j]));			
+					td.appendChild(document.createTextNode(data[i].values[j]));
 					tr.appendChild(td);
 				} //for(j)
-					
+
 				tbdy.appendChild(tr);
 			} //for(i)
 
-			return tbdy;		
+			return tbdy;
 		} //AppendRows()
-		
-		
-	  
+
+
+
 		let tbl = document.createElement('table');
 		tbl.style.width = '100%';
 		tbl.setAttribute('border', '1');
-			  
+
 		  //Table header
 		let thdr = document.createElement('thead');
 		let tr = document.createElement('tr');
-		
+
 		let th = document.createElement('th');
 		th.width = '25%';
-		//th.appendChild(document.createTextNode('');			
+		//th.appendChild(document.createTextNode('');
 		tr.appendChild(th);
-		
+
 		for (let j = 0; j < 2; j++) {
 			th = document.createElement('th')
-			th.appendChild(document.createTextNode( document.links[j].host ));			
+			th.appendChild(document.createTextNode( document.links[j].host ));
 			tr.appendChild(th);
 		}
 		thdr.appendChild(tr);
 		tbl.appendChild(thdr);
-		  
+
 		//Build table
 		let tbdy = document.createElement('tbody');
-		
+
 		AppendRows(tbdy, tbl_data);
 		AppendRows(tbdy, this.attrEx);
-			  
-			
+
+
 		tbl.appendChild(tbdy);
 		parent_node.appendChild(tbl)
-		
+
 	} //tableCreate
-	  
-	// Return list of elem like: {id:'vendorCode', values:['123', '159']};  
+
+	// Return list of elem like: {id:'vendorCode', values:['123', '159']};
 	Subset_of_attr() {
-		
+
 		let id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD'];
-		
+
 		let val_list = [];
-		
+
 		id_list.forEach((id)=>{
 			let values = ['', ''];
-			for (let i=0;i<2;i++) 
-				this.attr[i].forEach((elem)=>{if (elem[0].startsWith(id)) values[i]=elem[1]} );			
+			for (let i=0;i<2;i++)
+				this.attr[i].forEach((elem)=>{if (elem[0].startsWith(id)) values[i]=elem[1]} );
 					if (values[0] || values[1])
 						val_list.push({id:id, values:values});
-			
+
 		}) //forEach()
-		
+
 		return val_list;
 	} //Subset_of_attr()
 
@@ -1123,23 +1123,23 @@ class Obuv {
 		//Create table
 		let tbl_rows = this.Subset_of_attr();
 		this.tableCreate(infos[0], tbl_rows);
-			
+
 		//Auto decision
 		if(autoRun) {
 			let txt, color;
-			
+
 			if(this.AutoDecision_choice==-1) {
-				txt = `Auto: PAUSED ${this.AutoDecision_choice}`; 
+				txt = `Auto: PAUSED ${this.AutoDecision_choice}`;
 				color = 'Crimson'; // see https://colorscheme.ru/html-colors.html
 			} else {
 				txt = `Auto: RUN ${this.AutoDecision_choice+1}`;
 				color = 'ForestGreen'; // see https://colorscheme.ru/html-colors.html
 			}
-			
+
 			let tn = document.createElement('div');
-			tn.appendChild( document.createTextNode(txt) );			
+			tn.appendChild( document.createTextNode(txt) );
 			tn.style.color = color;
-			infos[0].appendChild(tn);									
+			infos[0].appendChild(tn);
 		}
 
 		//Normalize height of infos[0]
@@ -1158,17 +1158,17 @@ class Obuv {
 		if (links.length!=2 ) {return -1};
 
 		if ( Links_start_with(links, 'https://www.detmir.ru/') )
-			return this.DecideBy_Size_VCode( /:(\d+)$/ug, true );
+			return this.DecideBy_Size_VCode(true );
 			//return this.DetMir_special();
 
 		if ( Links_start_with(links, 'https://sport-marafon.ru/') )
-			return this.DecideBy_Size_VCode( /р\.\s(\S+)$/ug, false );
+			return this.DecideBy_Size_VCode(false );
 
 		if ( Links_start_with(links, 'https://campioshop.ru/') )
-			return this.DecideBy_Size_VCode( /\((.+)\)$/ug, false );
-		
+			return this.DecideBy_Size_VCode(false );
+
 		//if ( (this.subTask==OT_OBUV) && Links_start_with(links, 'https://www.letu.ru/') )
-		if (  Links_start_with(links, 'https://www.letu.ru/') )			
+		if (  Links_start_with(links, 'https://www.letu.ru/') )
 			return this.Special_Letu();
 
 		if (links[0].href==links[1].href) {
@@ -1177,7 +1177,7 @@ class Obuv {
 			{
 				//console.log('Obuv.DecideBy_Size', ret);
 				return ret;
-			}	
+			}
 		}
 
 
@@ -1219,52 +1219,23 @@ class Obuv {
 
 
 	//Comparte by sizes and vendor codes
-	DecideBy_Size_VCode(regEx, noData_if_noSize) {
+	DecideBy_Size_VCode(noData_if_noSize) {
 		let titles = document.getElementsByClassName('name');
 
-		let title1 = titles[0].textContent;
-		let title2 = titles[1].textContent;
+		let sizes = [	this.Parse_size( titles[0].textContent ),
+						this.Parse_size( titles[1].textContent )	];
 
-		//let re = /р\.\s(\S+)$/ug;
-		//let re = new RegExp('р\.\s(\S+)$', 'ug');
-
-		let mt1 = title1.matchAll(regEx);
-		let mt2 = title2.matchAll(regEx);
-
-		let ar1 = Array.from(mt1);
-		let ar2 = Array.from(mt2);
-		console.log('DecideBy_Size_VCode ar:', ar1, ar2);
+		//console.log('Obuv.DecideBy_Size_VCode:', sizes);
 
 		//Failed to extract size
-		if (!ar1.length || !ar2.length) {
+		if ((sizes[0]=='') || (sizes[1]=='')) {
 			if (noData_if_noSize) {
-				//return 3; //'Недостаточно данных для принятия решения' - DetMir
-				
-				//DetMir - встречаются случаи с размером формата 'XXL'. Пока их обходим				
-				let xls_size1 = false;
-				let xls_size2 = false;
-				
-				SML = ['S', 'M', 'L'];
-				for (i=0;i<sizes.length;i++) {
-					xls_size1 = xls_size1 || title1.endsWith(SML[i]);
-					xls_size2 = xls_size1 || title2.endsWith(SML[i]);
-				}
-				
-				if (xls_size1 || xls_size2) {
-					return -1; //XXL
-				} else {
-					return 3;
-				}	
-									
+				return 3; //'Недостаточно данных для принятия решения' - DetMir, в этом случае здесь вместо числового размера опция 'выберите размер'
 			} else {
-				return -1; 	
-			}							
-		} 
-
-		let sizes = [ar1[0][1], ar2[0][1]];
-
-		console.log('DecideBy_Size_VCode:', sizes);
-
+				return -1; //Непонятно, что делать
+			}
+		}
+		
 		if (!this.vendorCodes || (this.vendorCodes[0]!=this.vendorCodes[1]) ) return -1;
 
 		if (sizes[0]==sizes[1]) {
@@ -1301,20 +1272,20 @@ class Obuv {
 	} //DecideBy_Brand
 
 	DecideBy_Size() {
-		
+
 		let sizes = ['', ''];
-		for (let i=0;i<2;i++) 
-			this.attr[i].forEach((elem)=>{if (elem[0].startsWith('Размер')) sizes[i]=elem[1]} );	
+		for (let i=0;i<2;i++)
+			this.attr[i].forEach((elem)=>{if (elem[0].startsWith('Размер')) sizes[i]=elem[1]} );
 
 		let ret = -1;
-		if (sizes[0] && sizes[1]) {						
+		if (sizes[0] && sizes[1]) {
 			if (sizes[0]==sizes[1]) {
 				ret = 0; //Совпадают
 			} else {
-				ret = 1; //Отличаются				
-			}				
+				ret = 1; //Отличаются
+			}
 		}
-		
+
 		return ret;
 	} //DecideBy_Size()
 
@@ -1324,52 +1295,52 @@ class Obuv {
 		let nodes = document.getElementsByClassName('attributes');
 		if (nodes.length!=2) return null;
 
-		console.log('Parse_Attributes', nodes);		
+		console.log('Parse_Attributes', nodes);
 
 		//if (nodes[0].firstElementChild &&
-		//	Object.hasOwn(nodes[0].firstElementChild, 'nodeName') && 
+		//	Object.hasOwn(nodes[0].firstElementChild, 'nodeName') &&
 		//	(nodes[0].firstElementChild.nodeName=='TABLE')) {
-			
+
 		if (nodes[0].innerHTML.includes('<table')) {
 			return [Parse_table(nodes[0].firstElementChild), Parse_table(nodes[1].firstElementChild)]
 		} else {
-			
-			let delim;	
+
+			let delim;
 			if ((nodes[0].innerHTML.includes('<br>')) || (nodes[1].innerHTML.includes('<br>'))) {
 				delim = /\<br\>/;
-				return [Parse_text(nodes[0].innerHTML, delim), Parse_text(nodes[1].innerHTML, delim)]				
+				return [Parse_text(nodes[0].innerHTML, delim), Parse_text(nodes[1].innerHTML, delim)]
 			} else {
-				let delim = /\.\ /;			
-				return [Parse_text(nodes[0].textContent, delim), Parse_text(nodes[1].textContent, delim)]				
+				let delim = /\.\ /;
+				return [Parse_text(nodes[0].textContent, delim), Parse_text(nodes[1].textContent, delim)]
 			}
-						
+
 		}
 
 	} //Parse_Attributes
-	
-	
+
+
 	Letu_add_sku(idx) {
 		//console.log('Letu_add_sku', idx);
 		if (document.links[idx].href.includes('vendorCode')) //Already done
 			return;
-				
+
 		let vCode = null;
-		this.attr[idx].forEach((elem)=>{if (elem[0]=='vendorCode') vCode=elem[1]} );			
-		
+		this.attr[idx].forEach((elem)=>{if (elem[0]=='vendorCode') vCode=elem[1]} );
+
 		if (vCode)
 		{
 			document.links[idx].href = document.links[idx].href + '?vendorCode=' + vCode;
-			document.links[idx].textContent = document.links[idx].href;			
-		}	
-		
+			document.links[idx].textContent = document.links[idx].href;
+		}
+
 	} //Letu_add_sku()
 
 	Special_Letu() {
-		
+
 		function Compare_links_prefs(hrefArr) {
 
 			let prefs = ['', ''];
-			for(let i=0;i<2;i++) {    
+			for(let i=0;i<2;i++) {
 				let ipos = hrefArr[i].indexOf('sku');
 				if (ipos==-1)
 				  return false;
@@ -1378,27 +1349,93 @@ class Obuv {
 			} //for(i)
 
 			return (prefs[0]==prefs[1]);
-		} //Compare_links_pre		
-		
+		} //Compare_links_pre
+
 		//console.log('Obuv.Special_Letu', this.vendorCodes);
-		
+
 		//На всякий случай сравним префиксы до подстроки 'sku'
 		if (!Compare_links_prefs( [document.links[0].href, document.links[1].href] ))
 			return -1;
-				
+
 		//valid vendorCodes sholud be available
 		if (!this.vendorCodes || !this.vendorCodes[0] || !this.vendorCodes[1])
 			return -1;
-		
+
 		//Decision
 		if (this.vendorCodes[0]==this.vendorCodes[1]) {
 			return 0
 		} else {
 			return 1
-		}				
-		
+		}
+
 		return -1;
 	}
+
+
+/*
+  Выделяет размер из строки описания. Примеры:
+
+  abc:110
+  abc:XL
+  abc:120-140
+
+  abc р.43
+
+  abc (120-140)
+*/
+
+	Parse_size(descr) {
+		let words;
+		let size = '';
+		let ipos; 
+
+		//Случай 'abc:120'
+		ipos = descr.lastIndexOf(':');
+		if ((ipos >= 0) && (descr.length-ipos)<10)
+			size = descr.slice(ipos+1);
+
+		//Случай 'abc р. 125'
+		ipos = descr.lastIndexOf('р.');
+		if (size=='' && ipos>=0)
+			size = descr.slice(ipos+2).trim();
+
+		//Случай 'abc (130)'
+		if (size=='' && descr.endsWith(')')) {
+			ipos = descr.lastIndexOf('(');
+		if (ipos>=0)
+			size = descr.slice(ipos+1, descr.length-1);
+		}
+
+		// Случай 'abc размер 43 def' и 'abc р. 125'
+		if (size == '') {
+		  let words = descr.split(' ');
+		  for (let i=0;i<words.length-1;i++) {//Ok for '>.descrlenght-1'
+			if ((words[i] == 'р.') || (words[i] == 'размер')) {
+				size = words[i+1];
+				break;
+			}
+		  } //for
+		}
+
+		console.log('Obuv.Parse_size size', size);
+
+		//Проверяем формат size
+		if (size != '') {
+			//Цифры в начале строки '120' или '120-140'
+			if (size.match(/^[\d-]+/mg))
+			  return size;
+
+			//Символы S,M,XL
+			if (size.match(/^X*[SML]+$/mg))
+			  return size;
+
+			return ''; //fail
+		}
+
+		//Если я здесь - неудача
+		return '';
+
+	} //Parse_size()
 
 
 
