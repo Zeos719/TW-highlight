@@ -41,7 +41,7 @@ function Obuv_onCtrlEnter(e) {
 
 	//Ctrl-Enter
 	if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
-		//console.log('Obuv_onCtrlEnter: CtrlEnter--');
+		//console.log('Obuv.onCtrlEnter: CtrlEnter--');
 
 		if (SEND_TO_SERVER) {
 			choice = Obuv_SendToServer()
@@ -58,7 +58,7 @@ function Obuv_onCtrlEnter(e) {
 		}
 	}
 
-	//console.log('Obuv_onCtrlEnter-key', e.key, e.keyCode, e.code);
+	//console.log('Obuv.onCtrlEnter-key', e.key, e.keyCode, e.code);
 
 	//Toggle AutoRun
 	if (e.ctrlKey && (e.keyCode == 192)) { //Ctrl + ~
@@ -134,7 +134,7 @@ class PreviewWindows {
 
 			if ((this.epoch-item_age)>OLD_TRESHOLD) {
 				this.linkTabs.splice(i,1); //remove very old
-				console.log('OpenPreviewTabs delete hanging')
+				//console.log('Obuv.OpenPreviewTabs delete hanging')
 			}
 
 			} //for
@@ -152,7 +152,7 @@ class PreviewWindows {
 		}
 		*/
 
-		//console.log('OpenPreviewTabs start', this.linkTabs)
+		//console.log('Obuv.OpenPreviewTabs start', this.linkTabs)
 
 		// May new links are already in list?
 		for (let i=0;i<this.linkTabs.length;i++) {
@@ -170,7 +170,7 @@ class PreviewWindows {
 		this.linkTabs.push( [v0, v1, this.epoch] );
 		this.epoch++;
 
-		console.log('Obuv OpenPreviewTabs', this.linkTabs.length);
+		console.log('Obuv.OpenPreviewTabs', this.linkTabs.length);
 		return;
 	} //OpenPreviewTabs()
 
@@ -207,12 +207,12 @@ function Obuv_SendToServer() {
 		category: category[0].textContent
 	};
 
-	console.log('Obuv_SendToServer-1: ', payload);
+	console.log('Obuv.SendToServer-1: ', payload);
 
 	let json = JSON.stringify(payload);
 
 	$.post('http://localhost:8000/tw', json, function(data){
-		console.log('Obuv_SendToServer-2:', data);
+		console.log('Obuv.SendToServer-2:', data);
 	});
 
 	return user_choice;
@@ -406,14 +406,11 @@ function Strings_CompareAndColor(str1, str2, colorRed='#ff0000', colorGreen='#00
 	let colorized1 = Strings_ApplyColors(str1, words1, colorRed, colorGreen);
 	let colorized2 = Strings_ApplyColors(str2, words2, colorRed, colorGreen);
 
-	//console.log('words1', words1);
-	//console.log('words2', words2);
    return [colorized1, colorized2];
 }
 
 
 function Split_WordsAndPos(str, delim =	 /\s|\(|\)|:/) {
-	//console.log('Split_WordsAndPos:', str, delim);
 	let words = str.split(delim);
 
 	words = words.filter( function(item) {return item!=''} ); //filter out empty items
@@ -426,7 +423,7 @@ function Split_WordsAndPos(str, delim =	 /\s|\(|\)|:/) {
 
 		words[i] = {word: words[i], pos: pos};
 	}
-	//console.log(words);
+
 	return words;
 }
 
@@ -443,8 +440,6 @@ function Strings_ApplyColors(str, words, colorRed, colorGreen) {
 		colorized = `${prefix}<span style="background-color:${color};">${words[i].word}</span>${suffix}`;
 	} //for (i--)
 
-	//console.log(str, '\n', colorized, '\n');
-
 	return colorized;
 }
 
@@ -459,13 +454,10 @@ function LocateAfterAnchor(txt, anchors) {
 	let matches = txt.matchAll(regExp);
 	let matchesArr = Array.from(matches);
 
-	//console.log('LocateAfterAnchor:', matchesArr);
-
 	for (let i=0; i<matchesArr.length; i++) {
 		let match = matchesArr[i];
 
 		for (let anchor of anchors) {
-			//console.log('LocateAfterAnchor:', anchor, match[0]);
 			if (anchor==match[0]) {
 				let ret = {anchor: anchor, posAnchor: match.index};
 
@@ -568,7 +560,7 @@ function Parse_MemSize(str) {
 		let memSize = str.slice(start, end);
 		let suff = str.slice(end);
 
-		//console.log('Parse_MemSize', str, start, end);
+		//console.log('Obuv.Parse_MemSize', str, start, end);
 
 		return [pref, memSize, suff];
 	}
@@ -770,7 +762,7 @@ class Obuv {
   //sayHi() { alert(this.name); }
 
 	constructor() {
-			console.log('Obuv.constructor');
+			//console.log('Obuv.constructor');
 			this.GREEN_COLOR_LIGHT = '#ccffcc';
 
 			// Preload brands
@@ -804,7 +796,7 @@ class Obuv {
 
 			preview.ClosePreviewTabs();
 
-			console.log('Obuv new task:', this.taskId.length, this.taskId.slice(-10));
+			//console.log('Obuv new task:', this.taskId.length, this.taskId.slice(-10));
 		}
 
 
@@ -820,7 +812,7 @@ class Obuv {
 
 		//Main
 		this.attr = this.Parse_Attributes();
-		console.log('attr', this.attr);
+		console.log('Obuv.attr', this.attr);
 
 		this.attrEx = [ ];
 
@@ -836,16 +828,15 @@ class Obuv {
 
 		//Auto-select
 		let choice = this.AutoDecision_v2();
-		console.log('AutoDecision: ', choice);
+		console.log('Obuv.AutoDecision: ', choice);
 		this.AutoDecision_choice = choice; //For UpdateMyInfo
 
 		if (choice!=-1) {
 			if (autoRun && !this.clicked) {
-				console.log('Obuv before clicked:', this.taskId.length, this.taskId.slice(-10));
 				this.clicked = true;
 
 				setTimeout(function (choice){
-					console.log("AutoDecision fired:", choice);
+					console.log("Obuv.AutoDecision fired:", choice);
 					RB_set(choice);
 
 					let completeBtn = document.querySelector("#completeBtn");
@@ -901,7 +892,6 @@ class Obuv {
 		if (equals_till>0) {
 			let colored_text1 = ''.concat('<span style="background-color:', '#ddd', ';">', links[0].href.slice(0, equals_till), '</span>', links[0].href.slice(equals_till));
 			let colored_text2 = ''.concat('<span style="background-color:', '#ddd', ';">', links[1].href.slice(0, equals_till), '</span>', links[1].href.slice(equals_till));
-			//console.log('Tw color', colored_text2);
 
 			links[0].innerHTML = colored_text1;
 			links[1].innerHTML = colored_text2;
@@ -982,7 +972,7 @@ class Obuv {
 		for (let i=0;i<2;i++) {
 			this.attr[i].forEach((elem)=>{if (elem[0]=='vendorCode') this.vendorCodes[i]=elem[1]} );
 		}
-		console.log('Compare_VendorCode', this.vendorCodes);
+		//console.log('Compare_VendorCode', this.vendorCodes);
 
 		//Compare and colorize
 		//if ((this.vendorCodes[0]==null) || (this.vendorCodes[1]==null)) return;
@@ -1004,8 +994,7 @@ class Obuv {
 
 
 	Reset() {
-		console.log('Obuv.Reset()');
-		//console.log('Images:', document.images);
+		//console.log('Obuv.Reset()');
 
 		//for (const image of document.images) {
 		//} //for
@@ -1207,7 +1196,7 @@ class Obuv {
 
 		if (checkBox.length==0) return OT_CLOTHES; //В режиме 'Одежда' нет checkbox'a
 
-		//console.log('Obuv-checkBox', checkBox[0].textContent, '^');
+		//console.log('Obuv.checkBox', checkBox[0].textContent, '^');
 
 		let ret = -1;
 		let checkText = checkBox[0].textContent.trim();
@@ -1255,7 +1244,7 @@ class Obuv {
 		let brand1 = nodes[0].textContent.toUpperCase();
 		let brand2 = nodes[1].textContent.toUpperCase();
 
-		//console.log('DecideBy_Brand:', brand1, brand2, this.brands.Includes(brand1), this.brands.Includes(brand2));
+		//console.log('Obuv.DecideBy_Brand:', brand1, brand2, this.brands.Includes(brand1), this.brands.Includes(brand2));
 
 		if ( !( this.brands.Includes(brand1) && this.brands.Includes(brand2) ) ) {
 			console.log('DecideBy_Brand: unknown brand(s)');
@@ -1264,7 +1253,7 @@ class Obuv {
 
 		//Ok, verified brands
 		if (brand1!=brand2) {
-			//console.log('DecideBy_Brand: ABS DIFF');
+			//console.log('Obuv.DecideBy_Brand: ABS DIFF');
 			return 2; //Abs diff
 		}
 
@@ -1295,7 +1284,7 @@ class Obuv {
 		let nodes = document.getElementsByClassName('attributes');
 		if (nodes.length!=2) return null;
 
-		console.log('Parse_Attributes', nodes);
+		console.log('Obuv.Parse_Attributes', nodes);
 
 		//if (nodes[0].firstElementChild &&
 		//	Object.hasOwn(nodes[0].firstElementChild, 'nodeName') &&
@@ -1320,7 +1309,7 @@ class Obuv {
 
 
 	Letu_add_sku(idx) {
-		//console.log('Letu_add_sku', idx);
+		//console.log('Obuv.Letu_add_sku', idx);
 		if (document.links[idx].href.includes('vendorCode')) //Already done
 			return;
 

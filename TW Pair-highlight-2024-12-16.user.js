@@ -35,17 +35,28 @@ const tc_GiC = 4;
 const tc_Call027 = 5;
 const tc_CallType = 6;
 const tc_CheckImage = 7;
+const tc_FrontPage = 8;
+const tc_BadPic = 9;
 
 //var SubWindows = [null, null];
 
 //Global and control vars
 var autoRun = false;
-const SEND_TO_SERVER = false;
+const SEND_TO_SERVER = true;
 
 var vbd = null;
+let startPage;
 
+console.log('Before window');
 
-if (window!=window.top) {
+//if (window!=window.top)
+if (window==window.top) {
+    /* Not a frame! */
+    startPage = DetectStartPage();
+    DrawStartPage(startPage);
+    console.log('DetectStartPage-2', startPage);
+
+} else {
     /* I'm in a frame! */
     console.log('Tw: frame');
 
@@ -53,6 +64,10 @@ if (window!=window.top) {
     $(document).ready(function() {
         // желаемый код jQuer
         console.log('Tw: ready');
+
+        startPage = DetectStartPage();
+        DrawStartPage(startPage);
+        console.log('DetectStartPage-1', startPage);
 
 /*
        // Example usage of Observer API
@@ -78,6 +93,11 @@ if (window!=window.top) {
         var observer = new customObserver(document,false,function(observer,mutations){
             this.disconnect();
 
+            let startPage = DetectStartPage();
+            DrawStartPage(startPage);
+            console.log('DetectStartPage-3', startPage);
+            if (startPage>=0) return;
+
             //some DOM changes
             let docText = document.documentElement.textContent;
             if (docText.includes('👌')) { //Already done
@@ -100,6 +120,7 @@ this.saveUrl = url;
 		} );
 */
 
+/*
             if (!vbd) {
                 vbd = new ValidBrands();
                 vbd.Load_TXT();
@@ -119,10 +140,7 @@ this.saveUrl = url;
                     console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
 
             }
-
-
-
-
+*/
 
             let taskCode, taskVersion;
             [taskCode, taskVersion] = detectTask(docText);
@@ -167,8 +185,16 @@ this.saveUrl = url;
                 DoCheckImage(taskVersion);
             }
 
+            if (taskCode==tc_FrontPage) {
+                DoFrontPage();
+            }
+
             if (taskCode==-1) {
                 PresetCommonDefaults();
+            }
+
+            if (taskCode==tc_BadPic) {
+                DoBadPic();
             }
 
 
@@ -182,69 +208,6 @@ this.saveUrl = url;
 
 
 }
-else {
-    //console.log('Tw: not frame');
-}
-
-//Multiple items
-function OpenPreviewTabs(link0, link1) {
-    if (!Object.hasOwn(this, 'linkTabs')) {
-        this.linkTabs = [];
-        this.epoch = 0;
-    }
-
-    //console.log('OpenPreviewTabs start', this.linkTabs)
-
-    //Close last pre-view tabs
-    for (let i=this.linkTabs.length-1;i>=0;i--) {
-        let item = this.linkTabs[i]
-
-        let closed_0 = ((item[0].tab!=null) && item[0].tab.closed) || (item[0].tab==null)
-        let closed_1 = ((item[1].tab!=null) && item[1].tab.closed) || (item[1].tab==null)
-
-        if ( (item[0].tab!=null) && !item[0].tab.closed ) item[0].tab.close(); //better before splice because item then will be deleted
-        if ( (item[1].tab!=null) && !item[1].tab.closed ) item[1].tab.close();
-
-        if ( closed_0 && closed_1 ) { //delete closed
-            this.linkTabs.splice(i,1); //remove closed
-            continue;
-        }
-    } //for
-
-    //Delete old 'hanging' items
-    const OLD_TRESHOLD = 10
-
-    for (let i=this.linkTabs.length-1;i>=0;i--) {
-        let item_age = this.linkTabs[i][2]
-
-        if ((this.epoch-item_age)>OLD_TRESHOLD) {
-            this.linkTabs.splice(i,1); //remove very old
-            console.log('OpenPreviewTabs delete hanging')
-        }
-
-        } //for
-
-
-    // May new links are already in list?
-    for (let i=0;i<this.linkTabs.length;i++) {
-        let item = this.linkTabs[i]
-
-        if ((item[0].href==link0) && (item[1].href==link1)) {
-            return false;
-            }
-    } //for
-
-    //Add new item to list and open previews
-    let v1 = {tab:GM_openInTab(link1), href: link1}
-    let v0 = {tab:GM_openInTab(link0), href: link0}
-    
-    this.linkTabs.push( [v0, v1, this.epoch] );
-    this.epoch++;
-
-    //console.log('OpenPreviewTabs end', this.linkTabs)
-    return true
-}
-
 
 //Just a test
 /*
@@ -275,6 +238,9 @@ function detectTask(docText) {
     { marker: "расшифровка телефонного разговора", code: tc_Call027 },
     { marker: "Фраза из диалога:", code: tc_CallType },
     { marker: "Проверь изображение|половые органы", code: tc_CheckImage },
+    { marker: "Да, товар подходит для главной страницы", code: tc_FrontPage},
+    { marker: "Проверьте наличие нарушений на изображении", code: tc_BadPic},
+
 
   ].reverse();
 
@@ -293,8 +259,33 @@ function detectTask(docText) {
   return [-1, 0];
 }
 
+//Returns -1=not a start page; 0 - no jobs; 1 - jobs availabel
+function DetectStartPage() {
 
+    if (document.querySelector("div.tasks-empty-block")) return 0;
 
+    document.querySelectorAll('iframe').forEach( function (item ) {
+        if (item.contentWindow.document.body.querySelectorAll('div.tasks-empty-block')) return 0;
+    });
+
+    if (document.querySelector("task-item")) return 1;
+
+    document.querySelectorAll('iframe').forEach( function (item ) {
+        if (item.contentWindow.document.body.querySelectorAll('task-item').length>0) return 1;
+    });
+
+    return -1;
+}
+
+function DrawStartPage(startPage) {
+        let tt = window.parent.document.title;
+        if (startPage==1) {
+            if (!tt.includes('💥')) tt = '💥 ' + tt;
+        } else {
+            if (tt.includes('💥')) tt = tt.slice(2);
+        }
+        window.parent.document.title = tt;
+}
 
 
 //********************* Соответствие бренду  ********************************
@@ -391,13 +382,61 @@ function DoBanki() {
     }
 }
 
+//**********************************************
+function DoFrontPage() {
+    console.log('DoFrontPage');
+
+    RB_set(0); //Да, подходит
+
+    const REQUIRED_TOP = 50;
+
+    //window.scrollTo(0, 50);
+    //document.querySelector('#dummy_element').scrollIntoView()
+
+    setTimeout(function () {
+            window.scrollTo(0, 300);
+        },200);
+
+    console.log('DoFrontPage after scroll');
+
+} //DoFrontPage
+
+
+function DoBadPic() {
+    console.log('DoBadPic');
+
+    //Radio buttons - set defaults
+    const radio_btns = document.querySelectorAll('input[type=radio]');
+	let anyChecked = false;
+	for (const btn of radio_btns)
+		{anyChecked = anyChecked || btn.checked }
+
+    if (!anyChecked) {
+        radio_btns[ 0 ].parentNode.click(); //Нет нарушений
+    }
+
+    //Ярлыки с нарушениями
+    function OnClickBadge() {
+        //console.log('DoBadPic onclick');
+        radio_btns[ 1 ].parentNode.click(); //Есть нарушения
+    }
+
+    const badges = document.querySelectorAll('tui-badge');
+    //console.log('DoBadPic badges', badges);
+    for (let bg of badges) {
+        bg.onclick = OnClickBadge;
+    }
+
+
+};
+
 
 function PresetCommonDefaults() {
     console.log('PresetCommonDefaults');
 
     //Focus on text area
 	const edits = document.querySelectorAll('textarea');
-    if (edits.length>0) {
+    if (edits.length==1) {
         edits[0].focus();
     }
 
