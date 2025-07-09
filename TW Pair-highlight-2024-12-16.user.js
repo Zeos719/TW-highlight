@@ -14,6 +14,7 @@
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/Obuv_v1.js
 // @require      https://zeos719.github.io/TW-highlight/Call_027.js
 // @require      https://zeos719.github.io/TW-highlight/Preset_defaults.js
+// @require      https://zeos719.github.io/TW-highlight/mixed-tools.js
 
 // ==/UserScript==
 
@@ -54,7 +55,7 @@ if (window==window.top) {
     /* Not a frame! */
     startPage = DetectStartPage();
     DrawStartPage(startPage);
-    console.log('DetectStartPage-2', startPage);
+    console.log('DetectStartPage-2', startPage, (new Date()).toTimeString());
 
 } else {
     /* I'm in a frame! */
@@ -67,7 +68,7 @@ if (window==window.top) {
 
         startPage = DetectStartPage();
         DrawStartPage(startPage);
-        console.log('DetectStartPage-1', startPage);
+        console.log('DetectStartPage-1', startPage, (new Date()).toTimeString());
 
 /*
        // Example usage of Observer API
@@ -95,8 +96,8 @@ if (window==window.top) {
 
             let startPage = DetectStartPage();
             DrawStartPage(startPage);
-            console.log('DetectStartPage-3', startPage);
-            if (startPage>=0) return;
+            console.log('DetectStartPage-3', startPage, (new Date()).toTimeString());
+            //if (startPage>=0) return;
 
             //some DOM changes
             let docText = document.documentElement.textContent;
@@ -361,13 +362,6 @@ function AskHttpHelper(task, links) {
     return {result:1, answer:'Ok'}
 
     return {result:0, answer:null}
-}
-
-
-
-//**********************************************
-function hasUnicode(s) {
-    return /[^\u0000-\u007f]/.test(s);
 }
 
 

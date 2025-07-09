@@ -30,8 +30,8 @@ function http_GET(url, OnAnswer) {
 	
 }; //http_GET
 
-function StringHash(str) {
-	let hash = 0;
+function StringHash(str, hash=0) {
+	//let hash = 0;
 	
 	for (let i = 0; i<str.length; i++) {
 		const chr = str.charCodeAt(i);
@@ -42,3 +42,32 @@ function StringHash(str) {
 	
 	return hash;
 }; //StringHash
+
+// Преобразования типов для работы с image
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+function str2ab16(str) {
+  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+  var bufView = new Uint16Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
+function str2ab8(str) {
+  var buf = new ArrayBuffer(str.length); // 1 byte for each char
+  var bufView = new Uint8Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+//------------
+
+function hasUnicode(s) {
+    return /[^\u0000-\u007f]/.test(s);
+}
+

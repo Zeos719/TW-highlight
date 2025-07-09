@@ -605,13 +605,13 @@ class ValidBrands {
 
 			//console.log('ValidBrands', myself.brandsList);
 
-			myself.NamesToUpper();
+			myself.NamesToUpper();			
 			});
 
 	} //Load_JSON
 
 	SaveServerAnswer(url, data) {
-		//console.log('ValidBrands.SaveServerAnswer', url, this.brandsList, data.slice(0,20));
+		console.log('ValidBrands.SaveServerAnswer', data.length, url);
 
 		//Parse url: https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt
 		let tokens = url.split('/');
@@ -792,7 +792,7 @@ class Obuv {
 		let newTaskId = GetTaskId();
 		if (this.taskId!=newTaskId) {
 			this.taskId = newTaskId;
-			this.clicked = false;
+			this.clicked = false;			
 
 			preview.ClosePreviewTabs();
 
@@ -1047,11 +1047,10 @@ class Obuv {
 			return tbdy;
 		} //AppendRows()
 
-
-
 		let tbl = document.createElement('table');
 		tbl.style.width = '100%';
-		tbl.setAttribute('border', '1');
+		tbl.setAttribute('border', '1')
+		tbl.className = 'z-info-table';
 
 		  //Table header
 		let thdr = document.createElement('thead');
@@ -1102,13 +1101,24 @@ class Obuv {
 	} //Subset_of_attr()
 
 
+
 	UpdateMyInfo() {
 		const infos = document.querySelectorAll('.twinfo');	//select by class
 
+		// Проверяем, что таблица уже существует и данные в attrEx не изменились
+		/*
 		if (infos[0].firstElementChild && (infos[0].firstElementChild.tagName=='TABLE')) { //Table Already exists
 			return;
 		}
+		*/
+		
+		let tableExists = (document.querySelectorAll('table.z-info-table').length>0)
+		
 
+		
+		if (tableExists)
+			return;
+		
 		//Create table
 		let tbl_rows = this.Subset_of_attr();
 		this.tableCreate(infos[0], tbl_rows);
@@ -1458,27 +1468,4 @@ function tableCreate() {
 }
 tableCreate();
 */
-
-
-function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint16Array(buf));
-}
-
-function str2ab16(str) {
-  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-  var bufView = new Uint16Array(buf);
-  for (var i=0, strLen=str.length; i<strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
-}
-
-function str2ab8(str) {
-  var buf = new ArrayBuffer(str.length); // 1 byte for each char
-  var bufView = new Uint8Array(buf);
-  for (var i=0, strLen=str.length; i<strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
-}
 
