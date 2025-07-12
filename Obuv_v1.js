@@ -605,7 +605,7 @@ class ValidBrands {
 
 			//console.log('ValidBrands', myself.brandsList);
 
-			myself.NamesToUpper();			
+			myself.NamesToUpper();
 			});
 
 	} //Load_JSON
@@ -792,7 +792,7 @@ class Obuv {
 		let newTaskId = GetTaskId();
 		if (this.taskId!=newTaskId) {
 			this.taskId = newTaskId;
-			this.clicked = false;			
+			this.clicked = false;
 
 			preview.ClosePreviewTabs();
 
@@ -1111,14 +1111,14 @@ class Obuv {
 			return;
 		}
 		*/
-		
-		let tableExists = (document.querySelectorAll('table.z-info-table').length>0)
-		
 
-		
+		let tableExists = (document.querySelectorAll('table.z-info-table').length>0)
+
+
+
 		if (tableExists)
 			return;
-		
+
 		//Create table
 		let tbl_rows = this.Subset_of_attr();
 		this.tableCreate(infos[0], tbl_rows);
@@ -1168,7 +1168,12 @@ class Obuv {
 
 		//if ( (this.subTask==OT_OBUV) && Links_start_with(links, 'https://www.letu.ru/') )
 		if (  Links_start_with(links, 'https://www.letu.ru/') )
-			return this.Special_Letu();
+			return this.Letu_special();
+
+		if ( Links_start_with(links, 'https://petrovich.ru/') ) {
+			ret = this.Petrovich_special();
+			console.log('Obuv.Petrovich_special', ret);
+		}
 
 		if (links[0].href==links[1].href) {
 			ret = this.DecideBy_Size();
@@ -1234,7 +1239,7 @@ class Obuv {
 				return -1; //Непонятно, что делать
 			}
 		}
-		
+
 		if (!this.vendorCodes || (this.vendorCodes[0]!=this.vendorCodes[1]) ) return -1;
 
 		if (sizes[0]==sizes[1]) {
@@ -1334,7 +1339,7 @@ class Obuv {
 
 	} //Letu_add_sku()
 
-	Special_Letu() {
+	Letu_special() {
 
 		function Compare_links_prefs(hrefArr) {
 
@@ -1350,7 +1355,7 @@ class Obuv {
 			return (prefs[0]==prefs[1]);
 		} //Compare_links_pre
 
-		//console.log('Obuv.Special_Letu', this.vendorCodes);
+		//console.log('Obuv.Letu_special', this.vendorCodes);
 
 		//На всякий случай сравним префиксы до подстроки 'sku'
 		if (!Compare_links_prefs( [document.links[0].href, document.links[1].href] ))
@@ -1368,8 +1373,47 @@ class Obuv {
 		}
 
 		return -1;
-	}
+	} //Letu_special
 
+
+	Petrovich_special() {
+		let titles = document.getElementsByClassName('name');
+		titles = [ titles[0].textContent, titles[1].textContent ];
+
+		if (titles[0]==titles[1])
+			return 0; //Полностью совпадают
+
+		/*
+		'Костюм рабочий мужской утепленный ГК Спецобъединение КМ-10 48-50 рост 170-176 см темно-синий/васильковый'
+		*/
+		const regExp = /^(.+)\s(\d+-\d+ рост \d+-\d+ см)\s(.+)$/gm
+		
+		let matches = [null, null];
+		for(let i=0;i<titles.length;i++) {
+			let match = titles[i].matchAll(regExp);
+			match = Array.from(match);
+			if (match.length==0)
+				return -1; //some error
+
+			matches[i] = match[0]; //запоминаем первое совпадение с regExp
+		} //for(i)
+
+		//console.log(matches);
+
+		//Compare and decide
+		if (matches[0][1]!=matches[1][1]) {
+			return 2; //Абсолютно разные модели
+		} else {
+			//Модель одна и та же, сравниваем размер и цвет
+			if ((matches[0][2]==matches[1][2]) && //размер
+				(matches[0][3]==matches[1][3])) {//цвет
+				return 0; //Полное совпадение; уже было - в начале функции
+			} else {
+				return 1; //Частиное совпадение
+			}
+		} //if
+
+  return -1;	} //Petrovich_special
 
 /*
   Выделяет размер из строки описания. Примеры:
@@ -1386,7 +1430,7 @@ class Obuv {
 	Parse_size(descr) {
 		let words;
 		let size = '';
-		let ipos; 
+		let ipos;
 
 		//Случай 'abc:120'
 		ipos = descr.lastIndexOf(':');
