@@ -153,5 +153,8 @@ function hasUnicode(s) {
 //console.log( CSVToArray(test2) )
 
 function StripQuotes(str, quotes ='"') {
-  return str.replaceAll(/^\"(.*)\"$/gm, '$1')
+	if (typeof(str)=='string')
+		return str.replaceAll(/^\"(.*)\"$/gm, '$1')
+	else
+		return str;
 }
