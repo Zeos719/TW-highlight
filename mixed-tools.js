@@ -99,3 +99,55 @@ function hasUnicode(s) {
     return /[^\u0000-\u007f]/.test(s);
 }
 
+ function CSVToArray(csv, delim = ',', quote = '"') {
+  //List of delims and quotes
+  let delims = [];
+  let from = 0;
+  while (from < csv.length) {
+    let idx = csv.indexOf(delim, from);
+    if (idx < 0)
+      break;
+
+    delims.push(idx);
+    from = idx + 1
+  } //while
+
+  let quotes = [];
+  from = 0;
+  while (from < csv.length) {
+    let idx = csv.indexOf(quote, from);
+    if (idx < 0)
+      break;
+
+    quotes.push(idx);
+    from = idx + 1
+  } //while
+
+  //Filter out delims
+  delims = delims.filter(function (item, index, array) {
+    for (let i = 0; i < quotes.length-1; i += 2) {
+      if ((item > quotes[i]) && (item < quotes[i + 1]))
+        return false;
+    } //for
+
+    return true;
+  }); //filter
+
+  //Add 0 and csv.length to unify splitting proces
+  delims.unshift(0);
+  delims.push(csv.length);
+
+  //Final split
+  cols = []
+  for (let i = 0; i < delims.length-1; i++) {
+    from = delims[i];
+    let till = delims[i+1];
+    cols.push(csv.slice(from, till));
+  }//for
+
+  return cols;
+}
+
+//test1 = '1,2,"good one","complecated, oh"'
+//test2 = '1,2,"все просто","увы, запятая"'
+//console.log( CSVToArray(test2) )
