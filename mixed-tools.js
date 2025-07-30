@@ -140,7 +140,7 @@ function hasUnicode(s) {
   //Final split
   cols = []
   for (let i = 0; i < delims.length-1; i++) {
-    from = delims[i];
+    from = delims[i]+1;
     let till = delims[i+1];
     cols.push(csv.slice(from, till));
   }//for
