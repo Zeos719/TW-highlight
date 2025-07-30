@@ -19,18 +19,6 @@ function DoCallType() {
 	return;
 };
 
-function SaveCanvas(cnv) {
-	const dataUrl = cnv.toDataURL('image/png');
-	const link = document.createElement('a');
-	link.href = dataUrl;
-	link.download = 'safe-pic.png'; // Это было бы по душе Пикассо 👍
-	//link.innerText = '*** Save the picture ***';
-	document.body.appendChild(link);
-	link.click();
-	document.body.removeChild(link); // Не забывайте подчищать после себя
-}
-
-
 /*
 function DoCheckImage() {
 	//console.log('DoCheckImage() begin')
@@ -54,40 +42,10 @@ function DoCheckImage(taskVersion) {
 	if (!RB_alreadySet()) {
 		if (taskVersion==0) {  //Безопасная картинка
 		RB_set(0);
-
-		let canvas = document.getElementsByTagName('canvas');
-		//console.log('SaveCanvas canv', canvas)
-/*
-		let im_1 = canvas[0].getContext('2d');
-		console.log('SaveCanvas GetCont 0', im_1)
-
-		im_1.moveTo(30,30); 
-		im_1.lineTo(30,60); 
-		im_1.lineTo(60,60); 
-		im_1.lineTo(60,30); 
-		im_1.lineTo(30,30);
-		im_1.stroke(); 	
-
-		im_1 = canvas[1].getContext('2d');
-		console.log('SaveCanvas GetCont 1', im_1)
-
-		im_1.moveTo(90,30); 
-		im_1.lineTo(120,30); 
-		im_1.lineTo(120,60); 
-		im_1.lineTo(90,60); 
-		im_1.lineTo(90,30);
-		im_1.stroke(); 	
-*/			
-		//canvas[0].style.border = "solid 2px green";
-		//canvas[1].style.border = "solid 4px red";			
-			
-		//SaveCanvas(canvas[1]);
-			
-		}  //version 0
-		
+		} 	
 		if (taskVersion==1) { //Обнаженные органы
 		RB_set(1);
-		} //version 1	
+		} 	
 		
 	}	
 	
@@ -110,6 +68,20 @@ function RB_set(choice) {
 	
 	return;
 }
+
+
+function RB_get() {
+	//console.log('RB_get() begin');
+	
+	const radio_btns = document.querySelectorAll('input[type=radio]');
+
+	for(let i=0; i<radio_btns.length; i++) 
+		if (radio_btns[i].checked) 
+			return i;			
+	
+	return -1;
+}
+
 
 function RB_alreadySet() {
 	//console.log('RB_alreadySet() begin');

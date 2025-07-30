@@ -1,5 +1,5 @@
 function http_POST(url, data) {
-	console.log('Test_fetch_POST');
+	console.log('http_POST');
 
 	fetch(url, {
 		method: "POST",
@@ -7,13 +7,16 @@ function http_POST(url, data) {
 		headers: {
 			"Content-type": "application/json; charset=UTF-8"
 		}	
-	}).then(response => response.json()) 
+	})
+	.then(response => response.json()) 
+	.then(console.log)
+	
 	.catch(console.error);
 	
 };//http_POST
 
-function http_GET(url, OnAnswer) {
-	console.log('Test_fetch_GET');
+function http_GET_JSON(url, OnAnswer, OnError=console.error) {
+	console.log('http_GET_JSON', url);
 
 /*
 	fetch(url, {
@@ -24,11 +27,30 @@ function http_GET(url, OnAnswer) {
 	}) 
 */	
 	fetch(url)
-	.then(response => response.json())
-	.then(data => {if (OnAnswer) OnAnswer(data)})		
-	.catch(console.error);
+		.then(response => response.json())
+		//.then(data => console.log(data))
+		.then(data => {if (OnAnswer) OnAnswer(data)})		
+		.catch(OnError);
 	
-}; //http_GET
+}; //http_GET_JSON
+
+function http_GET_text(url, OnAnswer, OnError=console.error) {
+	console.log('http_GET_text');
+
+/*
+	fetch(url, {
+		method: "GET",
+		headers: {
+			"Content-type": "text/plain; charset=UTF-8"
+		}	
+	}) 
+*/	
+	fetch(url)
+		.then(response => response.text())
+		.then(data => {if (OnAnswer) OnAnswer(data)})		
+		.catch(OnError);
+	
+}; //http_GET_text
 
 function StringHash(str, hash=0) {
 	//let hash = 0;
@@ -42,6 +64,12 @@ function StringHash(str, hash=0) {
 	
 	return hash;
 }; //StringHash
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 // Преобразования типов для работы с image
 function ab2str(buf) {
