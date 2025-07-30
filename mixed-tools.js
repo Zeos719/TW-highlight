@@ -151,3 +151,7 @@ function hasUnicode(s) {
 //test1 = '1,2,"good one","complecated, oh"'
 //test2 = '1,2,"все просто","увы, запятая"'
 //console.log( CSVToArray(test2) )
+
+function StripQuotes(str, quotes ='"') {
+  return str.replaceAll(/^\"(.*)\"$/gm, '$1')
+}
