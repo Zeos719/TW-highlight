@@ -5,7 +5,6 @@
 // @description  try to take over the world!
 // @author       Zeos
 // @match        https://twork.tinkoff.ru/*
-// @match        file:///C:/temp/Projects.tmp/Tinkoff-Kleks/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        GM_openInTab
 // @run-at       document-end
@@ -15,11 +14,13 @@
 // @require      https://zeos719.github.io/TW-highlight/Call_027.js
 // @require      https://zeos719.github.io/TW-highlight/Preset_defaults.js
 // @require      https://zeos719.github.io/TW-highlight/mixed-tools.js
+// @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/play_exam.js
 
 // ==/UserScript==
 
 // @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
 
+// @match        file:///C:/temp/Projects.tmp/Tinkoff-Kleks/*
 
 //Красивые символы UTF-8
 // https://www.drive2.ru/b/463440578768535663/
@@ -38,6 +39,11 @@ const tc_CallType = 6;
 const tc_CheckImage = 7;
 const tc_FrontPage = 8;
 const tc_BadPic = 9;
+const tc_PlayExam = 10;
+
+const le_UNKNOWN = 0;
+const le_LEARN = 1;
+const le_EXAM = 2;
 
 //var SubWindows = [null, null];
 
@@ -56,6 +62,7 @@ if (window==window.top) {
     startPage = DetectStartPage();
     DrawStartPage(startPage);
     console.log('DetectStartPage-2', startPage, (new Date()).toTimeString());
+
 
 } else {
     /* I'm in a frame! */
@@ -112,6 +119,11 @@ if (window==window.top) {
                 this.connect();
                 return;
             }
+
+            //Exams
+            var isExam = DetectLearnOrExam();
+            console.log('DetectLearnOrExam', isExam);
+
 /*
         let url = 'https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt';
 
@@ -198,6 +210,11 @@ this.saveUrl = url;
                 DoBadPic();
             }
 
+            //Exam
+            //if (taskCode==tc_PlayExam){
+            if (isExam) {
+                DoPlayExam(0);
+            }
 
 
             this.connect();
@@ -232,7 +249,7 @@ function OpenPreviewTabs() {
 function detectTask(docText) {
 
   const taskMarkers = [
-    { marker: "Товары полностью совпадают", code: tc_Obuv },
+    { marker: "Товары полностью совпадают|Различные варианты одной и той же модели одного бренда", code: tc_Obuv },
     { marker: "БАНКИ.РУ", code: tc_Banki },
     { marker: "соответствие бренда", code: tc_Brand },
     { marker: "Подходят ли товары?|Название товара в чеке:", code: tc_GiC },
@@ -241,7 +258,7 @@ function detectTask(docText) {
     { marker: "Проверь изображение|половые органы", code: tc_CheckImage },
     { marker: "Да, товар подходит для главной страницы", code: tc_FrontPage},
     { marker: "Проверьте наличие нарушений на изображении", code: tc_BadPic},
-
+    { marker: "Произнесено ли предложение с вопросительной интонацией?|исправьте все опечатки в транскрипции|Откорректируйте расстановку дефисов|Исправьте ошибки нормализации", code: tc_PlayExam},
 
   ].reverse();
 
@@ -434,5 +451,24 @@ function PresetCommonDefaults() {
         edits[0].focus();
     }
 
-}
+    if (document.documentElement.textContent.includes('Оцените, насколько товар в красной рамке подходит под ваш запрос?')) {
+        if (!RB_alreadySet()) {
+            RB_set(0);
+        }
+    }
+} //PresetCommonDefaults()
+
+function DetectLearnOrExam() {
+    let ret = le_UNKNOWN;
+
+    let node = document.querySelector('div.b-statistical-panel-block');
+    if (node) {
+        if (node.innerText.includes('Обучение'))
+            return le_LEARN;
+        if (node.innerText.includes('Экзамен'))
+            return le_EXAM;
+    }
+
+    return ret;
+} //DetectLearnOrExam()
 
