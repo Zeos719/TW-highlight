@@ -15,7 +15,7 @@
 // @require      https://zeos719.github.io/TW-highlight/Preset_defaults.js
 // @require      https://zeos719.github.io/TW-highlight/mixed-tools.js
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/play_exam.js
-
+// @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\Category_of_goods.js
 // ==/UserScript==
 
 // @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
@@ -40,6 +40,7 @@ const tc_CheckImage = 7;
 const tc_FrontPage = 8;
 const tc_BadPic = 9;
 const tc_PlayExam = 10;
+const tc_CtgGoods = 11;
 
 const le_UNKNOWN = 0;
 const le_LEARN = 1;
@@ -100,6 +101,8 @@ if (window==window.top) {
 */
         var observer = new customObserver(document,false,function(observer,mutations){
             this.disconnect();
+
+            $.ajaxSetup({ cache: false });
 
             let startPage = DetectStartPage();
             DrawStartPage(startPage);
@@ -216,16 +219,19 @@ this.saveUrl = url;
                 DoPlayExam(0);
             }
 
+            if (taskCode==tc_CtgGoods) {
+                DoCtgGoods();
+            }
 
             this.connect();
         });
 
         observer.connect();
 
-    });
+    }); //$.ready()
 
 
-}
+}//else(frame)
 
 //Just a test
 /*
@@ -259,6 +265,7 @@ function detectTask(docText) {
     { marker: "Да, товар подходит для главной страницы", code: tc_FrontPage},
     { marker: "Проверьте наличие нарушений на изображении", code: tc_BadPic},
     { marker: "Произнесено ли предложение с вопросительной интонацией?|исправьте все опечатки в транскрипции|Откорректируйте расстановку дефисов|Исправьте ошибки нормализации", code: tc_PlayExam},
+    { marker: "Список категорий для товара", code: tc_CtgGoods},
 
   ].reverse();
 
@@ -442,8 +449,37 @@ function DoBadPic() {
 };
 
 
+let PCD_Marks = [
+    {'key':'в красной рамке', 'RButton':0}, //'Оцените, насколько товар в красной рамке подходит под ваш запрос?'
+    {'key':'Манипуляция', 'RButton':1}, //'В посте присутствует нарушение «Манипуляция рынком»?'
+    {'key':'живость', 'RButton':0}, //'Проверьте фотографию лица на "живость"'
+
+];
+
 function PresetCommonDefaults() {
     console.log('PresetCommonDefaults');
+
+    //Presets
+    let docText = document.documentElement.textContent;
+    if (!docText) return;
+    //console.log('PresetCommonDefaults length', docText.length);
+
+    for (let i=0;i<PCD_Marks.length;i++) {
+        let item = PCD_Marks[i];
+        if (!docText.includes(item.key)) continue;
+
+        if (item.hasOwnProperty('RButton')) {
+            try {
+                if (!RB_alreadySet()) RB_set(item.RButton)
+            } catch {
+                console.log('PresetCommonDefaults RB-except')
+            } //try
+
+            } //if(hasOwnProperty)
+
+
+
+    } //for
 
     //Focus on text area
 	const edits = document.querySelectorAll('textarea');
@@ -451,11 +487,6 @@ function PresetCommonDefaults() {
         edits[0].focus();
     }
 
-    if (document.documentElement.textContent.includes('Оцените, насколько товар в красной рамке подходит под ваш запрос?')) {
-        if (!RB_alreadySet()) {
-            RB_set(0);
-        }
-    }
 } //PresetCommonDefaults()
 
 function DetectLearnOrExam() {

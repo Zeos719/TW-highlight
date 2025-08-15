@@ -210,7 +210,7 @@ class PlayExam {
 			if (node) sol = node.innerText;
 
 			//encode LF->'\n'
-			sol = sol.replaceAll('\n', '\\n');
+			sol = sol.replaceAll('\n', '\\\\n'); // Four slashes to fight against Python corrections while writting to the file
 		}
 
 
@@ -227,17 +227,18 @@ class PlayExam {
 
 		//let url = rootUrl + 'que-inton.csv';
 		let url = rootUrl + 'pay-systems.csv';
+		//let url = rootUrl + 'moderate-comments.csv';
 
-		$.get(url, '', function(data){
-				myself.ProcessServerAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
+		$.get(url, { "_": $.now() }, function(data){
+				myself.ProcessHttpAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
 				vbd_count += 1;
 		} );
 
 
 	};
 
-	ProcessServerAnswer(url, data) {
-		console.log('PlayExam.ProcessServerAnswer', data.length, url);
+	ProcessHttpAnswer(url, data) {
+		console.log('PlayExam.ProcessHttpAnswer length', data.length, url);
 
 		//Parse url: https://www.phonewarez.ru/files/play-exams/que-inton.csv
 		let tokens = url.split('/');
@@ -261,13 +262,13 @@ class PlayExam {
 			return cols;
 		});
 				
-		//console.log('PlayExam.ProcessServerAnswer test', StripQuotes(dataLines[0][3]) );		
-		//console.log('PlayExam.ProcessServerAnswer test2',  '" тест два"'.replaceAll(/^\"(.*)\"$/gm, '$1'));		
+		//console.log('PlayExam.ProcessHttpAnswer test', StripQuotes(dataLines[0][3]) );		
+		//console.log('PlayExam.ProcessHttpAnswer test2',  '" тест два"'.replaceAll(/^\"(.*)\"$/gm, '$1'));		
 		
-		//console.log('PlayExam.ProcessServerAnswer dataLines:', dataLines);
+		//console.log('PlayExam.ProcessHttpAnswer dataLines:', dataLines);
 
 		play_exam.Answers = dataLines;
-		console.log('PlayExam.ProcessServerAnswer got lines:', play_exam.Answers.length);		
+		console.log('PlayExam.ProcessHttpAnswer got lines:', play_exam.Answers.length);		
 
 		return;
 	}
@@ -281,14 +282,14 @@ class PlayExam {
 	*/
 
 	AutoAnswer() {
-		//console.log('PlayExam.Answer.length', this.Answers.length);
+		console.log('PlayExam.Answer.length', this.Answers.length);
 		console.log('PlayExam.Answer.que', this.que);
 
 		//Look for the answer
 		let rb = -1
 		for (let i=0;i<this.Answers.length;i++) {
 			
-		//console.log('PlayExam.Answer.Answ', this.Answers[i][3]==this.que, this.Answers[i][3]);
+		console.log('PlayExam.Answer.Answ', this.Answers[i][3]==this.que, this.Answers[i][3]);
 			
 			if (this.Answers[i][3]==this.que) {
 				rb = this.Answers[i][2]
