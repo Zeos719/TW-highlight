@@ -158,3 +158,23 @@ function StripQuotes(str, quotes ='"') {
 	else
 		return str;
 }
+
+function IsLatin(str) {
+  if (str.length==0) return false;
+
+  for(let i=0;i<str.length;i++) {
+    let c = str.charCodeAt(i);
+    let isLatin = ((c >= 97) && (c <= 122)) || ((c >= 65) && (c <= 90)); //a..z A..Z
+    if (!isLatin) return false;
+  } //for
+
+  return true;
+} // IsLatin()
+
+// 'ЗЕЛЕНЫй', 'голубой', 'розовая', 'черное' -> true
+unction IsAdjectiveRus(str) {
+  if (str.length<3) return false;
+
+  let suffix = str.slice(str.length-2).toLowerCase();
+  return 'ой|ый|ая|ое'.includes(suffix);
+} //IsAdjectiveRus()
