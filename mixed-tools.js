@@ -176,5 +176,5 @@ unction IsAdjectiveRus(str) {
   if (str.length<3) return false;
 
   let suffix = str.slice(str.length-2).toLowerCase();
-  return 'ой|ый|ая|ое'.includes(suffix);
+  return 'ой|ый|ая|ое|ые'.includes(suffix);
 } //IsAdjectiveRus()
