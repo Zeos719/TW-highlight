@@ -6,13 +6,13 @@ function http_POST(url, data) {
 		body: JSON.stringify(data),
 		headers: {
 			"Content-type": "application/json; charset=UTF-8"
-		}	
+		}
 	})
-	.then(response => response.json()) 
+	.then(response => response.json())
 	.then(console.log)
-	
+
 	.catch(console.error);
-	
+
 };//http_POST
 
 function http_GET_JSON(url, OnAnswer, OnError=console.error) {
@@ -23,15 +23,15 @@ function http_GET_JSON(url, OnAnswer, OnError=console.error) {
 		method: "GET",
 		headers: {
 			"Content-type": "text/plain; charset=UTF-8"
-		}	
-	}) 
-*/	
+		}
+	})
+*/
 	fetch(url)
 		.then(response => response.json())
 		//.then(data => console.log(data))
-		.then(data => {if (OnAnswer) OnAnswer(data)})		
+		.then(data => {if (OnAnswer) OnAnswer(data)})
 		.catch(OnError);
-	
+
 }; //http_GET_JSON
 
 function http_GET_text(url, OnAnswer, OnError=console.error) {
@@ -42,26 +42,26 @@ function http_GET_text(url, OnAnswer, OnError=console.error) {
 		method: "GET",
 		headers: {
 			"Content-type": "text/plain; charset=UTF-8"
-		}	
-	}) 
-*/	
+		}
+	})
+*/
 	fetch(url)
 		.then(response => response.text())
-		.then(data => {if (OnAnswer) OnAnswer(data)})		
+		.then(data => {if (OnAnswer) OnAnswer(data)})
 		.catch(OnError);
-	
+
 }; //http_GET_text
 
 function StringHash(str, hash=0) {
 	//let hash = 0;
-	
+
 	for (let i = 0; i<str.length; i++) {
 		const chr = str.charCodeAt(i);
 		hash = ((hash << 5) - hash) + chr;
 		hash |= 0; // Преобразовываем к 32-битному целому числу
 	}
 	//console.log('Hex', hash.toString(16));
-	
+
 	return hash;
 }; //StringHash
 
@@ -176,5 +176,5 @@ function IsAdjectiveRus(str) {
   if (str.length<3) return false;
 
   let suffix = str.slice(str.length-2).toLowerCase();
-  return 'ой|ый|ая|ое|ые'.includes(suffix);
+  return 'ой|ый|ая|ое|ые|ие|ий'.includes(suffix);
 } //IsAdjectiveRus()
