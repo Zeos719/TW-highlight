@@ -21,10 +21,12 @@ class CategoryOfGoods {
 	constructor() {
 		//console.log('CtgGoods.constructor');
 
-		this.prevDescr = null;
+		this.prevName = null;
 		this.substDescr = [
 			['блуза', 'блузки'],
 			['гель', 'лаки'], // 'гель-лак'
+			['люстра', 'светильник'],			
+			['бра', 'светильник'],			
 			
 		];
 
@@ -34,79 +36,70 @@ class CategoryOfGoods {
 	
 	Run() {			
 		console.log('CtgGoods.Run');	
-		
+				
 		//Preload elements
-		//-1. headers
-		let headers = document.querySelectorAll('.flex-header__content');
-		let hdrNameOfGd = null;
-		let hdrImgOfGd = null;
+		let flex_elm_list = document.querySelectorAll('flex-container > flex-element');
 		
-		for (const hdr of headers) {
-			if (hdr.innerText=='Наименование товара') hdrNameOfGd=hdr;
-			if (hdr.innerText=='Изображение товара') hdrImgOfGd=hdr;			
-		} //for()
-			
-		//-2.editors
-		// 0 - наименование товара, краткое
-		// 1 - описание товара (под спойлером)
-		// 2 - 'Выберите ВСЕ категории'
-		let editors = document.querySelectorAll('.tui-editor-socket');
+		let name_grp = GetFlexPair(flex_elm_list, 'Наименование товара');
+		let descr_grp = GetFlexPair(flex_elm_list, 'Описание товара');
+		let image_grp = GetFlexPair(flex_elm_list, 'Изображение товара');
+		let help_grp = GetFlexPair(flex_elm_list, 'Список категорий для товара');		
+		//console.log('CtgGoods.test', name_grp, descr_grp, image_grp, help_grp);
+							
+		//Save name and description	
+		let name_node = name_grp[1].querySelector('tui-editor-socket');
+		let name_short = name_node.innerHTML;
+		console.log('CtgGoods.name', name_short);				
 
-		//Save description	
-		let descr = editors[0].innerText;
+		let descr_node = descr_grp[0].querySelector('div[data-type]');
+		let descr = descr_node.innerHTML;				
+		console.log('CtgGoods.descr', descr);				
 		
-		if (this.prevDescr==descr) {
+		/*if (this.prevName==name_short) {
 			console.log('CtgGoods.Run - alreday done!');
 			return;			
 		}
-		this.prevDescr = descr;
-		
-		//Изменяем 'Наименование товара' на ссылку
-		//editors[0].innerHTML = `<a href="https://ya.ru/search/?text=${descr}">${descr}</a>`;
-		//console.log('CtgGoods.editors[0]', editors[0]);
-			
-		//Hide 'Выберите ВСЕ категории..'
-		if (editors.length>3) {
-			editors[2].style.display = 'none';
+		this.prevName = name_short;*/
+		if (name_short.includes('<a')) {
+			console.log('CtgGoods.Run - alreday done!');
+			return;						
 		}
+
+		//'Наименование товара' -> делаем из текста ссылку
+		if (name_node) {			
+			name_node.innerHTML = `<a href="https://ya.ru/search/?text=${name_short}">${name_short}</a>`;
+		}
+	
+		//Hide 'Выберите ВСЕ категории..'
+		help_grp[0].style.display = 'none';
+		help_grp[1].style.display = 'none';		
 						
 		//Scroll till image
-		if (hdrImgOfGd  && !hdrImgOfGd.hasOwnProperty('already_scrolled')) {
+		if (image_grp[1]  && !image_grp[1].hasOwnProperty('already_scrolled')) {
 			
 			setTimeout(function() {
-				hdrImgOfGd.already_scrolled = true;						
-				hdrImgOfGd.scrollIntoView();				
+				image_grp[1].already_scrolled = true;						
+				image_grp[1].scrollIntoView();				
 			}, 500);
 		}
 		
-		//Перемещаем 'Наименование товара' перед 'Список категорий'
-		let hdrElm = document.querySelector("#klecks-app > tui-root > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(2)");
-		let txtElm = document.querySelector("#klecks-app > tui-root > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(3)")
-
-		let destElm = document.querySelector("#klecks-app > tui-root > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(10)")
-
 		//Auto selection - best before 'Change order'
-		this.AutoGuess(descr);
-
-		//!!!Change order of nodes!!!
-		if (hdrElm.innerText=='Наименование товара') {
-			//console.log('CtgGoods.Move');
-			destElm.before(hdrElm);
-			destElm.before(txtElm);
-		}
+		if (name_short.includes('Arlight')) name_short = 'светодиод';
 		
-		//Снова ищем описание - должно быть с индексрм 1
-		editors = document.querySelectorAll('tui-editor-socket');
-		//..и делаем из текста ссылку
-		if ((editors.length>2) && (editors[1].innerText==descr)) {			
-			editors[1].innerHTML = `<a href="https://ya.ru/search/?text=${descr}">${descr}</a>`;
-		}
+		this.AutoGuess(name_short, descr);
 		
+		//Перемещаем 'Наименование товара' и 'Описание товара' после image
+		image_grp[1].after( name_grp[1] );
+		image_grp[1].after( name_grp[0] );
 		
+		name_grp[1].after( descr_grp[1] );
+		name_grp[1].after( descr_grp[0] );
 		
+				
+		return;
 	}//Run()
 	
-	AutoGuess(descr) {
+	AutoGuess(name_short, descr) {
 		
 		const checkboxes = document.querySelectorAll('input[type=checkbox]');
 		const labels = document.querySelectorAll('label');
@@ -115,32 +108,75 @@ class CategoryOfGoods {
 			return;
 		}
 				
-		//Prepare descr
-		let words = descr.toLowerCase().split(/ |-/);
-		//console.log('CtgGoods.words', words);
-				
-		let key_word_long = words[0];
+		//Prepare name
+		let words = name_short.toLowerCase().split(/ |-/);	
 		
-		//Проверка на прилагательное
-		let suffix = key_word_long.slice(key_word_long.length-2); //last two chars
-		let isAdjective = 'ой ый ая ое'.includes(suffix);
-		if (isAdjective) key_word_long = words[1]; //если прилагательное - берем второе слово
+		//Пропускаем прилагательные и латиницу
+		let key_word = null;
+		for (let i=0;i<words.length;i++) {
+			let w = words[i];
+			if ( !IsLatin(w) && !IsAdjectiveRus(w)) {
+				key_word = w;
+				break;
+			}
+		} //for
+			
+		if (!key_word)	return; 		
 		
 		//Коррекции		
-		let key_word = key_word_long.slice(0, key_word_long.length-1); // Deelete last char; 'рубашка' <-> 'рубашки'
+		let key_word_short = key_word.slice(0, key_word.length-1); // Deelete last char; 'рубашка' <-> 'рубашки'
 				
 		for(let i=0;i<this.substDescr.length;i++) {
-			if (key_word_long==this.substDescr[i][0]) { //Сравниваем с key_word_full!
-				key_word = this.substDescr[i][1];
+			if (key_word==this.substDescr[i][0]) { //Сравниваем с key_word!
+				key_word_short = this.substDescr[i][1];
 				break;
 			}			
 		} //for
+				
+		console.log('CtgGoods.AutoGuess.key_word', key_word_short);
+
+		//Sex
+		let sex_marks = [
+			{'key':' девоч', 'present':false},
+			{'key':' мальчик', 'present':false},
+			{'key':' жен', 'present':false},
+			{'key':' муж', 'present':false},
+		];
+
+		for (let m of sex_marks) {
+			m.present = m.present || name_short.includes(m.key);
+		}//for(m)
+		for (let m of sex_marks) {
+			m.present = m.present || descr.includes(m.key);
+		}//for(m)
 		
-		console.log('CtgGoods.AutoGuess.key_word', key_word);
+		let anySex = false;
+		for(let m of sex_marks) {
+			anySex = anySex || m.present;
+		}		
+		console.log('CtgGoods.sex', sex_marks);
 
 		//Select checkboxes		
 		for (let i=0;i<labels.length;i++) {
-			if (labels[i].innerText.toLowerCase().includes(key_word)) {
+			let lbl_text = labels[i].innerText.toLowerCase();
+			
+			//special cases
+			if (lbl_text.includes('новорожденных')) continue;								
+			
+			
+			
+			if (lbl_text.includes(key_word_short)) {								
+			
+				//filter out sex
+				if (anySex) {
+					let skipCx = false;
+					
+					for(let m of sex_marks) 
+						if (lbl_text.includes(m.key) && !m.present) skipCx = true;
+					
+					if (skipCx) continue;
+				} //if(anySex)		
+			
 				if (!checkboxes[i].checked)	labels[i].click();
 				//console.log('CtgGoods.AutoGuess.lbl-click', labels[i].innerText);
 				
@@ -148,7 +184,24 @@ class CategoryOfGoods {
 			//console.log('CtgGoods.AutoGuess.lbl', labels[i].innerText);
 		} //for
 				
+		return;		
 	} //AutoGuess()
+/*	
+	GetSexMarks(descr) {
+		let marks = [
+			{'key':' девоч', 'present':false},
+			{'key':' мальчик', 'present':false},
+			{'key':' жен', 'present':false},
+			{'key':' муж', 'present':false},
+		];
+			
+		for (let m of marks) {
+			m.present = descr.includes(m.key);
+		}//for(m)
+		
+		return marks;
+	};
+*/	
 	
 	
 } //CtgGoods	

@@ -176,5 +176,34 @@ function IsAdjectiveRus(str) {
   if (str.length<3) return false;
 
   let suffix = str.slice(str.length-2).toLowerCase();
-  return 'ой|ый|ая|ое|ые|ие|ий'.includes(suffix);
+  return 'ой|ый|ая|ое|ые|ие|ий|яя|ее'.includes(suffix);
 } //IsAdjectiveRus()
+
+
+/*
+	flex_elm_list = document.querySelectorAll('flex-container > flex-element');
+*/
+function GetFlexPair(flex_elms, title_key, body_key=null) {
+	
+	let ret = [null, null];
+	
+	for (let i=0;i<flex_elms.length;i++) {
+		let elm = flex_elms[i];
+		if (elm.innerText.includes(title_key)) {
+			ret[0] = elm;
+			
+			if (!body_key) { //Если body_key не задан, выбираем следующий за title элемент
+				ret[1] = flex_elms[i+1];				
+				return ret;
+			}//if(!body_key)			
+		}//if(title_key)
+			
+		if (ret[0] && body_key && elm.innerText.includes(body_key)) { //Если задан body_key
+			ret[1] = elm;
+			return ret;
+		} //if(body_key)
+		
+	}//for
+	
+	return ret;	
+}
