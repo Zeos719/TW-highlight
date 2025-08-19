@@ -1237,7 +1237,7 @@ class Obuv {
 		let sizes = [	this.Parse_size( titles[0].textContent ),
 						this.Parse_size( titles[1].textContent )	];
 
-		//console.log('Obuv.DecideBy_Size_VCode:', sizes);
+		console.log('Obuv.DecideBy_Size_VCode:', sizes);
 
 		//Failed to extract size
 		if ((sizes[0]=='') || (sizes[1]=='')) {
@@ -1453,8 +1453,12 @@ class Obuv {
 		//Случай 'abc (130)'
 		if (size=='' && descr.endsWith(')')) {
 			ipos = descr.lastIndexOf('(');
-		if (ipos>=0)
-			size = descr.slice(ipos+1, descr.length-1);
+			if (ipos>=0)
+				size = descr.slice(ipos+1, descr.length-1);
+
+			ipos = size.indexOf(','); //'(XL, black)'
+			if (ipos>=0)
+				size = size.slice(0, ipos);		
 		}
 
 		// Случай 'abc размер 43 def' и 'abc р. 125'
@@ -1468,7 +1472,7 @@ class Obuv {
 		  } //for
 		}
 
-		console.log('Obuv.Parse_size size', size);
+		//console.log('Obuv.Parse_size size', size);
 
 		//Проверяем формат size
 		if (size != '') {
