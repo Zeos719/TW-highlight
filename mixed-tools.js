@@ -171,6 +171,22 @@ function IsLatin(str) {
   return true;
 } // IsLatin()
 
+function IsLatinOrDigit(str) {
+  if (str.length==0) return false;
+
+  for(let i=0;i<str.length;i++) {
+    let c = str.charCodeAt(i);
+    let isLatin = ((c >= 97) && (c <= 122)) || ((c >= 65) && (c <= 90)); //a..z A..Z
+    let isDigit = ((c >= 48) && (c <= 57)); //0..9
+	
+    if (!(isLatin || isDigit)) return false;
+  } //for
+
+  return true;
+} // IsLatin()
+
+
+
 // 'ЗЕЛЕНЫй', 'голубой', 'розовая', 'черное' -> true
 function IsAdjectiveRus(str) {
   if (str.length<3) return false;
@@ -207,3 +223,36 @@ function GetFlexPair(flex_elms, title_key, body_key=null) {
 	
 	return ret;	
 }
+
+/*
+ '<div id="id_1" class="class_A class_B" param>' -> 
+
+ [{tag:'div'}, {key:'id', value:'id_1'}, {key:'class', value:[class_A, class_B]}, {key:'param', value:''}]
+*/ 
+function ParseHtmlTag(tag) {
+  tag = tag.slice(1, tag.length-1);
+
+  let items = tag.match(/\w+\=['"][^'"]+['"]|\w+/g); //extract items 'id="id_1"'
+  
+  //tag
+  let ret = [{'tag':items[0]}];
+
+  //pairs
+  for (let i=1;i<items.length;i++) {
+    let item = items[i]; //id="id_1"
+
+    let subitems = item.split(/['"=\s]/);
+    subitems = subitems.filter((w)=>w.length>0);
+
+    let key = subitems[0];
+    let value = subitems.slice(1); //without subitems[0]
+    if (value.length==0) value=''; //like 'param' -> empty value
+    if (value.length==1) value = value[0]; //single value: id='id_1'
+
+    ret.push({key, value})
+
+    //console.log(key, value);
+  }//for(items)
+
+  return ret;
+}//ParseHtmlTag

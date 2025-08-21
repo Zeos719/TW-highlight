@@ -21,120 +21,6 @@ function DoPlayExam(subversion){
 };
 
 
-
-//namespace isolation
-var PLEX_isolatedFuncs;
-
-(function() {
-
-function onBtnClick(e) {
-	console.log('PlayExam.onBtnClick');
-	let choice = -1;
-
-	if (SEND_TO_SERVER) {
-		choice = SendToServer()
-	} else {
-		choice = 0; //?!
-	}
-
-	//Remove listeners
-	if (choice!=-1) {
-		document.removeEventListener("keydown", onCtrlEnter);
-
-		let completeBtn = document.querySelector("#completeBtn");
-		completeBtn.removeEventListener("click", onBtnClick);
-	}
-} //onBtnClick()
-
-
-function onCtrlEnter(e) {
-	let choice = -1;
-
-	//Ctrl-Enter
-	if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
-		console.log('PlayExam.onCtrlEnter: CtrlEnter--');
-
-		if (SEND_TO_SERVER) {
-			choice = SendToServer()
-		} else {
-			choice = 0; //?!
-		}
-
-		//Remove listeners
-		if (choice!=-1) {
-			document.removeEventListener("keydown", onCtrlEnter);
-
-			let completeBtn = document.querySelector("#completeBtn");
-			completeBtn.removeEventListener("click", onBtnClick);
-		}
-	}
-
-	//console.log('Obuv.onCtrlEnter-key', e.key, e.keyCode, e.code);
-
-	//Toggle AutoRun
-	if (e.ctrlKey && (e.keyCode == 192)) { //Ctrl + ~
-		console.log('PlayExam.onCtrlEnter: AutoRun');
-		autoRun = !autoRun;
-		DrawAutoIndicator(autoRun);
-	}
-
-} //onCtrlEnter
-
-function SendToServer() {
-	if (!play_exam) return -1;
-
-	let sol = play_exam.GetSolution();
-
-	//let node = document.querySelector(play_exam.JSselector);
-	//let question = node.textContent;
-
-	let payload = {
-		task: 'playexam',
-		subtask: play_exam.subtask,
-		solution: sol,
-		question: play_exam.que,
-	};
-
-	if (payload.solution==-1)
-		return
-
-	console.log('PLEX.SendToServer-1: ', payload);
-
-	let json = JSON.stringify(payload);
-
-	$.post('http://localhost:8000/tw', json, function(data){
-		console.log('PLEX.SendToServer-2:', data);
-	});
-
-	return sol;
-} //SendToServer()
-
-function DrawAutoIndicator(isOn) {
-	console.log('Toggle autoRun');
-
-	let completeBtn = document.querySelector("#completeBtn");
-
-	if (completeBtn && !Object.hasOwn(this, 'originalText')) this.originalText = completeBtn.textContent;
-
-	if (isOn) {
-		//completeBtn.style.background = 'solid 2px green';
-		completeBtn.textContent = this.originalText + '\u00A0💥'; //☑ ▶💥😎✔✈
-	} else {
-		//completeBtn.style.background = '';
-		completeBtn.textContent = this.originalText; //'Завершить задание';
-	}
-} //DrawAutoIndicator()
-
-	PLEX_isolatedFuncs = {
-		'onBtnClick':onBtnClick,
-		'onCtrlEnter':onCtrlEnter,
-		'DrawAutoIndicator':DrawAutoIndicator,
-		};
-
-	return;
-})(); //end namespace function
-
-
 //******************** class PlayExam ********************
 class PlayExam {
   //constructor(name) { this.name = name; }
@@ -157,19 +43,130 @@ class PlayExam {
 
 	} //constructor
 
+	//*** Events ***
+	handleEvent(e) {
+				//Ctrl-Enter
+				if (e.type=="keydown") {
+					this.onCtrlEnter(e);
+					}
 
+				if (e.type=="click") {
+					this.onBtnClick(e);
+					}
+
+			}//handleEvent
+
+	onCtrlEnter(e) {
+		let choice = -1;
+
+		//Ctrl-Enter
+		if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
+			console.log('PlayExam.onCtrlEnter: CtrlEnter--');
+
+			if (SEND_TO_SERVER) {
+				choice = this.SendToServer()
+			} else {
+				choice = 0; //?!
+			}
+
+			//Remove listeners
+			if (choice!=-1) {
+				document.removeEventListener("keydown", this);
+
+				let completeBtn = document.querySelector("#completeBtn");
+				completeBtn.removeEventListener("click", this);
+			}
+		}
+
+		//console.log('Obuv.onCtrlEnter-key', e.key, e.keyCode, e.code);
+
+		//Toggle AutoRun
+		if (e.ctrlKey && (e.keyCode == 192)) { //Ctrl + ~
+			console.log('PlayExam.onCtrlEnter: AutoRun');
+			autoRun = !autoRun;
+			this.DrawAutoIndicator(autoRun);
+		}
+
+	} //onCtrlEnter()
+
+	onBtnClick(e) {
+		console.log('PlayExam.onOkClick');
+		let choice = -1;
+
+		if (SEND_TO_SERVER) {
+			choice = this.SendToServer()
+		} else {
+			choice = 0; //?!
+		}
+
+		//Remove listeners
+		if (choice!=-1) {
+			document.removeEventListener("keydown", this);
+
+			let completeBtn = document.querySelector("#completeBtn");
+			completeBtn.removeEventListener("click", this);
+		}
+	} //onBtnClick()
+
+	SendToServer() {
+		if (!play_exam) return -1;
+
+		let sol = this.GetSolution();
+
+		//let node = document.querySelector(play_exam.JSselector);
+		//let question = node.textContent;
+
+		let payload = {
+			task: 'playexam',
+			subtask: this.subtask,
+			solution: sol,
+			question: this.que,
+		};
+
+		if (payload.solution==-1)
+			return;
+		console.log('PlayExam.SendToServer-1: ', payload);
+
+		let json = JSON.stringify(payload);
+
+		$.post('http://localhost:8000/tw', json, function(data){
+			console.log('PlayExam.SendToServer-2:', data);
+		});
+
+		return sol;
+	} //SendToServer()
+
+	DrawAutoIndicator(isOn) {
+		console.log('PlayExam.DrawAutoIndicator');
+
+		let completeBtn = document.querySelector("#completeBtn");
+
+		if (completeBtn && !Object.hasOwn(this, 'originalText')) this.originalText = completeBtn.textContent;
+
+		if (isOn) {
+			const mark = '\u00A0💥'; //☑ ▶💥😎✔✈
+			if (!completeBtn.textContent.includes(mark))			
+				completeBtn.textContent = this.originalText + mark; 
+		} else {
+			//completeBtn.style.background = '';
+			completeBtn.textContent = this.originalText; //'Завершить задание';
+		}
+	} //DrawAutoIndicator()
+
+
+	//**** Main ****
 	Run(subtask, textJSpath) {
 		this.subtask = subtask;
 		this.textJSpath = textJSpath;
 
 		// Attach handlers to track exit
 		let completeBtn = document.querySelector("#completeBtn");
-		completeBtn.addEventListener("click", PLEX_isolatedFuncs['onBtnClick']);
+		completeBtn.addEventListener("click", this);
 
-		document.addEventListener("keydown", PLEX_isolatedFuncs['onCtrlEnter']);
+		document.addEventListener("keydown", this);
 
 		//Main
-		PLEX_isolatedFuncs['DrawAutoIndicator'](autoRun);
+		this.DrawAutoIndicator(autoRun);
 
 		this.solutionType = this.DetectSolType();
 		console.log('PlayExam.solutionType', this.solutionType);
@@ -226,8 +223,9 @@ class PlayExam {
 		let rootUrl = 'https://www.phonewarez.ru/files/play-exams/';
 
 		//let url = rootUrl + 'que-inton.csv';
-		let url = rootUrl + 'pay-systems.csv';
+		//let url = rootUrl + 'pay-systems.csv';		
 		//let url = rootUrl + 'moderate-comments.csv';
+		let url = rootUrl + 'post-moderate.csv';
 
 		$.get(url, { "_": $.now() }, function(data){
 				myself.ProcessHttpAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
@@ -250,25 +248,25 @@ class PlayExam {
 		let dataLines = data.split('\r');
 		dataLines = dataLines.filter(function(s) {return (s!='')});
 
-		dataLines = dataLines.map( function(item, index, array) {		
+		dataLines = dataLines.map( function(item, index, array) {
 			let cols = CSVToArray(item, ',', '"')
-			
+
 			cols = cols.map(function(item, index, array) {
 				item = StripQuotes(item); //strip quotes
 				item = item.replaceAll('\\n', '\n'); //Decode '\\n'->LF
 				return item;
-				}); 
-			
+				});
+
 			return cols;
 		});
-				
-		//console.log('PlayExam.ProcessHttpAnswer test', StripQuotes(dataLines[0][3]) );		
-		//console.log('PlayExam.ProcessHttpAnswer test2',  '" тест два"'.replaceAll(/^\"(.*)\"$/gm, '$1'));		
-		
+
+		//console.log('PlayExam.ProcessHttpAnswer test', StripQuotes(dataLines[0][3]) );
+		//console.log('PlayExam.ProcessHttpAnswer test2',  '" тест два"'.replaceAll(/^\"(.*)\"$/gm, '$1'));
+
 		//console.log('PlayExam.ProcessHttpAnswer dataLines:', dataLines);
 
 		play_exam.Answers = dataLines;
-		console.log('PlayExam.ProcessHttpAnswer got lines:', play_exam.Answers.length);		
+		console.log('PlayExam.ProcessHttpAnswer got lines:', play_exam.Answers.length);
 
 		return;
 	}
@@ -288,9 +286,9 @@ class PlayExam {
 		//Look for the answer
 		let rb = -1
 		for (let i=0;i<this.Answers.length;i++) {
-			
+
 		console.log('PlayExam.Answer.Answ', this.Answers[i][3]==this.que, this.Answers[i][3]);
-			
+
 			if (this.Answers[i][3]==this.que) {
 				rb = this.Answers[i][2]
 				break;
