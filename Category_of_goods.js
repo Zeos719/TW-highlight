@@ -34,8 +34,103 @@ class CategoryOfGoods {
 
 	} //constructor
 	
+	//*** Events ***
+	handleEvent(e) {
+				//Ctrl-Enter
+				if (e.type=="keydown") {
+					this.onCtrlEnter(e);
+					}
+
+				if (e.type=="click") {
+					this.onBtnClick(e);
+					}
+
+			}//handleEvent
+
+	onCtrlEnter(e) {
+		let choice = -1;
+
+		//Ctrl-Enter
+		if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
+			console.log('PlayExam.onCtrlEnter: CtrlEnter--');
+
+			if (SEND_TO_SERVER) {
+				choice = this.SendToServer();
+			} else {
+				choice = 0; //?!
+			}
+
+			//Remove listeners
+			if (choice!=-1) {
+				document.removeEventListener("keydown", this);
+
+				let completeBtn = document.querySelector("#completeBtn");
+				completeBtn.removeEventListener("click", this);
+			}
+		}
+
+		//console.log('Obuv.onCtrlEnter-key', e.key, e.keyCode, e.code);
+
+	} //onCtrlEnter()
+
+	onBtnClick(e) {
+		console.log('PlayExam.onOkClick');
+		let choice = -1;
+
+		if (SEND_TO_SERVER) {
+			choice = this.SendToServer()
+		} else {
+			choice = 0; //?!
+		}
+
+		//Remove listeners
+		if (choice!=-1) {
+			document.removeEventListener("keydown", this);
+
+			let completeBtn = document.querySelector("#completeBtn");
+			completeBtn.removeEventListener("click", this);
+		}
+	} //onBtnClick()
+
+	SendToServer() {
+		/*
+		let sol = this.GetSolution();
+
+		//let node = document.querySelector(play_exam.JSselector);
+		//let question = node.textContent;
+
+		let payload = {
+			task: 'playexam',
+			subtask: this.subtask,
+			solution: sol,
+			question: this.que,
+		};
+
+		if (payload.solution==-1)
+			return;
+		console.log('PlayExam.SendToServer-1: ', payload);
+
+		let json = JSON.stringify(payload);
+
+		$.post('http://localhost:8000/tw', json, function(data){
+			console.log('PlayExam.SendToServer-2:', data);
+		});
+
+		return sol;
+		*/
+	} //SendToServer()
+	
+	
+	
+	//*** Main ***
 	Run() {			
-		console.log('CtgGoods.Run');	
+		console.log('CtgGoods.Run');
+
+		// Attach handlers to track exit
+		let completeBtn = document.querySelector("#completeBtn");
+		completeBtn.addEventListener("click", this);
+
+		document.addEventListener("keydown", this);	
 				
 		//Preload elements
 		let flex_elm_list = document.querySelectorAll('flex-container > flex-element');
@@ -67,7 +162,10 @@ class CategoryOfGoods {
 
 		//'Наименование товара' -> делаем из текста ссылку
 		if (name_node) {			
-			name_node.innerHTML = `<a href="https://ya.ru/search/?text=${name_short}">${name_short}</a>`;
+			let url = "https://ya.ru/search/?text=${name_short}";
+			let urlObj = new URL(url); //To encodeUrl
+		
+			name_node.innerHTML = `<a href="${urlObj}">${name_short}</a>`;
 		}
 	
 		//Hide 'Выберите ВСЕ категории..'
@@ -107,72 +205,51 @@ class CategoryOfGoods {
 			console.log('CtgGoods.AutoGuess check.len!=lbl.len');
 			return;
 		}
-				
-		//Prepare name
-		let words = name_short.toLowerCase().split(/ |-/);	
-		
-		//Пропускаем прилагательные и латиницу
-		let key_word = null;
-		for (let i=0;i<words.length;i++) {
-			let w = words[i];
-			if ( !IsLatin(w) && !IsAdjectiveRus(w)) {
-				key_word = w;
-				break;
-			}
-		} //for
+
+		let categories = new Array(labels.length);
+		for (let i=0;i<labels.length;i++) {
+			categories[i] = labels[i].innerText.toLowerCase();
 			
-		if (!key_word)	return; 		
-		
-		//Коррекции		
-		let key_word_short = key_word.slice(0, key_word.length-1); // Deelete last char; 'рубашка' <-> 'рубашки'
-				
-		for(let i=0;i<this.substDescr.length;i++) {
-			if (key_word==this.substDescr[i][0]) { //Сравниваем с key_word!
-				key_word_short = this.substDescr[i][1];
-				break;
-			}			
-		} //for
-				
-		console.log('CtgGoods.AutoGuess.key_word', key_word_short);
+			//Example: 'Дом и дача -> Текстиль -> Ковры и ковровые дорожки'
+			categories[i] = categories[i].replaceAll('->', '@');
+			categories[i] = categories[i].split('@').pop().trim();			
+		} //for(i)
+		//console.log('CtgGoods.categories', categories);
 
 		//Sex
-		let sex_marks = [
-			{'key':' девоч', 'present':false},
-			{'key':' мальчик', 'present':false},
-			{'key':' жен', 'present':false},
-			{'key':' муж', 'present':false},
-		];
-
-		for (let m of sex_marks) {
-			m.present = m.present || name_short.includes(m.key);
-		}//for(m)
-		for (let m of sex_marks) {
-			m.present = m.present || descr.includes(m.key);
-		}//for(m)
+		let sex_marks = this.GetSexMarks(name_short, descr);
 		
 		let anySex = false;
-		for(let m of sex_marks) {
-			anySex = anySex || m.present;
-		}		
-		console.log('CtgGoods.sex', sex_marks);
+		for(let m of sex_marks) anySex = anySex || m.present;
+		
+		//console.log('CtgGoods.sex', sex_marks);
+
+		//Choice
+		let advise;
+		if (this.BadName(name_short)) {
+			advise = this.Guess_catWords(descr, categories);
+			
+		} else {
+			advise = this.Guess_byOneWord(name_short, categories);				
+		}
+				
+		//console.log('CtgGoods.advise', advise);
 
 		//Select checkboxes		
-		for (let i=0;i<labels.length;i++) {
-			let lbl_text = labels[i].innerText.toLowerCase();
+		for (let i=0;i<categories.length;i++) {
+			let ctg = categories[i];
 			
 			//special cases
-			if (lbl_text.includes('новорожденных')) continue;								
-			
-			
-			
-			if (lbl_text.includes(key_word_short)) {								
+			if (ctg.includes('новорожденных')) continue;								
+					
+			if (advise[i]) {								
 			
 				//filter out sex
 				if (anySex) {
 					let skipCx = false;
 					
 					for(let m of sex_marks) 
-						if (lbl_text.includes(m.key) && !m.present) skipCx = true;
+						if (ctg.includes(m.key) && !m.present) skipCx = true;
 					
 					if (skipCx) continue;
 				} //if(anySex)		
@@ -186,22 +263,126 @@ class CategoryOfGoods {
 				
 		return;		
 	} //AutoGuess()
-/*	
-	GetSexMarks(descr) {
-		let marks = [
-			{'key':' девоч', 'present':false},
-			{'key':' мальчик', 'present':false},
-			{'key':' жен', 'present':false},
-			{'key':' муж', 'present':false},
+
+	GetSexMarks(name_short, descr) {
+		let sex_marks = [
+			{'key':'девоч', 'present':false},
+			{'key':'мальчик', 'present':false},
+			{'key':'женск', 'present':false},
+			{'key':'мужск', 'present':false},
 		];
-			
-		for (let m of marks) {
-			m.present = descr.includes(m.key);
+
+		for (let m of sex_marks) {
+			m.present = m.present || name_short.toLowerCase().includes(m.key);
 		}//for(m)
+		for (let m of sex_marks) {
+			m.present = m.present || descr.includes(m.key);
+		}//for(m)
+
+		//Special: ' юбк' -> женское
+		sex_marks[2].present = sex_marks[2].present || descr.includes(' юбк');
 		
-		return marks;
+		return sex_marks;
 	};
-*/	
+	
+	// Плохое имя - если солстоит только из латиницы
+	
+	BadName(name_short) {
+		let words = name_short.toLowerCase().split(/[., ;-]/);
+		words = words.filter((word) => word.length > 0);
+		
+		let ret = true;
+		for (let w of words) ret = ret && IsLatinOrDigit(w);
+		
+		//console.log('CtgGoods.BadName', ret, name_short);
+		return ret;		
+	} //BadName()
+	
+	/* 
+	Используем первое существительное (пропускаем прилагательный и латиницу) для поиска 
+	среди категорий. Ключевое слово укорачиваем на 1 букву для коррекции множеств./единственого числа 
+	*/
+	Guess_byOneWord(str, categories) {
+		
+		let ret = Array(categories.length).fill(false);
+				
+		//Prepare name
+		str = str.replaceAll('&nbsp;', ' ');
+		let words = str.toLowerCase().split(/ |-|,/);	
+		
+		//Пропускаем прилагательные и латиницу
+		let key_word = null;
+		for (let i=0;i<words.length;i++) {
+			let w = words[i];
+			if ( !IsLatin(w) && !IsAdjectiveRus(w)) {
+				key_word = w;
+				break;
+			}
+		} //for
+			
+		if (!key_word)	return ret; 		
+		
+		//Коррекции		
+		let key_word_short = key_word.slice(0, key_word.length-1); // Delete last char; 'рубашка' <-> 'рубашки'
+				
+		for(let i=0;i<this.substDescr.length;i++) {
+			if (key_word==this.substDescr[i][0]) { //Сравниваем с key_word!
+				key_word_short = this.substDescr[i][1];
+				break;
+			}			
+		} //for
+				
+		console.log('CtgGoods.AutoGuess.key_word', key_word_short);
+		
+		//Проверяем категории
+		for (let i=0;i<categories.length;i++) {
+			ret[i] = categories[i].toLowerCase().includes(key_word_short);						
+		} //for(i)
+				
+		return ret
+	}
+	
+	/*
+	Делим categories на отдельные слова и ищем их в str.
+	Прилагательные и существительные корректируются!
+	*/
+	Guess_catWords(str, categories) {
+		//split to words
+		let cat_words = Array(categories.length);
+		
+		for (let i=0;i<categories.length;i++) {
+			let ctg = categories[i].replaceAll('->', '');
+			
+			let words = ctg.toLowerCase().split(/[., ;-]/);
+			words = words.filter((word) => word.length > 3);
+						
+			//Correction
+			for(let k=0;k<words.length;k++)
+				{ 
+					let w = words[k];
+					let toDel=1; 
+					if (IsAdjectiveRus(w)) toDel=2;
+					words[k] = w.slice(0, w.length-toDel); 
+				};
+						
+			cat_words[i] = words;
+		} //for
+		console.log('CtgGoods.Guess_catWords', cat_words);
+		
+		//Search
+		str = str.toLowerCase();
+		
+		let ret = Array(categories.length).fill(false);
+				
+		for (let i=0;i<categories.length;i++) {
+			let words = cat_words[i];
+			for (const w of words) {
+				ret[i] = ret[i] || str.includes(w);				
+			} //for(k)						
+		} //for(i)
+		
+		return ret;
+	} //Guess_byOneWord
 	
 	
 } //CtgGoods	
