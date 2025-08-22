@@ -22,12 +22,14 @@ class CategoryOfGoods {
 		//console.log('CtgGoods.constructor');
 
 		this.prevName = null;
+		this.forServer = {};
+		
 		this.substDescr = [
 			['блуза', 'блузки'],
 			['гель', 'лаки'], // 'гель-лак'
 			['люстра', 'светильник'],			
 			['бра', 'светильник'],			
-			
+						
 		];
 
 
@@ -93,22 +95,29 @@ class CategoryOfGoods {
 	} //onBtnClick()
 
 	SendToServer() {
-		/*
-		let sol = this.GetSolution();
+		//Get categories
+		const labels = document.querySelectorAll('label');
 
-		//let node = document.querySelector(play_exam.JSselector);
-		//let question = node.textContent;
+		let categories = new Array(labels.length);
+		for (let i=0;i<labels.length;i++) categories[i] = labels[i].innerText;
 
+		//Get solution
+		const checkboxes = document.querySelectorAll('input[type=checkbox]');
+
+		let choices = new Array(checkboxes.length);
+			choices[i] = checkboxes[i].checked;
+
+		//Prepare payload
 		let payload = {
-			task: 'playexam',
-			subtask: this.subtask,
-			solution: sol,
-			question: this.que,
+			task: 'catofgoods',
+			categories: categories,
+			choices: choices,
+			name: forServer.name.replaceAll('\n', '\\\\n'),
+			descr: forServer.descr.replaceAll('\n', '\\\\n'),
 		};
 
-		if (payload.solution==-1)
-			return;
 		console.log('PlayExam.SendToServer-1: ', payload);
+return;		
 
 		let json = JSON.stringify(payload);
 
@@ -116,8 +125,7 @@ class CategoryOfGoods {
 			console.log('PlayExam.SendToServer-2:', data);
 		});
 
-		return sol;
-		*/
+		return;		
 	} //SendToServer()
 	
 	
@@ -125,6 +133,10 @@ class CategoryOfGoods {
 	//*** Main ***
 	Run() {			
 		console.log('CtgGoods.Run');
+		
+		//Reset
+		let name_short = '';
+		let descr = '';
 
 		// Attach handlers to track exit
 		let completeBtn = document.querySelector("#completeBtn");
@@ -135,34 +147,44 @@ class CategoryOfGoods {
 		//Preload elements
 		let flex_elm_list = document.querySelectorAll('flex-container > flex-element');
 		
-		let name_grp = GetFlexPair(flex_elm_list, 'Наименование товара');
-		let descr_grp = GetFlexPair(flex_elm_list, 'Описание товара');
+		let name_grp = GetFlexPair(flex_elm_list, 'Наименование товара');			
 		let image_grp = GetFlexPair(flex_elm_list, 'Изображение товара');
+		
+		let descr_grp = GetFlexPair(flex_elm_list, 'Описание товара');
+		//let descr_grp = GetFlexPair(flex_elm_list, 'Особенности:');
+
+		//Get description				
+		let descr_node = null;
+		if (descr_grp[0]!=null) { //v1
+			descr_node = descr_grp[0].querySelector('div[data-type]');
+		} else { //v2
+			descr_node = document.querySelectorAll('tui-editor-socket')[1];
+		}
+		descr = descr_node.innerHTML;										
+		console.log('CtgGoods.descr', descr);				
+
+		
 		let help_grp = GetFlexPair(flex_elm_list, 'Список категорий для товара');		
 		//console.log('CtgGoods.test', name_grp, descr_grp, image_grp, help_grp);
 							
-		//Save name and description	
+		//Get name 
 		let name_node = name_grp[1].querySelector('tui-editor-socket');
-		let name_short = name_node.innerHTML;
-		console.log('CtgGoods.name', name_short);				
-
-		let descr_node = descr_grp[0].querySelector('div[data-type]');
-		let descr = descr_node.innerHTML;				
-		console.log('CtgGoods.descr', descr);				
-		
-		/*if (this.prevName==name_short) {
-			console.log('CtgGoods.Run - alreday done!');
-			return;			
-		}
-		this.prevName = name_short;*/
-		if (name_short.includes('<a')) {
-			console.log('CtgGoods.Run - alreday done!');
+	
+		if (name_node.innerHTML.includes('<a')) {
+			console.log('CtgGoods.Run - already done!');
 			return;						
 		}
+		
+		name_short = name_node.innerHTML;
+		console.log('CtgGoods.name', name_short);				
+
+		//Save description for server
+		this.forServer.name = name_short;
+		this.forServer.descr = descr;
 
 		//'Наименование товара' -> делаем из текста ссылку
 		if (name_node) {			
-			let url = "https://ya.ru/search/?text=${name_short}";
+			let url = `https://ya.ru/search/?text=${name_short}`;
 			let urlObj = new URL(url); //To encodeUrl
 		
 			name_node.innerHTML = `<a href="${urlObj}">${name_short}</a>`;
@@ -187,11 +209,13 @@ class CategoryOfGoods {
 		this.AutoGuess(name_short, descr);
 		
 		//Перемещаем 'Наименование товара' и 'Описание товара' после image
+		/*
 		image_grp[1].after( name_grp[1] );
 		image_grp[1].after( name_grp[0] );
 		
 		name_grp[1].after( descr_grp[1] );
 		name_grp[1].after( descr_grp[0] );
+		*/
 		
 				
 		return;

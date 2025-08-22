@@ -225,7 +225,8 @@ class PlayExam {
 		//let url = rootUrl + 'que-inton.csv';
 		//let url = rootUrl + 'pay-systems.csv';		
 		//let url = rootUrl + 'moderate-comments.csv';
-		let url = rootUrl + 'post-moderate.csv';
+		//let url = rootUrl + 'post-moderate.csv';
+		let url = rootUrl + 'post-theme.csv';
 
 		$.get(url, { "_": $.now() }, function(data){
 				myself.ProcessHttpAnswer(this.url, data); //this.url ! 'this' referes settings of GET() function!
