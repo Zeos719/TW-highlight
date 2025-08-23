@@ -13,8 +13,10 @@ function DoPlayExam(subversion){
 		play_exam = new PlayExam();
 	}
 
-	if (play_exam.subversion!=subversion)
-		play_exam.Load_TXT(subversion);
+	if (play_exam.subversion!=subversion) {
+		play_exam.subversion=subversion;
+		play_exam.Load_TXT(subversion);		
+	}
 
 	play_exam.Run(subversion, null)
 
@@ -40,6 +42,7 @@ class PlayExam {
 
 		this.SOLTYPE_RB = 0;
 		this.SOLTYPE_EDIT = 1;
+		this.SOLTYPE_BADGES = 2;
 
 	} //constructor
 
@@ -112,6 +115,8 @@ class PlayExam {
 		if (!play_exam) return -1;
 
 		let sol = this.GetSolution();
+		if ((sol==-1) || (sol==''))
+			return;
 
 		//let node = document.querySelector(play_exam.JSselector);
 		//let question = node.textContent;
@@ -123,8 +128,6 @@ class PlayExam {
 			question: this.que,
 		};
 
-		if (payload.solution==-1)
-			return;
 		console.log('PlayExam.SendToServer-1: ', payload);
 
 		let json = JSON.stringify(payload);
@@ -156,6 +159,13 @@ class PlayExam {
 
 	//**** Main ****
 	Run(subtask, textJSpath) {
+		//check 'Done' mark	
+		if (document.querySelector('div.z-done-mark')) {
+			console.log('PlayExam-already done');
+			return;
+		}
+		
+		
 		this.subtask = subtask;
 		this.textJSpath = textJSpath;
 
@@ -181,16 +191,25 @@ class PlayExam {
 		this.AutoAnswer();
 		if (autoRun) {
 		}
+		
+		//Append 'Done' marker
+		let doneMark = document.createElement('div');
+		doneMark.className = 'z-done-mark';
+		this.queNode.appendChild(doneMark);
+		
 
 	} //Run()
 
 	DetectSolType() {
 		//const editNode = document.querySelector('div.t-pseudo-content');
 		const radio_btns = document.querySelectorAll('input[type=radio]');
+		const badges = document.querySelectorAll('tui-badge');
 
 		let ret = this.SOLTYPE_EDIT;
-		if (radio_btns.length>0)
+		if (radio_btns.length>0)			
 			ret = this.SOLTYPE_RB;
+		if (badges.length>0) 
+			ret = this.SOLTYPE_BADGES;
 
 		return ret;
 	}
@@ -210,7 +229,20 @@ class PlayExam {
 			sol = sol.replaceAll('\n', '\\\\n'); // Four slashes to fight against Python corrections while writting to the file
 		}
 
-
+		if (this.solutionType==this.SOLTYPE_BADGES) {//Set of badges
+			const badges = document.querySelectorAll('tui-badge');
+			//console.log('PlayExam.GetSol-1', badges);
+			
+			const active_class = 'flex-labeling__badge_active';
+			
+			for (let bd of badges) {				
+				bd.classList.forEach(function (cl) {
+					//if(cl==active_class) sol=bd.innerText});
+					if(cl.includes('active')) sol=bd.innerText});
+			}//for
+		}
+		
+		//console.log('PlayExam.GetSol-4', sol);
 		return sol;
 	}
 
@@ -288,7 +320,7 @@ class PlayExam {
 		let rb = -1
 		for (let i=0;i<this.Answers.length;i++) {
 
-		console.log('PlayExam.Answer.Answ', this.Answers[i][3]==this.que, this.Answers[i][3]);
+		//console.log('PlayExam.Answer.Answ', this.Answers[i][3]==this.que, this.Answers[i][3]);
 
 			if (this.Answers[i][3]==this.que) {
 				rb = this.Answers[i][2]

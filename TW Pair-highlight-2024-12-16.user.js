@@ -13,12 +13,13 @@
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/Obuv_v1.js
 // @require      https://zeos719.github.io/TW-highlight/Call_027.js
 // @require      https://zeos719.github.io/TW-highlight/Preset_defaults.js
-// @require      https://zeos719.github.io/TW-highlight/mixed-tools.js
+// @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/mixed-tools.js
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/play_exam.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\Category_of_goods.js
 // ==/UserScript==
 
 // @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
+// @require      https://zeos719.github.io/TW-highlight/mixed-tools.js
 
 // @match        file:///C:/temp/Projects.tmp/Tinkoff-Kleks/*
 
@@ -41,6 +42,7 @@ const tc_FrontPage = 8;
 const tc_BadPic = 9;
 const tc_PlayExam = 10;
 const tc_CtgGoods = 11;
+const tc_PostTheme = 12;
 
 const le_UNKNOWN = 0;
 const le_LEARN = 1;
@@ -215,7 +217,7 @@ this.saveUrl = url;
 
             //Exam
             //if (taskCode==tc_PlayExam){
-            if (isExam) {
+            if (isExam || ((taskCode==tc_PostTheme))) {
                 DoPlayExam(0);
             }
 
@@ -266,6 +268,7 @@ function detectTask(docText) {
     { marker: "Проверьте наличие нарушений на изображении", code: tc_BadPic},
     { marker: "Произнесено ли предложение с вопросительной интонацией?|исправьте все опечатки в транскрипции|Откорректируйте расстановку дефисов|Исправьте ошибки нормализации", code: tc_PlayExam},
     { marker: "Список категорий для товара", code: tc_CtgGoods},
+    { marker: "Проверьте пост на принадлежность к тематике", code: tc_PostTheme},
 
   ].reverse();
 
@@ -453,6 +456,8 @@ let PCD_Marks = [
     {'key':'в красной рамке', 'RButton':0}, //'Оцените, насколько товар в красной рамке подходит под ваш запрос?'
     {'key':'Манипуляция', 'RButton':1}, //'В посте присутствует нарушение «Манипуляция рынком»?'
     {'key':'живость', 'RButton':0}, //'Проверьте фотографию лица на "живость"'
+    {'key':'Проверь пост на наличие нарушений', 'RButton':1}, //'Проверь пост на наличие нарушений'
+
 
 ];
 
@@ -463,6 +468,9 @@ function PresetCommonDefaults() {
     let docText = document.documentElement.textContent;
     if (!docText) return;
     //console.log('PresetCommonDefaults length', docText.length);
+
+    if(docText.includes('Характеристика товара и её значение')) return;
+
 
     for (let i=0;i<PCD_Marks.length;i++) {
         let item = PCD_Marks[i];
