@@ -89,7 +89,7 @@ function RB_get_lbl() {
 
 	for(let i=0; i<radio_btns.length; i++) 
 		if (radio_btns[i].checked) 
-			return radio_btns[i].parent.innerText;			
+			return radio_btns[i].parentElement.innerText;			
 	
 	return -1;
 }
