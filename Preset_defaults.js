@@ -82,6 +82,17 @@ function RB_get() {
 	return -1;
 }
 
+function RB_get_lbl() {
+	//console.log('RB_get() begin');
+	
+	const radio_btns = document.querySelectorAll('input[type=radio]');
+
+	for(let i=0; i<radio_btns.length; i++) 
+		if (radio_btns[i].checked) 
+			return radio_btns[i].parent.innerText;			
+	
+	return -1;
+}
 
 function RB_alreadySet() {
 	//console.log('RB_alreadySet() begin');
