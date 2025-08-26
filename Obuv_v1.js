@@ -20,7 +20,7 @@ function Obuv_onBtnClick(e) {
 }
 
 function DrawAutoIndicator(isOn) {
-	console.log('Toggle autoRun');
+	//console.log('Toggle autoRun');
 
 	let completeBtn = document.querySelector("#completeBtn");
 
@@ -777,7 +777,7 @@ class Obuv {
 			this.brands = new ValidBrands();
 			this.brands.Load_TXT();
 
-			this.taskId = null;
+			this.taskId = '?';
 			this.clicked = false;
 
 
@@ -798,15 +798,14 @@ class Obuv {
 
 		//Reset for new task
 		let newTaskId = GetTaskId();
+		console.log('Obuv.GetTaskId', this.taskId==newTaskId, this.clicked);
+
 		if (this.taskId!=newTaskId) {
 			this.taskId = newTaskId;
 			this.clicked = false;
 
 			preview.ClosePreviewTabs();
-
-			//console.log('Obuv new task:', this.taskId.length, this.taskId.slice(-10));
 		}
-
 
 		DrawAutoIndicator(autoRun);
 
@@ -820,7 +819,7 @@ class Obuv {
 
 		//Main
 		this.attr = this.Parse_Attributes();
-		console.log('Obuv.attr', this.attr);
+		//console.log('Obuv.attr', this.attr);
 
 		this.attrEx = [ ];
 
@@ -836,7 +835,7 @@ class Obuv {
 
 		//Auto-select
 		let choice = this.AutoDecision_v2();
-		console.log('Obuv.AutoDecision: ', choice);
+		console.log('Obuv.AutoDecision: ', choice, this.clicked);
 		this.AutoDecision_choice = choice; //For UpdateMyInfo
 
 		if (choice!=-1) {
@@ -844,12 +843,17 @@ class Obuv {
 				this.clicked = true;
 
 				setTimeout(function (choice){
-					console.log("Obuv.AutoDecision fired:", choice);
+					let reminder = document.links[0].href.slice(-20);
+					console.log("Obuv.AutoDecision fired:", choice, reminder);
+					
 					RB_set(choice);
 
 					let completeBtn = document.querySelector("#completeBtn");
 					completeBtn.focus();
 					completeBtn.click();
+					
+					obv.clicked = false; //!not this! (inside callbak)
+					//obv.this.taskId = '?';
 
 				}, "2000", choice);
 			} //if(autoRun)
@@ -1159,6 +1163,15 @@ class Obuv {
 
 
 	AutoDecision_v2() {
+		
+		//На сайте ссылка не меняется при изменении размера! Ответ - "Недостаточно данных"
+		const sitesNoSize = [
+			'https://kanzler-style.ru/',
+			'https://lacoste.ru/',
+			'https://bungly.ru/',
+		]
+		
+		
 		let ret;
 		let links = document.links;
 
@@ -1182,6 +1195,13 @@ class Obuv {
 			ret = this.Petrovich_special();
 			console.log('Obuv.Petrovich_special', ret);
 		}
+
+		//На сайте ссылка не меняется при изменении размера! Ответ - "Недостаточно данных"
+		for (let lnk of sitesNoSize) {
+			if ( Links_start_with(links, lnk) ) return 3; 
+		}
+
+		
 
 		if (links[0].href==links[1].href) {
 			ret = this.DecideBy_Size();
@@ -1307,7 +1327,7 @@ class Obuv {
 		let nodes = document.getElementsByClassName('attributes');
 		if (nodes.length!=2) return null;
 
-		console.log('Obuv.Parse_Attributes', nodes);
+		//console.log('Obuv.Parse_Attributes', nodes);
 
 		//if (nodes[0].firstElementChild &&
 		//	Object.hasOwn(nodes[0].firstElementChild, 'nodeName') &&
