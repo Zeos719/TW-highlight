@@ -218,7 +218,7 @@ class PlayExam {
 		let sol = ''
 
 		if (this.solutionType==this.SOLTYPE_RB) {//Radio buttons
-			sol = RB_get();
+			sol = RB_get_lbl();
 		}
 
 		if (this.solutionType==this.SOLTYPE_EDIT) {//Text area
