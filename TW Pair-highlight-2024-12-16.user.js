@@ -16,6 +16,7 @@
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/mixed-tools.js
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/play_exam.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\Category_of_goods.js
+// @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\post-theme-nicely-formated.js
 // ==/UserScript==
 
 // @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
@@ -164,6 +165,9 @@ this.saveUrl = url;
             [taskCode, taskVersion] = detectTask(docText);
             console.log('detectTask:', taskCode, taskVersion);
 
+            if (taskCode>=0) isExam = false;
+
+
             if (taskCode==tc_Banki) DoBanki();
 
             if (taskCode==tc_Obuv) {
@@ -218,7 +222,7 @@ this.saveUrl = url;
             //Exam
             //if (taskCode==tc_PlayExam){
             if (isExam || ((taskCode==tc_PostTheme))) {
-                DoPlayExam(0);
+                DoPlayExam(isExam);
             }
 
             if (taskCode==tc_CtgGoods) {
@@ -266,9 +270,9 @@ function detectTask(docText) {
     { marker: "Проверь изображение|половые органы", code: tc_CheckImage },
     { marker: "Да, товар подходит для главной страницы", code: tc_FrontPage},
     { marker: "Проверьте наличие нарушений на изображении", code: tc_BadPic},
-    { marker: "Произнесено ли предложение с вопросительной интонацией?|исправьте все опечатки в транскрипции|Откорректируйте расстановку дефисов|Исправьте ошибки нормализации", code: tc_PlayExam},
+    //{ marker: "Произнесено ли предложение с вопросительной интонацией?|исправьте все опечатки в транскрипции|Откорректируйте расстановку дефисов|Исправьте ошибки нормализации", code: tc_PlayExam},
     { marker: "Список категорий для товара", code: tc_CtgGoods},
-    { marker: "Проверьте пост на принадлежность к тематике", code: tc_PostTheme},
+    { marker: "Проверьте пост|Проверь пост", code: tc_PostTheme}, //'Проверьте пост на принадлежность к тематике', 'Проверь пост на наличие указанного нарушения'
 
   ].reverse();
 
