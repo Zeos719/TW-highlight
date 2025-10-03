@@ -17,6 +17,7 @@
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/play_exam.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\Category_of_goods.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\post-theme-nicely-formated.js
+// @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\pulse_idea.js
 // ==/UserScript==
 
 // @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
@@ -44,6 +45,7 @@ const tc_BadPic = 9;
 const tc_PlayExam = 10;
 const tc_CtgGoods = 11;
 const tc_PostTheme = 12;
+const tc_PulseIdea = 13;
 
 const le_UNKNOWN = 0;
 const le_LEARN = 1;
@@ -229,6 +231,13 @@ this.saveUrl = url;
                 DoCtgGoods();
             }
 
+            if (taskCode==tc_PulseIdea) {
+                DoPulseIdea();
+            }
+
+            tc_PulseIdea
+
+
             this.connect();
         });
 
@@ -273,6 +282,7 @@ function detectTask(docText) {
     //{ marker: "Произнесено ли предложение с вопросительной интонацией?|исправьте все опечатки в транскрипции|Откорректируйте расстановку дефисов|Исправьте ошибки нормализации", code: tc_PlayExam},
     { marker: "Список категорий для товара", code: tc_CtgGoods},
     { marker: "Проверьте пост|Проверь пост", code: tc_PostTheme}, //'Проверьте пост на принадлежность к тематике', 'Проверь пост на наличие указанного нарушения'
+    { marker: "Пост подходит для ленты \"Идеи\"?", code: tc_PulseIdea},
 
   ].reverse();
 
@@ -460,8 +470,8 @@ let PCD_Marks = [
     {'key':'в красной рамке', 'RButton':0}, //'Оцените, насколько товар в красной рамке подходит под ваш запрос?'
     {'key':'Манипуляция', 'RButton':1}, //'В посте присутствует нарушение «Манипуляция рынком»?'
     {'key':'живость', 'RButton':0}, //'Проверьте фотографию лица на "живость"'
-    {'key':'Проверь пост на наличие нарушений', 'RButton':1}, //'Проверь пост на наличие нарушений'
-
+    {'key':'Проверь пост на наличие нарушений', 'RButton':1},
+    {'key':'Товар подходит для размещения на главной странице?', 'RButton':0},
 
 ];
 
@@ -489,6 +499,12 @@ function PresetCommonDefaults() {
 
             } //if(hasOwnProperty)
 
+        //Scroll to first header
+        let headers = document.querySelectorAll('.tui-text_h6');
+        if (headers.length>=1) {
+            headers[0].scrollIntoView()
+        }
+
 
 
     } //for
@@ -506,7 +522,7 @@ function DetectLearnOrExam() {
 
     let node = document.querySelector('div.b-statistical-panel-block');
     if (node) {
-        if (node.innerText.includes('Обучение'))
+        if (node.innerText.includes('Обучение') || node.innerText.includes('Тренировка'))
             return le_LEARN;
         if (node.innerText.includes('Экзамен'))
             return le_EXAM;

@@ -141,9 +141,9 @@ function NF_GetDigits(text) {
 } // NF_GetDigits
 
 function NF_GetTickers(text) {
-	items = []
+	let items = []
 
-	reg = /\$\w+\b/g
+	const reg = /\$\w+\b/g
 
 	let matchAll = text.matchAll(reg)
 

@@ -343,6 +343,11 @@ var Size_is_set = [
 'https://sport-marafon.ru/'
 ]
 
+ const TV_brands = ['LG', 'Hyundai', 'Asano', 'Digma', 
+	'Xiaomi', 'Harper', 'TCL', 'Sony', 
+	'Sber', 'Samsung', 'Grundig', 'YaGPT', 
+	'Haier', 'Supra', 'Toshiba', 'Panasonic', 
+	'Thomson', 'Hisense']
 
 /*
  Return:	-1 = unknown\
@@ -417,6 +422,145 @@ function Strings_CompareAndColor(str1, str2, colorRed='#ff0000', colorGreen='#00
    return [colorized1, colorized2];
 }
 
+function Items_groups(items) {
+  let prev_v = null
+
+  if (items.length == 0) return []
+
+  groups = [{ same: items[0], from: 0, count: 1 }]
+
+  for (i = 1; i < items.length; i++) {
+    if (items[i] == groups[groups.length - 1].same)
+      groups[groups.length - 1].count += 1
+    else
+      groups.push({ same: items[i], from: i, count: 1 })
+  } // for
+
+  return groups
+} //Items_groups
+
+function ColorizeByChar(A, B) {
+  
+  function Add_color(str, groups) {
+    const RED_COLOR_DARK = '#ffcccc'
+    const RED_COLOR_LIGHT= '#ffefef'
+
+    let colorized = str
+
+    if (groups.length==1 && groups[0].same==false) {
+      colorized = `<span style="background-color:${RED_COLOR_DARK};">${str}</span>`      
+    }
+
+    if (groups.length>1) {
+      let from = 0
+
+      for (let i=groups.length-1; i>=0; i--) {
+        let from = groups[i].from
+        let till = groups[i].from + groups[i].count
+        let prefix = colorized.slice(0, from)
+        let suffix = colorized.slice(till)
+        let middle = groups[i].value
+
+        let color = RED_COLOR_DARK
+        if (groups[i].same) color = RED_COLOR_LIGHT
+
+        colorized = `${prefix}<span style="background-color:${color};">${middle}</span>${suffix}`
+      }
+
+    }
+
+    return colorized
+  } //Add_color()
+
+	function Expand_dgt_group(A, diff) {  
+	  let enforce
+
+	  for(i=0;i<A.length;i++) {
+		if (!IsDigit(A[i])) {
+		  enforce = false
+		} else {
+		  //If digit
+		  if (!diff[i]) enforce = true
+		  if (enforce) diff[i] = false
+		  }
+	  } //for(0->lenght)
+
+	  for (i=A.length-1; i>=0; i--) {
+		if (!IsDigit(A[i])) { 
+		  enforce = false
+		} else {
+		  //If digit
+		  if (!diff[i]) enforce = true
+		  if (enforce) diff[i] = false
+		}
+	  } //for(0->lenght)
+
+	  return diff
+	} //Expand_dgt_group(
+
+
+
+
+  // Difference map
+  let diffs_A = new Array(A.length).fill(false)
+  let diffs_B = new Array(B.length).fill(false)
+
+  let min_len = Math.min(A.length, B.length)
+
+	//let Aa = A.replace('/\d/g', '5')
+	//let Bb = A.replace('/\d/g', '5')
+
+  for(let i=0;i<min_len;i++) {
+    diffs_A[i] = diffs_B[i] = (A[i]==B[i])
+  }
+    
+  diffs_A = Expand_dgt_group(A, diffs_A)
+  diffs_B = Expand_dgt_group(B, diffs_B)
+
+  // Grouping differences
+  let grps_A = Items_groups(diffs_A)
+  let grps_B = Items_groups(diffs_B)
+
+  //console.log(grps_A)
+  //console.log(grps_B)
+
+  // Add strings to maps
+  let from
+
+  from = 0
+  for (let i = 0; i<grps_A.length;i++) {
+    let till = from + grps_A[i].count
+    grps_A[i].value = A.slice(from, till)
+    from = till
+  }
+
+  from = 0
+  for (let i = 0; i < grps_B.length; i++) {
+    let till = from + grps_B[i].count
+    grps_B[i].value = B.slice(from, till)
+    from = till
+  }
+
+  //Add colors to string
+  let colorized_A = Add_color(A, grps_A)
+  let colorized_B = Add_color(B, grps_B)
+
+  //console.log(colorized_A)
+  //console.log(colorized_B)
+  
+	return [colorized_A, colorized_B]
+} //ColorizeByChar
+
+function Is_modelId(str) {
+  const pattern_all = /^[\.\-\dA-Z]+$/
+  const pattern_AZ = /[A-Z]/
+  const pattern_09 = /\d+/
+
+  return Boolean( str.match(pattern_all) && 
+			str.match(pattern_AZ) && str.match(pattern_09) && 
+			str.length>2 && !str.startsWith('DVB-') &&
+			str!='50Hz' && str!='60Hz')
+}
 
 function Split_WordsAndPos(str, delim =	 /\s|\(|\)|:/) {
 	let words = str.split(delim);
@@ -927,10 +1071,37 @@ class Obuv {
 		if (title1.innerHTML.includes('<span')) return; //Already done
 
 		let colorized1, colorized2;
+
+
+		// Special for 'Телевизор'
+		if (title1.textContent.toLowerCase().includes('телевизор')) {		
+			let words1 = title1.textContent.split(' ');
+			let words2 = title2.textContent.split(' ');
+			
+			words1 = words1.filter( Is_modelId )
+			words2 = words2.filter( Is_modelId )
+
+			console.log('Obuv.tv-models1', words1)
+			console.log('Obuv.tv-models2', words2)
+			
+			colorized1 = title1.textContent
+			colorized2 = title2.textContent
+			
+			if (words1.length==1 && words2.length==1) {
+				[colorized1, colorized2] = ColorizeByChar(words1[0], words2[0])						
+				
+				title1.innerHTML = title1.textContent.replace(words1[0], colorized1)
+				title2.innerHTML = title2.textContent.replace(words2[0], colorized2)				
+				
+				return				
+			}						
+		} // 'Телевизор'
+
+		//I am here - apply normal scheme					
 		[colorized1, colorized2] = Strings_CompareAndColor(title1.textContent, title2.textContent, '#ffcccc', null);
 
 		title1.innerHTML = colorized1;
-		title2.innerHTML = colorized2;
+		title2.innerHTML = colorized2;		
 
 		return;
 	} //Compare_Titles()
@@ -1094,9 +1265,9 @@ class Obuv {
 	} //tableCreate
 
 	// Return list of elem like: {id:'vendorCode', values:['123', '159']};
-	Subset_of_attr() {
+	Subset_of_attr(id_list) {
 
-		let id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD'];
+		//const id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD'];
 
 		let val_list = [];
 
@@ -1112,6 +1283,29 @@ class Obuv {
 		return val_list;
 	} //Subset_of_attr()
 
+	Attr_NoSizeNorColor() {	
+		const id_list = ['Цвет', 'Размер'];
+		let val_list = this.Subset_of_attr(id_list)
+		
+		if (val_list.length==0) return true; //ytn djj,ot 
+
+		let hasValues = new Array(val_list).fill(false);
+		
+		for (let i=0;i<id_list.length;i++) {
+			for (let val of val_list) {
+				if (val.id==id_list[i]) 
+					hasValues[i] = Boolean(val.values[0]) && Boolean(val.values[1]);
+			}
+		}
+
+		console.log('Obuv.Attr_NoSizeNorColor', hasValues);	
+		
+		for (let hasItem of hasValues) {
+			if (hasItem) return false; //Есть что-то для обеих товаров
+		}
+				
+		return true;		
+	} //Attr_NoSizeNorColor()
 
 
 	UpdateMyInfo() {
@@ -1132,7 +1326,9 @@ class Obuv {
 			return;
 
 		//Create table
-		let tbl_rows = this.Subset_of_attr();
+		const id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD', 'Частота', 'Разрешение', 'Диагональ'];
+
+		let tbl_rows = this.Subset_of_attr(id_list);
 		this.tableCreate(infos[0], tbl_rows);
 
 		//Auto decision
@@ -1169,6 +1365,7 @@ class Obuv {
 			'https://kanzler-style.ru/',
 			'https://lacoste.ru/',
 			'https://bungly.ru/',
+			'https://ralf.ru/',
 		]
 		
 		
@@ -1198,10 +1395,9 @@ class Obuv {
 
 		//На сайте ссылка не меняется при изменении размера! Ответ - "Недостаточно данных"
 		for (let lnk of sitesNoSize) {
-			if ( Links_start_with(links, lnk) ) return 3; 
+			if ( Links_start_with(links, lnk) ) 
+					if (this.Attr_NoSizeNorColor())	return 3; 
 		}
-
-		
 
 		if (links[0].href==links[1].href) {
 			ret = this.DecideBy_Size();

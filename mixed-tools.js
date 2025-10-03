@@ -298,6 +298,19 @@ function RB_get_lbl() {
 	return -1;
 }
 
+function RB_set_lbl(btnNo, lbl) {
+	//console.log('RB_set_lbl() begin');
+	
+	//const radio_btns = document.querySelectorAll('input[type=radio]');
+	const radio_lbls = document.querySelectorAll('div[automation-id=flex-radio-button__label]');
+
+	if (btnNo<radio_lbls.length) {
+		radio_lbls[btnNo].innerText = lbl;
+	}
+	
+	return -1;
+}
+
 function RB_alreadySet() {
 	//console.log('RB_alreadySet() begin');
 	
@@ -309,3 +322,38 @@ function RB_alreadySet() {
 	
 	return anyChecked;
 }
+
+function RB_uncheckAll() {
+	console.log('RB_uncheckAll() begin');
+	
+	const radio_btns = document.querySelectorAll('input[type=radio]');
+
+	for (const btn of radio_btns) 
+		{if (btn.checked) btn.checked = false}
+	
+	return;
+}
+
+function IsDigit(n) {return /\d+/.test(n)}
+
+/*  Раскраска заданных слов
+
+	let matches = text.matchAll(regExp);
+	let matchesArr = Array.from(matches);
+	textNode.innerHTML = ColorizeWords_matchAll(text, matchesArr, 'pink')				
+*/
+function ColorizeWords_matchAll(text, matchAll_array, color) {
+
+	for(let i=matchAll_array.length-1;i>=0;i--) {
+		let m = matchAll_array[i]
+		//console.log('m', m[0], m.index)
+		
+		let pref = text.slice(0, m.index)
+		let suff = text.slice(m.index+m[0].length)
+		
+		text = `${pref}<span style="background-color:${color};">${m[0]}</span>${suff}`
+	} //for
+
+	return text
+} //ColorizeWords_matchAll()
+
