@@ -214,7 +214,12 @@ this.saveUrl = url;
             }
 
             if (taskCode==-1) {
-                PresetCommonDefaults();
+                if (IsIgnoredTask(docText)) {
+                    //console.log('Ignored task');
+                    ExitTask();
+                } else {
+                    PresetCommonDefaults();
+                }
             }
 
             if (taskCode==tc_BadPic) {
@@ -235,7 +240,6 @@ this.saveUrl = url;
                 DoPulseIdea();
             }
 
-            tc_PulseIdea
 
 
             this.connect();
@@ -271,7 +275,7 @@ function detectTask(docText) {
 
   const taskMarkers = [
     { marker: "Товары полностью совпадают|Различные варианты одной и той же модели одного бренда", code: tc_Obuv },
-    { marker: "БАНКИ.РУ", code: tc_Banki },
+    //{ marker: "БАНКИ.РУ", code: tc_Banki },
     { marker: "соответствие бренда", code: tc_Brand },
     { marker: "Подходят ли товары?|Название товара в чеке:", code: tc_GiC },
     { marker: "расшифровка телефонного разговора", code: tc_Call027 },
@@ -471,7 +475,10 @@ let PCD_Marks = [
     {'key':'Манипуляция', 'RButton':1}, //'В посте присутствует нарушение «Манипуляция рынком»?'
     {'key':'живость', 'RButton':0}, //'Проверьте фотографию лица на "живость"'
     {'key':'Проверь пост на наличие нарушений', 'RButton':1},
+    {'key':'Проверь комментарий на наличие нарушений', 'RButton':1},
     {'key':'Товар подходит для размещения на главной странице?', 'RButton':0},
+    {'key':'Корректно ли нормализован текст?', 'RButton':0},
+    {'key':'На аудио голос человека или результат синтеза?', 'RButton':1},
 
 ];
 
@@ -531,3 +538,61 @@ function DetectLearnOrExam() {
     return ret;
 } //DetectLearnOrExam()
 
+const ignoredTasks = [
+    "Особенности разметки отзывов на БАНКИ.РУ",
+    //"В какой аудиозаписи голос звучит лучше?",
+    //"В какой аудиозаписи голос больше похож на оригинал",
+    //"Выберите категорию для товара",
+];
+
+function IsIgnoredTask(docText) {
+  for(let t of ignoredTasks) if (docText.includes(t)) return true;
+  return false;
+}
+
+function ExitTask() {
+    const Z_BUTTON_CLICKED = "z-button-clicked";
+
+    let btns = document.querySelectorAll("button");
+
+    let exitBtns = [null, null];
+    for(let b of btns) {
+        if (b.innerText.includes("Выйти из задания")) exitBtns[0] = b;
+        if (b.innerText.includes("Да, выйти")) exitBtns[1] = b;
+    }
+
+    //console.log('ExitTask.btns', exitBtns);
+
+    if (!exitBtns[0] && !exitBtns[1]) return; //Нет кнопок
+
+    if (exitBtns[0] && !exitBtns[1]) //Только первая кнопка
+    {
+        if (!exitBtns[0].classList.contains(Z_BUTTON_CLICKED)) {
+            exitBtns[0].classList.add(Z_BUTTON_CLICKED);
+
+            //exitBtns[0].click();
+            setTimeout(function () {exitBtns[0].click()}, 200);
+
+            console.log('ExitTask.click-0');
+        } else {
+            console.log('ExitTask.alreadyClicked-0');
+        }
+
+    }
+
+    if (exitBtns[0] && exitBtns[1]) //Обе кнопки
+    {
+        exitBtns[0].classList.remove(Z_BUTTON_CLICKED);
+
+        //exitBtns[1].click();
+        setTimeout(function () {exitBtns[1].click()}, 200);
+
+        console.log('ExitTask.click-1');
+
+    }
+
+    return;
+
+
+    return
+}

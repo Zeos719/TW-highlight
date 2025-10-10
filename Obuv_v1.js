@@ -230,20 +230,22 @@ function Obuv_SendToServer() {
 // Convert <table> to a list of rows. tbl is a node! tbl = node.firstElementChild
 function Parse_table(tbl) {
 
-		if (tbl==null) {
-			console.log('Obuv.Parse_table null!');
-			return [];
-		}
+	//console.log('Obuv.Parse_table', tbl);	
 
-		let tbl_list = [];
-		for (let row of tbl.rows) {
-			row_list = [];
+	if (tbl==null) {
+		console.log('Obuv.Parse_table null!');
+		return [];
+	}
 
-			for(let cell of row.cells)
-				row_list.push(cell.textContent.trim());
+	let tbl_list = [];
+	for (let row of tbl.rows) {
+		row_list = [];
 
-			tbl_list.push(row_list);
-		} //for(row)
+		for(let cell of row.cells)
+			row_list.push(cell.textContent.trim());
+
+		tbl_list.push(row_list);
+	} //for(row)
 
 	return tbl_list;
 
@@ -1523,14 +1525,21 @@ class Obuv {
 		let nodes = document.getElementsByClassName('attributes');
 		if (nodes.length!=2) return null;
 
+		let tbls = [
+			nodes[0].querySelector('table'),
+			nodes[1].querySelector('table')
+		];
+
 		//console.log('Obuv.Parse_Attributes', nodes);
 
 		//if (nodes[0].firstElementChild &&
 		//	Object.hasOwn(nodes[0].firstElementChild, 'nodeName') &&
 		//	(nodes[0].firstElementChild.nodeName=='TABLE')) {
 
-		if (nodes[0].innerHTML.includes('<table')) {
-			return [Parse_table(nodes[0].firstElementChild), Parse_table(nodes[1].firstElementChild)]
+		//if (nodes[0].innerHTML.includes('<table')) {
+		if (tbls[0] && tbls[0]) {						
+			//return [Parse_table(nodes[0].firstElementChild), Parse_table(nodes[1].firstElementChild)]
+			return [Parse_table(tbls[0]), Parse_table(tbls[1])]			
 		} else {
 
 			let delim;
