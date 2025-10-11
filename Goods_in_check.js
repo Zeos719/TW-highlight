@@ -21,6 +21,7 @@ function GiC_onCtrlEnter(e) {
 	
 			let completeBtn = document.querySelector("#completeBtn");
 			completeBtn.removeEventListener("click", GiC_onBtnClick);	
+			completeBtn.focus();
 		}
 	}	
 }
