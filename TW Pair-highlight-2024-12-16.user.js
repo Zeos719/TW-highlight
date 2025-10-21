@@ -541,8 +541,12 @@ function DetectLearnOrExam() {
 const ignoredTasks = [
     "Особенности разметки отзывов на БАНКИ.РУ",
     //"В какой аудиозаписи голос звучит лучше?",
-    //"В какой аудиозаписи голос больше похож на оригинал",
+    //"В какой аудиозаписи голос больше похож на оригинал", // Сравнение 3 аудио!
     //"Выберите категорию для товара",
+    //"Проверьте соответствие текста и аудио",
+    "Прочитай сообщение и выбери подходящую категорию",
+    //"Запишите транскрипцию аудио",
+    "Прослушайте аудио и выберите наилучшую транскрипцию",
 ];
 
 function IsIgnoredTask(docText) {
@@ -571,7 +575,7 @@ function ExitTask() {
             exitBtns[0].classList.add(Z_BUTTON_CLICKED);
 
             //exitBtns[0].click();
-            setTimeout(function () {exitBtns[0].click()}, 200);
+            setTimeout(function () {exitBtns[0].click()}, 300);
 
             console.log('ExitTask.click-0');
         } else {
@@ -585,7 +589,7 @@ function ExitTask() {
         exitBtns[0].classList.remove(Z_BUTTON_CLICKED);
 
         //exitBtns[1].click();
-        setTimeout(function () {exitBtns[1].click()}, 200);
+        setTimeout(function () {exitBtns[1].click()}, 300);
 
         console.log('ExitTask.click-1');
 
