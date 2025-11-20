@@ -179,12 +179,12 @@ class PlayExam {
 		let iPos;
 
 		//* Только тикер *
-		if ( this.que.match(/^\$[A-Z|0-9]+$/) )	return BAD_POST;
+		//if ( this.que.match(/^\$[A-Z|0-9]+$/) )	return BAD_POST;
 
 		//* Только стратегия *
-		if ( this.que.match(/^\&\S+$/) )	return BAD_POST;
-
-
+		//let numWords = this.que.split(' ').length;
+		//if ( numWords<=2 && this.que.match(/^\&\S+/) )	return BAD_POST;
+		
 		//* Начинается с #disclosure *
 		//if (que_low.startsWith('#disclosure')) return GOOD_POST;
 
@@ -266,11 +266,11 @@ class PlayExam {
 			if (autoRun) {
 			}
 		} else {
-			let isCheckPost = this.header_main.includes(' пост ');
+			let isCheckPost = this.header_main.includes(' пост ') || this.header_main.includes(' коммент');
 			let isManipulPost = isCheckPost&& this.header_2nd.includes('Манипуляция');
 			let isThemePost = isCheckPost && this.header_2nd.includes('Выберите тематик');
 
-console.log('PalyExam.theme', isCheckPost, isThemePost, this.header_2nd)
+console.log('PalyExam.theme', isCheckPost, isManipulPost, isThemePost, this.header_2nd)
 
 			let decision = -1;
 
@@ -294,12 +294,12 @@ console.log('PalyExam.theme', isCheckPost, isThemePost, this.header_2nd)
 					this.Colorize(decision);
 
 					const lbls = ['Да (Z)', 'Нет (Z)'];
-					RB_set_lbl(decision, lbls[decision])
+					RB_set_lbl(decision, lbls[decision]);
 				}
 			} //Обычная проверка
 			
 			if (isManipulPost) { //Манипуляция
-				let header_2nd = null
+				let header_2nd = null;
 				let headers = document.querySelectorAll('.tui-text_h6');
 				if (headers && headers.length>0)
 					header_2nd = headers[headers.length-1];
@@ -309,7 +309,7 @@ console.log('PalyExam.theme', isCheckPost, isThemePost, this.header_2nd)
 			}
 
 			if (isThemePost) { //Проверка темы 
-				let hasTicker = this.que.match(/\$[A-Z\d]+/) //Look for any ticker
+				let hasTicker = this.que.match(/\$[A-Z][A-Z\d]+/) //Look for any ticker. Was /\$[A-Z\d]+/
 				console.log('PalyExam.hasTicker', hasTicker)
 				
 				const ACTIVE_BADGE_CLASS = 'flex-labeling__badge_active'

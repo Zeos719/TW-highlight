@@ -79,20 +79,24 @@ function Obuv_onCtrlEnter(e) {
 
 	//Open links
 	if (e.ctrlKey && (e.code == "KeyM")) { //Ctrl + M
-		preview.OpenPreviewTabs(document.links[0].href, document.links[1].href);
+		let links = Obuv_GetMainLinks();
+		
+		preview.OpenPreviewTabs(links[0].href, links[1].href);
 	}
 
 	//1..4 -> Radio buttons
-	const RB_keys  = ["Digit1", "Digit2", "Digit3", "Digit4"];
+	const RB_keys  = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9"];
 	let RB_selected = -1;
 	
-	for (let i=0;i<RB_keys.length;i++) {
-		if (e.code==RB_keys[i]) {
-			RB_set(i);
-			RB_selected = i;
-			break;
-		}
-	} //for(RB_keys[])
+	if (!e.shiftKey && !e.ctrlKey) {
+		for (let i=0;i<RB_keys.length;i++) {
+			if (e.code==RB_keys[i]) {
+				RB_set(i);
+				RB_selected = i;
+				break;
+			}
+		} //for(RB_keys[])
+	}
 
 	//Double check RB setiings
 	if ( (RB_selected!=-1) && (RB_selected!=RB_get()) ) {
@@ -194,7 +198,7 @@ function Obuv_SendToServer() {
 	let brands = document.getElementsByClassName('brand');
 	let category = document.getElementsByClassName('category');
 
-	let links = document.links;
+	let links = Obuv_GetMainLinks();
 
 	//get user choice
 	const radio_btns = document.querySelectorAll('input[type=radio]');
@@ -276,12 +280,27 @@ function GetTaskId() {
 		return str;
 	}
 
-	if (document.links.length==1) {
-		return StripVendorCode(document.links[0].href);
-	} else {
-		return StripVendorCode(document.links[0].href) + StripVendorCode(document.links[1].href);
-	}
+	let links = Obuv_GetMainLinks();
+	
+	return StripVendorCode(links[0].href) + StripVendorCode(links[1].href);
 } //GetTaskId()
+
+//Извлекаем две основных ссылки на товары - в новой версии задания на странице несколько ссылок
+function Obuv_GetMainLinks() {
+		let ret;
+		
+		if (document.links.count==2) //первоначальная версия задания
+			ret = document.links
+		else {		
+			let links = document.querySelectorAll('a.url');		
+			ret = [links[0], links[1]] //первавя попытка - просто первые две
+		}
+		
+		console.log('Obuv.GetMainLinks', ret);
+			
+		return ret;
+	} //GetMainLinks
+
 
 
 //********************* Два товара (обувь)	********************************
@@ -294,7 +313,7 @@ function DoObuv() {
 
 	if (obv==null) obv = new Obuv();
 
-	if (document.links.length==2) {
+	if (document.links.length>=2) {
 		obv.Run();
 	}
 
@@ -937,14 +956,18 @@ class Obuv {
 		document.addEventListener("keydown", Obuv_onCtrlEnter);
 
 		//Preset default
+		this.links = Obuv_GetMainLinks();
+		
 		this.Reset();
-		this.SelectDecision(2); //'Abs differ' by deffault
+		this.SelectDecision([1,7]); //Decision by default
+		//this.SelectDecision(2);
+		
 		this.subTask = this.DetectSubTask();
 		//console.log('Obuv subTask:', this.subTask);
 
 		//Reset for new task
 		let newTaskId = GetTaskId();
-		console.log('Obuv.GetTaskId', this.taskId==newTaskId, this.clicked);
+		//console.log('Obuv.GetTaskId', this.taskId==newTaskId, this.clicked);
 
 		if (this.taskId!=newTaskId) {
 			this.taskId = newTaskId;
@@ -956,24 +979,24 @@ class Obuv {
 		DrawAutoIndicator(autoRun);
 
 		//Scrool to view main part
-		let bound = document.links[0].getBoundingClientRect();
+		let bound = this.links[0].getBoundingClientRect();
 		const REQUIRED_TOP = 600; //600
 		//console.log('Tw bound:', bound.top);
 		if (window.pageYOffset==0) {
 			window.scroll(0, (bound.top-REQUIRED_TOP));
 			}
-
+	
 		//Main
 		this.attr = this.Parse_Attributes();
 		//console.log('Obuv.attr', this.attr);
-
+		
 		this.attrEx = [ ];
 
 		for (let idx=0;idx<2;idx++)
-			if (document.links[idx].href.startsWith('https://www.letu.ru/'))
+			if (this.links[idx].href.startsWith('https://www.letu.ru/'))
 				this.Letu_add_sku(idx);
 
-		this.Compare_href_byParts(document.links);
+		this.Compare_href_byParts(this.links);
 
 		this.Compare_Titles();
 		this.Compare_Brands();
@@ -989,7 +1012,7 @@ class Obuv {
 				this.clicked = true;
 
 				setTimeout(function (choice){
-					let reminder = document.links[0].href.slice(-20);
+					let reminder = this.links[0].href.slice(-20);
 					console.log("Obuv.AutoDecision fired:", choice, reminder);
 					
 					RB_set(choice);
@@ -1008,11 +1031,10 @@ class Obuv {
 		//Display
 		this.UpdateMyInfo();
 
-
 		//Auto select for https://superstep.ru - 'недостаточно данных' и выход
 		/*
-		if (document.links[0].href.includes('superstep.ru') &&
-		   (document.links[0].href==document.links[1].href) ) {
+		if (this.links[0].href.includes('superstep.ru') &&
+		   (this.links[0].href==this.links[1].href) ) {
 
 			RB_set(3); //Данных недостаточно
 
@@ -1024,11 +1046,15 @@ class Obuv {
 	return;
 	} //Run()
 
-	//choice = 0,1,2 (see Obuv_AutoDecision() )
+	//choice = 0,1,2 (see Obuv_AutoDecision() ) or array of choices '[1,7]'
 	SelectDecision(choice) {
 		if (RB_alreadySet()) { return }
 
-		RB_set(choice)
+		if (typeof(choice)=='number')
+			choice = [choice];
+
+		choice.forEach(function(ch) {RB_set(ch)});
+		
 		window.scroll(0, 0); //scroll back to top
 	} //SelectDecision()
 
@@ -1188,12 +1214,12 @@ class Obuv {
 		const infos = document.querySelectorAll('.twinfo');	//select by class
 
 		if (infos.length==0)
-			for (let i=0;i<document.links.length;i++) {
+			for (let i=0;i<this.links.length;i++) {
 				let newNode = document.createElement("div");
 				//newNode.textContent = '*** my info 2 ***';
 				newNode.className = "twinfo";
 
-				document.links[i].parentNode.prepend(newNode);
+				this.links[i].parentNode.prepend(newNode);
 			} //for
 
 		//Reset vars
@@ -1248,7 +1274,7 @@ class Obuv {
 
 		for (let j = 0; j < 2; j++) {
 			th = document.createElement('th')
-			th.appendChild(document.createTextNode( document.links[j].host ));
+			th.appendChild(document.createTextNode( this.links[j].host ));
 			tr.appendChild(th);
 		}
 		thdr.appendChild(tr);
@@ -1269,18 +1295,39 @@ class Obuv {
 	// Return list of elem like: {id:'vendorCode', values:['123', '159']};
 	Subset_of_attr(id_list) {
 
-		//const id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD'];
-
 		let val_list = [];
 
 		id_list.forEach((id)=>{
+			let id_str = id;
+
 			let values = ['', ''];
 			for (let i=0;i<2;i++)
-				this.attr[i].forEach((elem)=>{if (elem[0].startsWith(id)) values[i]=elem[1]} );
-					if (values[0] || values[1])
-						val_list.push({id:id, values:values});
+				this.attr[i].forEach(function (elem){
+					if (typeof(id)=='string') {						
+						if (elem[0].startsWith(id)) values[i]=elem[1]
+					}
+					
+					if (typeof(id)=='object') { //regular expression - 
+						/* !!! rewrite
+						плохо - если в списке аттрибутов более одного срабатывания, то в список добавляется последний 
+						*/
+					
+						if (elem[0].match(id)) {
+							id_str = elem[0];					
+							values[i]=elem[1];
+							console.log('Obuv.Subset_of_attr.1', i, id, elem);
+						}											
+					} //if(regExp)				
+				
+				});
+			
+				if (values[0] || values[1]) {
+					val_list.push({id:id_str, values:values});
+				}
 
 		}) //forEach()
+		
+		console.log('Obuv.Subset_of_attr.2', val_list);
 
 		return val_list;
 	} //Subset_of_attr()
@@ -1328,7 +1375,10 @@ class Obuv {
 			return;
 
 		//Create table
-		const id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD', 'Частота', 'Разрешение', 'Диагональ'];
+		//const id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD', 'Частота', 'Разрешение', 'Диагональ', /\s(сим|СИМ|sim|SIM)\W/gm];
+		const id_list = ['vendorCode', 'Оттенок', 'Цвет', 'Тон', 'Объем', 'Размер', 'SSD', 'Частота', 'Разрешение', 'Диагональ', 
+			'Тип SIM', 'Количество SIM',
+			'Тип сим', 'Количество слотов для SIM'];
 
 		let tbl_rows = this.Subset_of_attr(id_list);
 		this.tableCreate(infos[0], tbl_rows);
@@ -1372,7 +1422,7 @@ class Obuv {
 		
 		
 		let ret;
-		let links = document.links;
+		let links = this.links;
 
 		if (links.length!=2 ) {return -1};
 
@@ -1415,7 +1465,7 @@ class Obuv {
 			return this.DecideBy_Brand();
 
 
-		if (links[0].href!=document.links[1].href) { return -1}; //After special cases!
+		if (links[0].href!=this.links[1].href) { return -1}; //After special cases!
 	/*
 		let site_type = Sort_sites(links[0].href);
 		if (site_type==0) return 1; //if size is not defined
@@ -1558,7 +1608,7 @@ class Obuv {
 
 	Letu_add_sku(idx) {
 		//console.log('Obuv.Letu_add_sku', idx);
-		if (document.links[idx].href.includes('vendorCode')) //Already done
+		if (this.links[idx].href.includes('vendorCode')) //Already done
 			return;
 
 		let vCode = null;
@@ -1566,8 +1616,8 @@ class Obuv {
 
 		if (vCode)
 		{
-			document.links[idx].href = document.links[idx].href + '?vendorCode=' + vCode;
-			document.links[idx].textContent = document.links[idx].href;
+			this.links[idx].href = this.links[idx].href + '?vendorCode=' + vCode;
+			this.links[idx].textContent = this.links[idx].href;
 		}
 
 	} //Letu_add_sku()
@@ -1591,7 +1641,7 @@ class Obuv {
 		//console.log('Obuv.Letu_special', this.vendorCodes);
 
 		//На всякий случай сравним префиксы до подстроки 'sku'
-		if (!Compare_links_prefs( [document.links[0].href, document.links[1].href] ))
+		if (!Compare_links_prefs( [this.links[0].href, this.links[1].href] ))
 			return -1;
 
 		//valid vendorCodes sholud be available
