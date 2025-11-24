@@ -480,9 +480,24 @@ let PCD_Marks = [
     //{'key':'Корректно ли нормализован текст?', 'RButton':0},
     //{'key':'На аудио голос человека или результат синтеза?', 'RButton':1},
     {'key':'Оценка качества изображения', 'RButton':[2,5,8,11]},
-
+    {'key':'Проверьте наличие тематики "Инвестиции"', 'TextFunc': PCD_Tiker, 'TextPrm':null},
 
 ];
+
+function PCD_Tiker(docText, prm) {
+    let rb = 1;
+    if (docText.match(/\$[A-Z|0-9]+/) ) rb = 0;
+
+    //console.log('PCD_Tiker', docText, rb);
+
+    try {
+        if (!RB_alreadySet()) RB_set(rb)
+        } catch {
+            console.log('PCD_Tiker RB-except')
+        } //try
+
+    return;
+}
 
 function PresetCommonDefaults() {
     console.log('PresetCommonDefaults');
@@ -497,6 +512,7 @@ function PresetCommonDefaults() {
 
     for (let i=0;i<PCD_Marks.length;i++) {
         let item = PCD_Marks[i];
+
         if (!docText.includes(item.key)) continue;
 
         if (item.hasOwnProperty('RButton')) {
@@ -507,6 +523,11 @@ function PresetCommonDefaults() {
             } //try
 
             } //if(hasOwnProperty)
+
+        if (item.hasOwnProperty('TextFunc')) {
+            item.TextFunc(docText, item.TextParam)
+            } //if(hasOwnProperty)
+
 
         //Scroll to first header
         let headers = document.querySelectorAll('.tui-text_h6');
