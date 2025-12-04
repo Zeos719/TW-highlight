@@ -18,6 +18,7 @@
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\Category_of_goods.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\post-theme-nicely-formated.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\pulse_idea.js
+// @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\smart_catalog.js
 // ==/UserScript==
 
 // @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
@@ -46,6 +47,7 @@ const tc_PlayExam = 10;
 const tc_CtgGoods = 11;
 const tc_PostTheme = 12;
 const tc_PulseIdea = 13;
+const tc_SmartCat = 14;
 
 const le_UNKNOWN = 0;
 const le_LEARN = 1;
@@ -240,6 +242,10 @@ this.saveUrl = url;
                 DoPulseIdea();
             }
 
+            if (taskCode==tc_SmartCat) {
+                DoSmartCat();
+            }
+
 
 
             this.connect();
@@ -287,6 +293,7 @@ function detectTask(docText) {
     { marker: "Список категорий для товара", code: tc_CtgGoods},
     { marker: "Проверьте пост|Проверь пост|Проверь коммент", code: tc_PostTheme}, //'Проверьте пост на принадлежность к тематике', 'Проверь пост на наличие указанного нарушения'
     { marker: "Пост подходит для ленты \"Идеи\"?", code: tc_PulseIdea},
+    { marker: "Выберите категорию для товара", code: tc_SmartCat},
 
   ].reverse();
 
@@ -317,7 +324,7 @@ function DetectStartPage() {
     if (document.querySelector("task-item")) return 1;
 
     document.querySelectorAll('iframe').forEach( function (item ) {
-        if (item.contentWindow.document.body.querySelectorAll('task-item').length>0) return 1;
+        if (item.contentWindow.document.body && item.contentWindow.document.body.querySelectorAll('task-item').length>0) return 1;
     });
 
     return -1;
@@ -481,17 +488,19 @@ let PCD_Marks = [
     //{'key':'На аудио голос человека или результат синтеза?', 'RButton':1},
     {'key':'Оценка качества изображения', 'RButton':[2,5,8,11]},
     {'key':'Проверьте наличие тематики "Инвестиции"', 'TextFunc': PCD_Tiker, 'TextPrm':null},
+    {'key':'Описание намерения:', 'RButton':0},
+
 
 ];
 
 function PCD_Tiker(docText, prm) {
-    let rb = 1;
+    let rb = -1;
     if (docText.match(/\$[A-Z|0-9]+/) ) rb = 0;
 
     //console.log('PCD_Tiker', docText, rb);
 
     try {
-        if (!RB_alreadySet()) RB_set(rb)
+        if (!RB_alreadySet() && (rb!=-1)) RB_set(rb)
         } catch {
             console.log('PCD_Tiker RB-except')
         } //try
@@ -517,7 +526,7 @@ function PresetCommonDefaults() {
 
         if (item.hasOwnProperty('RButton')) {
             try {
-                if (!RB_alreadySet()) RB_set(item.RButton)
+                if (!RB_alreadySet()) RB_set(item.RButton);
             } catch {
                 console.log('PresetCommonDefaults RB-except')
             } //try
@@ -562,16 +571,18 @@ function DetectLearnOrExam() {
 } //DetectLearnOrExam()
 
 const ignoredTasks = [
-    "Особенности разметки отзывов на БАНКИ.РУ",
+    //"Особенности разметки отзывов на БАНКИ.РУ",
     //"В какой аудиозаписи голос звучит лучше?",
     //"В какой аудиозаписи голос больше похож на оригинал", // Сравнение 3 аудио!
     //"Выберите категорию для товара",
     //"Проверьте соответствие текста и аудио",
-    "Прочитай сообщение и выбери подходящую категорию",
+    //"Прочитай сообщение и выбери подходящую категорию",
     //"Запишите транскрипцию аудио",
     //"Прослушайте аудио и выберите наилучшую транскрипцию",
-    "Предложенные данные организации",
-    "Матчинг. Бытовая техника",
+    //"Предложенные данные организации",
+    "Прослушайте аудио и выберите наилучшую транскрипцию",
+    "Клиент формулирует свой запрос в поиск или поддержку",
+    //"Исполнитель (БЕЗ ИП)",
 ];
 
 function IsIgnoredTask(docText) {
