@@ -1,7 +1,7 @@
 
 let ctgGoods = null;
 
-function DoCtgGoods() {
+function DoCtgGoods(taskVesrion, exam) {
 
 	console.log('DoCtgGoods() starts');
 

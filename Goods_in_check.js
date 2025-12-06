@@ -88,7 +88,7 @@ const GiC_locators = [
 var GiC_task_version;
 
 
-function DoGoodsInCheck(task_version) {	
+function DoGoodsInCheck(task_version, exam) {	
 	console.log('DoGoodsInCheck() starts');
 
 	GiC_task_version = task_version; //Save to global var

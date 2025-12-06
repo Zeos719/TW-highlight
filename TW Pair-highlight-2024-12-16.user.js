@@ -14,7 +14,7 @@
 // @require      https://zeos719.github.io/TW-highlight/Call_027.js
 // @require      https://zeos719.github.io/TW-highlight/Preset_defaults.js
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/mixed-tools.js
-// @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/play_exam.js
+// @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/que_answ.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\Category_of_goods.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\post-theme-nicely-formated.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\pulse_idea.js
@@ -53,7 +53,44 @@ const le_UNKNOWN = 0;
 const le_LEARN = 1;
 const le_EXAM = 2;
 
-//var SubWindows = [null, null];
+//Task functions
+
+const taskMarkers = [
+    { marker: "Товары полностью совпадают|Полностью идентичные товары|Различные варианты одной и той же модели одного бренда|Нет, товары совсем разные", code: tc_Obuv },
+    //{ marker: "БАНКИ.РУ", code: tc_Banki },
+    { marker: "соответствие бренда", code: tc_Brand },
+    { marker: "Подходят ли товары?|Название товара в чеке:", code: tc_GiC },
+    { marker: "расшифровка телефонного разговора", code: tc_Call027 },
+    { marker: "Фраза из диалога:", code: tc_CallType },
+    { marker: "Проверь изображение|половые органы", code: tc_CheckImage },
+    { marker: "Да, товар подходит для главной страницы", code: tc_FrontPage},
+    { marker: "Проверьте наличие нарушений на изображении", code: tc_BadPic},
+    //{ marker: "Произнесено ли предложение с вопросительной интонацией?|исправьте все опечатки в транскрипции|Откорректируйте расстановку дефисов|Исправьте ошибки нормализации", code: tc_PlayExam},
+    { marker: "Список категорий для товара", code: tc_CtgGoods},
+    { marker: "Проверьте пост|Проверь пост|Проверь коммент", code: tc_PostTheme}, //'Проверьте пост на принадлежность к тематике', 'Проверь пост на наличие указанного нарушения'
+    { marker: "Пост подходит для ленты \"Идеи\"?", code: tc_PulseIdea},
+    { marker: "Выберите категорию для товара", code: tc_SmartCat},
+  ].reverse();
+
+
+const taskFuncs = new Map([
+    [tc_Obuv, DoObuv],
+    [tc_Banki, DoBanki],
+    [tc_Brand, DoBrandCorrespond],
+    [tc_GiC, DoGoodsInCheck],
+    [tc_Call027, DoCall027],
+    [tc_CallType, DoCallType],
+    [tc_CheckImage, DoCheckImage],
+    [tc_FrontPage, DoFrontPage],
+    [tc_BadPic, DoBadPic],
+    [tc_PlayExam, DoQueAnsw], //!
+    [tc_CtgGoods, DoCtgGoods],
+    [tc_PostTheme, DoQueAnsw], //!
+    [tc_PulseIdea, DoPulseIdea],
+    [tc_SmartCat, DoSmartCat],
+
+]);
+
 
 //Global and control vars
 var autoRun = false;
@@ -130,10 +167,6 @@ if (window==window.top) {
                 return;
             }
 
-            //Exams
-            var isExam = DetectLearnOrExam();
-            console.log('DetectLearnOrExam', isExam);
-
 /*
         let url = 'https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt';
 
@@ -143,110 +176,7 @@ this.saveUrl = url;
 		} );
 */
 
-/*
-            if (!vbd) {
-                vbd = new ValidBrands();
-                vbd.Load_TXT();
-            }
-
-            if (vbd.HasData()) {
-                    let brName = '1TOY';
-                    console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
-
-                    brName = '1TAY';
-                    console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
-
-                    brName = 'Baby balance';
-                    console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
-
-                    brName = 'адмиралЪ';
-                    console.log('ValidBrands.Includes', brName, vbd.Includes(brName));
-
-            }
-*/
-
-            let taskCode, taskVersion;
-            [taskCode, taskVersion] = detectTask(docText);
-            console.log('detectTask:', taskCode, taskVersion);
-
-            if (taskCode>=0) isExam = false;
-
-
-            if (taskCode==tc_Banki) DoBanki();
-
-            if (taskCode==tc_Obuv) {
-                //AskHttpHelper('obuv', document.links);
-                DoObuv();
-                //if (!autoRun)
-                //    OpenPreviewTabs(document.links[0].href, document.links[1].href);
-            }
-
-            if (taskCode==tc_Brand) {DoBrandCorrespond()};
-
-            //Сопоставить товары в чеке
-            let selector;
-            //selector = document.querySelector("#klecks-app > tui-root > tui-dropdown-host > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(3) > flex-header > div");
-            //v1
-            selector = document.querySelector("#klecks-app > tui-root > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(3) > flex-header > div");
-
-            //v2
-            //selector = document.querySelector("#klecks-app > tui-root > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(7) > flex-header > div")
-
-            if (taskCode==tc_GiC) {
-//console.log('detectTask4:', taskCode, taskVersion);
-                //selector.innerHTML += '  &#128076;'; // append 👌 as a mark
-
-                DoGoodsInCheck(taskVersion);
-            }
-
-            if (taskCode==tc_Call027) {
-                DoCall027();
-            }
-
-            if (taskCode==tc_CallType) {
-                DoCallType();
-            }
-
-            if (taskCode==tc_CheckImage) {
-                DoCheckImage(taskVersion);
-            }
-
-            if (taskCode==tc_FrontPage) {
-                DoFrontPage();
-            }
-
-            if (taskCode==-1) {
-                if (IsIgnoredTask(docText)) {
-                    //console.log('Ignored task');
-                    ExitTask();
-                } else {
-                    PresetCommonDefaults();
-                }
-            }
-
-            if (taskCode==tc_BadPic) {
-                DoBadPic();
-            }
-
-            //Exam
-            //if (taskCode==tc_PlayExam){
-            if (isExam || ((taskCode==tc_PostTheme))) {
-                DoPlayExam(isExam);
-            }
-
-            if (taskCode==tc_CtgGoods) {
-                DoCtgGoods();
-            }
-
-            if (taskCode==tc_PulseIdea) {
-                DoPulseIdea();
-            }
-
-            if (taskCode==tc_SmartCat) {
-                DoSmartCat();
-            }
-
-
+            RunTask(docText);
 
             this.connect();
         });
@@ -278,24 +208,6 @@ function OpenPreviewTabs() {
 
 //return [taskCode, taskVersion]
 function detectTask(docText) {
-
-  const taskMarkers = [
-    { marker: "Товары полностью совпадают|Полностью идентичные товары|Различные варианты одной и той же модели одного бренда|Нет, товары совсем разные", code: tc_Obuv },
-    //{ marker: "БАНКИ.РУ", code: tc_Banki },
-    { marker: "соответствие бренда", code: tc_Brand },
-    { marker: "Подходят ли товары?|Название товара в чеке:", code: tc_GiC },
-    { marker: "расшифровка телефонного разговора", code: tc_Call027 },
-    { marker: "Фраза из диалога:", code: tc_CallType },
-    { marker: "Проверь изображение|половые органы", code: tc_CheckImage },
-    { marker: "Да, товар подходит для главной страницы", code: tc_FrontPage},
-    { marker: "Проверьте наличие нарушений на изображении", code: tc_BadPic},
-    //{ marker: "Произнесено ли предложение с вопросительной интонацией?|исправьте все опечатки в транскрипции|Откорректируйте расстановку дефисов|Исправьте ошибки нормализации", code: tc_PlayExam},
-    { marker: "Список категорий для товара", code: tc_CtgGoods},
-    { marker: "Проверьте пост|Проверь пост|Проверь коммент", code: tc_PostTheme}, //'Проверьте пост на принадлежность к тематике', 'Проверь пост на наличие указанного нарушения'
-    { marker: "Пост подходит для ленты \"Идеи\"?", code: tc_PulseIdea},
-    { marker: "Выберите категорию для товара", code: tc_SmartCat},
-
-  ].reverse();
 
   for (let task of taskMarkers) {
     let mark_arr = task.marker.split('|');
@@ -557,7 +469,6 @@ function PresetCommonDefaults() {
 } //PresetCommonDefaults()
 
 function DetectLearnOrExam() {
-    let ret = le_UNKNOWN;
 
     let node = document.querySelector('div.b-statistical-panel-block');
     if (node) {
@@ -567,7 +478,7 @@ function DetectLearnOrExam() {
             return le_EXAM;
     }
 
-    return ret;
+    return le_UNKNOWN;
 } //DetectLearnOrExam()
 
 const ignoredTasks = [
@@ -636,3 +547,30 @@ function ExitTask() {
 
     return
 }
+
+function RunTask(docText) {
+
+    //Exams: le_UNKNOWN, le_LEARN, le_EXAM
+    var exam = DetectLearnOrExam();
+    console.log('DetectLearnOrExam', exam);
+
+    let taskCode, taskVersion;
+    [taskCode, taskVersion] = detectTask(docText);
+    console.log('detectTask:', taskCode, taskVersion);
+
+    //if (taskCode>=0) exam = le_UNKNOWN;
+
+    if (taskCode==-1) {
+        if (IsIgnoredTask(docText)) {
+            //console.log('Ignored task');
+            ExitTask();
+        } else {
+            PresetCommonDefaults();
+        }
+    } else {
+        let func = taskFuncs.get(taskCode);
+        if (func) func(taskVersion, exam);
+    }
+
+} //RunTask()
+

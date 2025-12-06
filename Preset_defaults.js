@@ -1,4 +1,4 @@
-function DoCallType() {
+function DoCallType(taskVesrion, exam) {
 	console.log('DoCallType() begin (Presets.js)')
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
@@ -20,7 +20,7 @@ function DoCallType() {
 };
 
 /*
-function DoCheckImage() {
+function DoCheckImage(taskVesrion, exam) {
 	//console.log('DoCheckImage() begin')
 	
 	const radio_btns = document.querySelectorAll('input[type=radio]');
@@ -37,7 +37,7 @@ function DoCheckImage() {
 }	
 */
 
-function DoCheckImage(taskVersion) {
+function DoCheckImage(taskVesrion, exam) {
 	//console.log('DoCheckImage ver:', taskVersion)
 	if (!RB_alreadySet()) {
 		if (taskVersion==0) {  //Безопасная картинка

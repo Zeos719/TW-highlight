@@ -1,7 +1,7 @@
 
 var	pulse_idea = null;
 
-function DoPulseIdea(){
+function DoPulseIdea(taskVesrion, exam){
 	if (pulse_idea==null) {
 		pulse_idea = new PulseIdea();
 	}
@@ -82,6 +82,25 @@ class PulseIdea {
 			autoRun = !autoRun;
 			this.DrawAutoIndicator(autoRun);
 		}
+		
+		//1..4 -> Radio buttons
+		const RB_keys  = ["Digit1", "Digit2"];
+		let RB_selected = -1;
+		
+		for (let i=0;i<RB_keys.length;i++) {
+			if (e.code==RB_keys[i]) {
+				RB_set(i);
+				RB_selected = i;
+				break;
+			}
+		} //for(RB_keys[])
+
+	//Double check RB setiings
+	if ( (RB_selected!=-1) && (RB_selected!=RB_get()) ) {
+		console.error('PulseIdea.RB_set err', RB_selected);
+	}
+		
+		
 
 	} //onCtrlEnter()
 
