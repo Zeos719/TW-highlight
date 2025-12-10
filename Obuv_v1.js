@@ -86,11 +86,12 @@ function Obuv_onCtrlEnter(e) {
 
 	//1..4 -> Radio buttons
 	const RB_keys  = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9"];
+	const NP_keys  = ["Numpad1", "Numpad2", "Numpad3", "Numpad4", "Numpad5", "Numpad6", "Numpad7", "Numpad8", "Numpad9"];
 	let RB_selected = -1;
 	
 	if (!e.shiftKey && !e.ctrlKey) {
 		for (let i=0;i<RB_keys.length;i++) {
-			if (e.code==RB_keys[i]) {
+			if (e.code==RB_keys[i] || e.code==NP_keys[i]) {
 				RB_set(i);
 				RB_selected = i;
 				break;

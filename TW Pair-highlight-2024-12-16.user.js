@@ -56,7 +56,8 @@ const le_EXAM = 2;
 //Task functions
 
 const taskMarkers = [
-    { marker: "Товары полностью совпадают|Полностью идентичные товары|Различные варианты одной и той же модели одного бренда|Нет, товары совсем разные", code: tc_Obuv },
+    //!! 'Полностью идентичные_товары' - 'Полностью идентичные__товары'
+    { marker: "Товары полностью совпадают|Полностью идентичные|Различные варианты одной и той же модели одного бренда|Нет, товары совсем разные", code: tc_Obuv },
     //{ marker: "БАНКИ.РУ", code: tc_Banki },
     { marker: "соответствие бренда", code: tc_Brand },
     { marker: "Подходят ли товары?|Название товара в чеке:", code: tc_GiC },
@@ -98,6 +99,9 @@ const SEND_TO_SERVER = true;
 
 var vbd = null;
 let startPage;
+
+var observer = null;
+
 
 console.log('Before window');
 
@@ -143,7 +147,8 @@ if (window==window.top) {
      });
     observer.observe(document.body, { childList: true, subtree: true });
 */
-        var observer = new customObserver(document,false,function(observer,mutations){
+
+        if (!observer) observer = new customObserver(document,false,function(observer,mutations){
             this.disconnect();
 
             $.ajaxSetup({ cache: false });
@@ -208,6 +213,8 @@ function OpenPreviewTabs() {
 
 //return [taskCode, taskVersion]
 function detectTask(docText) {
+
+//console.log('detectTask.docText:', docText);
 
   for (let task of taskMarkers) {
     let mark_arr = task.marker.split('|');
