@@ -18,7 +18,7 @@ function DoSmartCat(taskVesrion, exam) {
 	} catch(err) {
 		console.log('SmartCatalog.DoSmartCat', err)
 	}
-	
+
 
 };
 
@@ -32,6 +32,7 @@ class SmartCatalog {
 		console.log('SmartCatalog.constructor');
 
 		this.Answers = []; //for Auto
+		this.LastChoices = {};
 
 		this.GREEN_COLOR_LIGHT='#e6fff2';
 		this.RED_COLOR_LIGHT  ='#ffe6e6';
@@ -48,6 +49,8 @@ class SmartCatalog {
 				if (e.type=="click") {
 					this.onBtnClick(e);
 					}
+
+				this.DeleteOverlay();
 
 			}//handleEvent
 
@@ -109,6 +112,8 @@ class SmartCatalog {
 		let sol = this.GetSolution();
 		if (!sol) return;
 
+		this.UpdateChoices(sol);
+
 		let payload = {
 			task: 'SmartCatalog',
 			//subtask: this.subtask,
@@ -126,7 +131,7 @@ class SmartCatalog {
 		});
 
 		return sol;
-		
+
 	} //SendToServer()
 
 	DrawAutoIndicator(isOn) {
@@ -165,47 +170,160 @@ class SmartCatalog {
 
 		//Main
 		this.DrawAutoIndicator(autoRun);
-		
+
 		this.GetDescr();
 		console.log('SmartCatalog.descr', this.descr, this.link);
-		
-		
-		
-		
-		
+
+		if (!document.querySelector('div.z-overlay')) this.AddOverlay();
+		this.PrintChoices();
+
+
 		//Append 'Done' marker
 		{ // If valid Answers were loded..
 			let doneMark = document.createElement('div');
 			doneMark.className = 'z-done-mark';
 			//this.queNode.appendChild(doneMark);
 		}
-		
-		//
-		
-		
+
 
 	} //Run()
 
 	GetDescr() {
 		this.descr = null;
 		this.href = null;
-		
+
 		let node = document.querySelector('.tui-editor-socket');
 		if (node) this.descr = node.innerText;
-		
+
 		let nodes = document.querySelectorAll('a');
 		if (nodes && nodes.length>=3) this.href = nodes[2].href;
-			
+
 		return;
 	} //GetDescr()
 
 	GetSolution() {
-		let sol = null;
-		
-		let node = document.querySelector('div.child__text_with-check');
-		if (node) sol = node.innerText;
-		
-		return sol;		
+		return this.GetSelectedPath();
 	} //GetSolution()
+
+	//Путь к выбранной категории в виде 'cat_1|cat_2}cat_3'
+	GetSelectedPath() {
+		let path = '';
+
+		//Categories
+		let nodes = document.querySelectorAll('div.child__header_child-selected');
+		for (let nd of nodes) path += nd.innerText + '|';
+
+		//Final node
+		let nd = document.querySelector('div.child__text_with-check');
+
+		if (!path && !nd) return;
+
+		if (nd) {
+			path += nd.innerText;
+		} else {
+			path += '?';
+		};
+
+		return path;
+	} //GetSelectedPath
+
+	AddOverlay() {
+		//console.log('SmartCatalog.AddOverlay');
+/*
+		//Add css for buttons
+		const style = document.createElement('style').
+		style.innerHTML = '.button-z {\
+            display: block;\
+            background-color: white;\
+            border: 2px solid #ccc;\
+            color: black;\
+            padding: 10px 0;\
+            width: 100%;\
+            box-sizing: border-box;\
+            cursor: pointer;\
+            text-align: left;\
+            padding-left: 10px;\
+            margin-bottom: 5px;\
+            border-radius: 5px;\
+        }';
+			
+		document.head.appendChild(style);
+*/
+		//Add div
+		const div = document.createElement('div');
+		div.className = 'z-overlay';
+
+		div.style.cssText = "\
+            position: fixed; /* Фиксируем положение элемента относительно окна браузера */ \
+            top: 40px;\
+            right: 15px;\
+            //background-color: rgba(255, 255, 255, 0.8); /* Полупрозрачный фон */\
+			background-color: rgba(255, 255, 255, 1); /* Полупрозрачный фон */\
+            border: 3px solid #888; /* Рамка серого цвета толщиной 3px */\
+            box-sizing: border-box; /* Учитываем толщину рамки внутри размера блока */\
+            width: calc(100vw / 3); /* Ширина одной трети ширины экрана */\
+            height: calc(100vh / 3); /* Высота одной трети высоты экрана */\
+            display: flex;\
+            //justify-content: center;\
+			justify-content: left;\
+            align-items: center;\
+            z-index: 1000; /* Устанавливаем элемент поверх всех остальных */\
+		";
+
+		div.innerHTML = 'Hello, World!';
+		
+		//document.body.appendChild(div);
+		//Прикрепляем к элементу, который будет удален при обновлении
+		let nd = document.querySelector('tui-editor-socket');
+		if (nd) nd.appendChild(div);
+				
+	} //AddOverlay
+
+	DeleteOverlay() {
+		const div = document.querySelector('div.z-overlay');
+		if (div) div.remove()
+	} //DeleteOverlay
+
+	UpdateChoices(sol) {
+		const CHOICE_WEIGHT = 3.0;
+		const CHOICE_DECAY = 0.8;
+		
+		if (sol in this.LastChoices) {
+			this.LastChoices[sol] += CHOICE_WEIGHT;
+		} else {
+			this.LastChoices[sol] = CHOICE_WEIGHT;
+		}
+
+		for (let key in this.LastChoices) this.LastChoices[key] *= CHOICE_DECAY
+
+		console.log('SmartCatalog.LastChoices', this.LastChoices);
+	} //UpdateChoices
+
+	PrintChoices() {
+		const CHOICE_TRESHOLD = 1.0;
+		
+		const div = document.querySelector('div.z-overlay');
+		if (!div) return;
+
+		let items = [];
+		for (let key in this.LastChoices) {
+			if (this.LastChoices[key]>CHOICE_TRESHOLD)
+				items.push(key + ':' + this.LastChoices[key].toFixed(2));
+				//txt +=  key + ':' + this.LastChoices[key].toFixed(2) + '<br\>';
+		}
+		
+		items.sort();
+		
+		//Create buttons
+		for (let txt of items) {			
+			let btn = document.createElement('button');
+			btn.className = 'button-z';
+			btn.innerText = txt;
+			
+			div.appendChild(btn);			
+		} //for		
+		
+	} //PrintChoices
+
 
 } //SmartCatalog
