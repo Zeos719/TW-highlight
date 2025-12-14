@@ -355,5 +355,17 @@ function ColorizeWords_matchAll(text, matchAll_array, color) {
 	} //for
 
 	return text
-} //ColorizeWords_matchAll()
+} //ColorizeWords_matchAll
 
+function triggerMouseUp(node) {
+		console.log('triggerMouseUp');
+        const event = new MouseEvent('mouseup', { bubbles: true });
+        //document.getElementById('myDiv').dispatchEvent(event);
+		node.dispatchEvent(event);
+    }
+		
+function triggerClick(node) {
+		console.log('triggerClick');
+        const event = new MouseEvent('click', { bubbles: true });
+        node.dispatchEvent(event);
+    }

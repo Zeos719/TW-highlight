@@ -275,7 +275,7 @@ class QueAnsw {
 			let isManipulPost = isCheckPost&& this.header_2nd.includes('Манипуляция');
 			let isThemePost = isCheckPost && this.header_2nd.includes('Выберите тематик');
 
-console.log('PalyExam.theme', isCheckPost, isManipulPost, isThemePost, this.header_2nd)
+console.log('QueAnsw.theme', isCheckPost, isManipulPost, isThemePost, this.header_2nd)
 
 			let decision = -1;
 
@@ -315,7 +315,7 @@ console.log('PalyExam.theme', isCheckPost, isManipulPost, isThemePost, this.head
 
 			if (isThemePost) { //Проверка темы 
 				let hasTicker = this.que.match(/\$[A-Z][A-Z\d]+/) //Look for any ticker. Was /\$[A-Z\d]+/
-				console.log('PalyExam.hasTicker', hasTicker)
+				console.log('QueAnsw.hasTicker', hasTicker)
 				
 				const ACTIVE_BADGE_CLASS = 'flex-labeling__badge_active'
 				
@@ -327,8 +327,11 @@ console.log('PalyExam.theme', isCheckPost, isManipulPost, isThemePost, this.head
 								
 				if (hasTicker) {
 						let bd = badges_dict['Инвестиции']
-						if (bd) 					
-							bd.classList.add(ACTIVE_BADGE_CLASS)											
+						if (bd){ 					
+							//bd.classList.add(ACTIVE_BADGE_CLASS)											
+							//triggerMouseUp(bd);
+							triggerClick(bd);
+						}
 				}
 			}
 
