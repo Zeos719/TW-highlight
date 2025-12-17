@@ -102,7 +102,6 @@ let startPage;
 
 var observer = null;
 
-
 console.log('Before window');
 
 //if (window!=window.top)
@@ -173,13 +172,25 @@ if (window==window.top) {
             }
 
 /*
-        let url = 'https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt';
+        let url = 'https://www.phonewarez.ru/files/TW/smart-ctg-tree.json';
+        //let url = 'https://www.phonewarez.ru/files/TW/example.json';
 
-		$.get(url, '', function(data) {
-this.saveUrl = url;
-			console.log('ValidBrands.get-Lamoda', this.saveUrl, data.slice(0,22));
-		} );
+        console.log('SmartCtgTree.GET-0', url);
+		$.get(url, '', function(data, textStatus) {
+            this.saveUrl = url;
+			console.log('SmartCtgTree.GET-1', this.saveUrl, textStatus, data);
+		})
+  .fail(function( jqXHR, textStatus, errorThrown ) {
+    console.log( "SmartCtgTree.GET error", textStatus );
+  })
 */
+
+
+            if (!smart_tree) {
+                smart_tree = new SmartCtgTree();
+                smart_tree.Load_http();
+            }
+
 
             RunTask(docText);
 
@@ -501,6 +512,7 @@ const ignoredTasks = [
     "Прослушайте аудио и выберите наилучшую транскрипцию",
     "Клиент формулирует свой запрос в поиск или поддержку",
     //"Исполнитель (БЕЗ ИП)",
+    "Анализ отзывов",
 ];
 
 function IsIgnoredTask(docText) {

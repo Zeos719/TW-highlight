@@ -787,7 +787,7 @@ class ValidBrands {
 	SaveServerAnswer(url, data) {
 		console.log('ValidBrands.SaveServerAnswer', data.length, url);
 
-		//Parse url: https://www.phonewarez.ru/files/TW-brands/Letu/А-Я.cp1251.txt
+		//Parse url: https://www.phonewarez.ru/files/TW/brands/Letu/А-Я.cp1251.txt
 		let tokens = url.split('/');
 		let fileNameWithExt  = tokens[ tokens.length-1 ];  // 'А-Я.cp1251.txt'
 		let fileName  = fileNameWithExt.split('.')[0].toUpperCase(); // 'А-Я'

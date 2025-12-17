@@ -268,7 +268,8 @@ function RB_set(choice) {
 	if (typeof(choice)=='number') choice = [choice];
 	
 	for(let i=0; i<choice.length; i++) {
-		radio_btns[ choice[i] ].parentNode.click();
+		//radio_btns[ choice[i] ].parentNode.click();
+		triggerClick( radio_btns[ choice[i] ] );
 	} //for(ch)
 	
 	return;
@@ -365,7 +366,7 @@ function triggerMouseUp(node) {
     }
 		
 function triggerClick(node) {
-		console.log('triggerClick');
+		console.log('triggerClick', node);
         const event = new MouseEvent('click', { bubbles: true });
         node.dispatchEvent(event);
     }

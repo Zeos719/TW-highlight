@@ -407,7 +407,7 @@ console.log('QueAnsw.theme', isCheckPost, isManipulPost, isThemePost, this.heade
 
 		let myself = this;
 
-		let rootUrl = 'https://www.phonewarez.ru/files/play-exams/';
+		let rootUrl = 'https://www.phonewarez.ru/files/TW/play-exams/';
 
 		let url = rootUrl + 'que-inton.csv';
 		//let url = rootUrl + 'pay-systems.csv';
