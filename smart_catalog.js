@@ -53,35 +53,74 @@ class SmartCtgTree {
 			console.log( "SmartCtgTree.GET-fail error", textStatus, errorThrown )
 		  })
 		.done(function() {
-			console.log( "SmartCtgTree.GET-done", myself.data );			
+			//console.log( "SmartCtgTree.GET-done", myself.data );			
 		})  
 		
 		return;
 	}; //Load_http
 
-	GetSuitableCtgs(hint) {
-		const IGNORE = '<<NOTUSED>>'
 
-		//prepare hint	
-		hint = hint.toLowerCase().replace('.', ',');
-		hint = hint.split(',');
-		if (hint.length==2) hint.push(IGNORE).reverse();
-		if (hint.length==1) hint.push([IGNORE, IGNORE]).reverse();
+	// hint='муж об' ctg='мужская обувь'
+	 CompareWithCtg(hint, ctg) {
+	
+		hint = hint.toLowerCase().replace(/[,()]/g, '');
+		hint = hint.split(' ');
+		hint = hint.filter( (w)=>{return w!=''} );
+		hint = hint.slice(0,3);
+		
+		ctg = ctg.toLowerCase();
+		ctg = ctg.split(' ').filter( (w)=>{return w!=''} );
+		
+		//console.log('CWC', hint, ctg);
+		
+		if (hint.length==0) return false;
+		
+		for (let h of hint) {		
+			let gotIt = false;
+			ctg.forEach( (ct)=>{ gotIt = gotIt || ct.startsWith(h) } );
+			
+			if (!gotIt) return false;
+		};
+	
+		return true;
+	} //CompareWithCtg
+
+	//hints = 'abc,cd ef' ctgs = Array(3)
+	CompareWithCtgGroup(hints, ctgs) {
+		hints = hints.split(',').slice(0,3);
+		
+		if (hints.length==0) return false;
 				
-		//search		
-		let ctgs = [];
-		for (let ctg in this.data) {
-			
-			
-			
-			
-			
-			return ctgs;
+		let skipTill = 3-hints.length;		
+		let ok = true;
+		
+		//console.log('CWCG', skipTill, hints);
+				
+		for(let i=skipTill;i<3;i++) {
+			ok = ok && this.CompareWithCtg(hints[i-skipTill], ctgs[i]);			
 		} //for
+
+		return ok;
+	} //CompareWithCtgGroup
+
+	//hints = 'об,муж кр' )
+	GetSuitableCtgs(hints) {		
+		if (hints=='') return [];
 		
+		let ctgs_ok = [];
 		
-		return ['Category 1: ' + hint , 'Category 2: ' + hint];
-	}
+		this.data.forEach( (ctgs)=>{
+				if (this.CompareWithCtgGroup(hints, ctgs))
+					ctgs_ok.push(ctgs);		
+			}		
+		); //forEach
+		
+		console.log('GetSuitableCtgs', hints, ctgs_ok);
+		
+		return ctgs_ok;
+	} //GetSuitableCtgs
+
+
 
 }; //SmartCtgTree
 
@@ -98,6 +137,8 @@ class SmartCatalog {
 
 		this.GREEN_COLOR_LIGHT='#e6fff2';
 		this.RED_COLOR_LIGHT  ='#ffe6e6';
+		
+		this.QuickJump_prev = {'hint':'', 'ctgs':[]};
 
 	} //constructor
 
@@ -402,6 +443,7 @@ class SmartCatalog {
 		nd.oninput = this.Edit_oninput;		
 		div_chi.appendChild(nd);			
 		this.QJmp_edit = nd;
+		//console.log('SmartCatalog.QJmp_edit', this.QJmp_edit);
 		
 		//nd = document.createElement('button');
 		//nd.className = 'button-z';
@@ -428,9 +470,10 @@ class SmartCatalog {
 				
 	} //AddOverlay
 
-	Edit_oninput() {
-		let hint = this.QJmp_edit.value;
-		this.PrintSuitableCtgs(hint);
+	Edit_oninput() {		
+		//console.log('SmartCatalog.Edit_oninput', smart_cat.QJmp_edit);
+		let hint = smart_cat.QJmp_edit.value;
+		smart_cat.PrintSuitableCtgs(hint);
 	};
 
 	DeleteOverlay() {
@@ -514,13 +557,38 @@ class SmartCatalog {
 	PrintSuitableCtgs(hint) {
 		if (!smart_tree) return;
 		
-		let ctgs = smart_tree.GetSuitableCtgs(hint);
+		let ctgs;
 		
+		smart_tree.GetSuitableCtgs(hint);
+		
+		if (hint!=this.QuickJump_prev.hint)
+		{
+			this.QuickJump_prev.hint = hint;
+			this.QuickJump_prev.ctgs = smart_tree.GetSuitableCtgs(hint);						
+		}
+		ctgs = this.QuickJump_prev.ctgs; //Кешированное значение
+					
+		//clue categories into string	
+		let paths = [];
+		const MAX_PATHS = 2;
+		for (let i=0;i<MAX_PATHS;i++) {
+			let pt = `${ctgs[i][0]}|${ctgs[i][1]}|${ctgs[i][2]}`;
+			paths.push(  pt  );
+		} //for
+		
+		if (ctgs.length>MAX_PATHS) paths.push(`${ctgs.length}...`);
+	
+		//	
 		let content = '';
-		for (ct of ctgs) content += ct + 'br/';
-		
-		let nd = document.querySelector('#quick-jump-ctgs');
-		if (nd) nd.innerHTML = content;
+		if (paths.length>0) {
+				content = paths[0];
+				for (let i=1;i<paths.length;i++) content += '<br/>' + paths[i];
+		}
+						
+		let nd = document.querySelector('#quick-jump-ctgs');		
+		if (nd) 
+			if (nd.innerHTML!=content)
+				nd.innerHTML = content;
 		
 		
 	} //PrintSuitableCtgs

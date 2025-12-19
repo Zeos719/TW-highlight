@@ -370,3 +370,38 @@ function triggerClick(node) {
         const event = new MouseEvent('click', { bubbles: true });
         node.dispatchEvent(event);
     }
+
+	// compare_fn(x, y)
+	function BinarySearch(arr, el, compare_fn) {
+		let low = 0;
+		let top = arr.length - 1;
+		while (low <= top) {
+			let mid = (top + low) >> 1;
+			let cmp = compare_fn(el, arr[mid]);
+			if (cmp > 0) {
+				low = mid + 1;
+			} else if(cmp < 0) {
+				top = mid - 1;
+			} else {
+				return mid;
+			}
+		}
+		return -1;
+	} //BinarySearch
+
+	// To use with BinarySearch
+	function InflateSearchRange(arr, x, idx, compare_fn) {	
+		if (idx<0) return null;
+		
+		//to bottom
+		let bottom = idx;		
+		while(bottom>=0 && compare_fn(x, arr[bottom])==0) --bottom;
+		bottom++;
+	
+		//to top
+		let top = idx;		
+		while(top<arr.length && compare_fn(x, arr[top])==0) ++top;
+		top--;
+		
+		return [bottom, top];
+	} //InflateRange
