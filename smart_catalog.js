@@ -270,7 +270,7 @@ class SmartCatalog {
 		completeBtn.addEventListener("click", this);
 
 		document.addEventListener("keydown", this);
-
+		
 		//Main
 		this.DrawAutoIndicator(autoRun);
 
@@ -281,6 +281,8 @@ class SmartCatalog {
 		this.PrintQuickJump();
 		this.PrintLastCtgs();
 
+		let nd = document.getElementById('quick-jump-imput');
+		if (nd) nd.focus();
 
 		//Append 'Done' marker
 		{ // If valid Answers were loded..
@@ -441,9 +443,10 @@ class SmartCatalog {
 		nd = document.createElement('input');
 		nd.id = 'quick-jump-imput';
 		nd.oninput = this.Edit_oninput;		
+		nd.onkeydown = this.Edit_onkeydown;		
+		
+
 		div_chi.appendChild(nd);			
-		this.QJmp_edit = nd;
-		//console.log('SmartCatalog.QJmp_edit', this.QJmp_edit);
 		
 		//nd = document.createElement('button');
 		//nd.className = 'button-z';
@@ -471,10 +474,28 @@ class SmartCatalog {
 	} //AddOverlay
 
 	Edit_oninput() {		
-		//console.log('SmartCatalog.Edit_oninput', smart_cat.QJmp_edit);
-		let hint = smart_cat.QJmp_edit.value;
-		smart_cat.PrintSuitableCtgs(hint);
-	};
+		let nd = document.getElementById('quick-jump-imput');
+		//console.log('SmartCatalog.Edit_oninput', nd);
+		if (nd) {
+			let hint = nd.value;
+			smart_cat.PrintSuitableCtgs(hint);
+		}
+	} //Edit_oninput
+
+	Edit_onkeydown(e) {
+		//console.log('SmartCatalog.Edit_onkeydown', e.ctrlKey, e.key);		
+		if (!e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {									
+			let nd = document.querySelector('#quick-jump-ctgs');					
+			if (!nd) return;						
+			
+			let ctgPath = nd.innerHTML;
+			//console.log('SmartCatalog.Edit_onkeydown', ctgPath);	
+			
+			if (!ctgPath || ctgPath.indexOf('<br/>')>=0) return; //Должен быть строго один путь						
+			
+			smart_cat.SelectCtg(ctgPath);					
+		}
+	} //Edit_onkeydown
 
 	DeleteOverlay() {
 		//const div = document.querySelector('div.z-overlay');
@@ -571,7 +592,9 @@ class SmartCatalog {
 		//clue categories into string	
 		let paths = [];
 		const MAX_PATHS = 2;
-		for (let i=0;i<MAX_PATHS;i++) {
+		for (let i=0;i<ctgs.length;i++) {
+			if (i==MAX_PATHS) break;
+			
 			let pt = `${ctgs[i][0]}|${ctgs[i][1]}|${ctgs[i][2]}`;
 			paths.push(  pt  );
 		} //for
@@ -662,16 +685,26 @@ class SmartCatalog {
 	} //ClickChoice_OnTimer
 
 
-	//path - as list, stage = 1-3
 	SelectCtg_trigger(category_title) {
 		let ok = false;
+		let divs;
+						
+		//Проверяем, может быть путь уже открыт
+		let alreadySelected = false;
 		
-		//let divs = document.querySelectorAll('flex-selection-tree div');
-		let divs = document.querySelectorAll('[automation-id="selection-tree__child__body"]')
-				
+		divs = document.querySelectorAll('div.child__header_child-selected'); //for stages 1,2
+		for (let d of divs) alreadySelected ||= (d.textContent==category_title);
+		
+		divs = document.querySelectorAll('div.child__header_hover-selected'); //for stage 3
+		for (let d of divs) alreadySelected ||= (d.textContent==category_title);
+					
+		//Click itself
+		divs = document.querySelectorAll('[automation-id="selection-tree__child__body"]');
+		
 		for (let d of divs) {
 			if (d.innerText==category_title) {
-				triggerClick(d);
+								
+				if (!alreadySelected) triggerClick(d);
 				
 				d.scrollIntoView();
 				
@@ -680,7 +713,7 @@ class SmartCatalog {
 			}	
 		} //for
 
-		console.log('SmartCatalog.SelectCtg_trigger', divs.length, ok, category_title);					
+		//console.log('SmartCatalog.SelectCtg_trigger', divs.length, ok, category_title);					
 
 		return ok;
 	}	

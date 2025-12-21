@@ -405,3 +405,24 @@ function triggerClick(node) {
 		
 		return [bottom, top];
 	} //InflateRange
+
+	function UniqueSort(arr, compare_fn) {
+		if (!compare_fn) compare_fn = function (x,y) {return x-y};
+				
+		if (arr.length<=1) return arr;		
+		
+		let sorted = arr;
+		sorted.sort(compare_fn);
+				
+		let prev = sorted[0];
+		let unique = [ prev ];
+		
+		for (let i=1;i<sorted.length;i++) {
+			if(compare_fn(prev, sorted[i])!=0) {
+				prev = sorted[i];
+				unique.push(prev);			
+			}		
+		}//for
+			
+		return unique;
+	} //UniqueSort
