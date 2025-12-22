@@ -23,6 +23,126 @@ function DoSmartCat(taskVesrion, exam) {
 
 };
 
+//*** Быстрый поиск по категориям с помощью BinarySearh - одна категория ***
+class Ctg_QuickSearch {
+	
+	//data from html
+	constructor(ctgNo, orgData) {
+		console.log('Ctg3_QuickSearch.constructor');
+
+		// data = [[word, lineNo], ...]	
+		this.data = [];
+		this.BuildWordLists(ctgNo, orgData);
+	}
+
+	BuildWordLists(ctgNo, orgData) {
+		let var_name = `cat${ctgNo}_name`;
+		
+		for (let i=0;i<orgData.length;i++) {
+			let words;
+		
+			words = orgData[i][var_name];				
+			
+			words = words.replace(/[,\(\)]/g, ' '); // ',()'
+			words = words.toLowerCase().split(' ');
+			words = words.filter( (a)=>{return a!=''} );
+							
+			for (let w of words)
+				this.data.push( [w, [i]] );					
+		} //for
+		
+		this.data = this.CombineSameWords(this.data);			
+		
+	}//BuildWordLists()
+
+	CombineSameWords(arr) {
+		if (arr.length<=1) return arr;
+	
+		//Remove duplicates and summarize references
+		let compare_fn = function (a,b) {return a[0].localeCompare(b[0])}
+		
+		let sorted = arr;
+		sorted.sort( compare_fn );
+				
+		let prev = sorted[0];
+		let unique = [ prev ]; //[ '', []  ]
+						
+		for (let i=1;i<sorted.length;i++) {
+			let w = sorted[i];
+					
+			if(compare_fn(prev, w)!=0) {
+				//Add new
+				prev = w;
+				unique.push( w );			
+			} else {
+				//Summarize
+				let last = unique[unique.length-1];
+				last[1].push( ...w[1] );			
+			}		
+		}//for
+
+		// На всякий случай удалям повторы внутри каждого списка references
+		for (let w of unique) { w[1] = UniqueSort(w[1]) }
+		
+		return unique;			
+	} //CombineSameWords
+
+	// Поиск вхождений по одному слову (префиксу)
+	LocateWord(w) {
+		let compare_fn = function (aa,bb) {
+			let a=aa[0]; let b=bb[0]; 
+			return a.localeCompare(b.slice(0,a.length)) }; //Только один slice! Чтобы педотвратить совпадение 'пол' с ключом 'поло'
+
+		
+		//this.data: [ .., [name, [refs]], ..]
+		let idx = BinarySearch(this.data, [w], compare_fn); //Ok for [w]; compare_fn accepts two ARRAYS
+		if (idx==-1) return null;
+	
+		let r = InflateSearchRange(this.data, [w], idx, compare_fn); //Again Ok for [w]; compare_fn accepts two ARRAYS
+		//console.log('idx', w, idx);
+		//console.log('data[idx]', this.data.slice(idx-3, idx+3));
+		//console.log('range', r[0], r[1]);
+				
+		//Объединяем все списки reference в найденных пределах 		
+		let refs = [];
+		for (let i=r[0];i<=r[1];i++) {
+			let data_i = this.data[i];
+			refs.push( ...data_i[1] );
+		} //for
+
+		//console.log('refs', refs);										
+		
+		refs = UniqueSort(refs);
+		return refs;		
+	} //LocateWord
+
+	//hint из нескольких слов: 'муж поло'. Ищем пересечение refs для всех слов. 
+	// !Возвращает Set()!
+	LocateHint(hint) {	
+		hint = hint.toLowerCase().replace(/[,()]/g, ' ');
+		hint = hint.split(' ');
+		hint = hint.filter( (w)=>{return w!=''} );
+		
+		if (hint.length==0) return null;
+	
+		let refs_common = new Set( this.LocateWord( hint[0] ) );  
+		
+		for (let i=1;i<hint.length;i++) {
+			let refs_i = new Set( this.LocateWord( hint[i] ) );  
+			refs_common = refs_common.intersection(refs_i);
+			
+			if (refs_common.length==0) break;				
+		} //for
+	
+		//console.log('Ctg_QuickSearch.LocateHint', hint, refs_common);
+	
+		return refs_common; //Set()!
+	} //LocateHint
+
+
+} //Ctg_QuickSearch
+
+
 //******************** class SmartCtgTree - load categories tree ********************
 class SmartCtgTree {
   //constructor(name) { this.name = name; }
@@ -33,6 +153,11 @@ class SmartCtgTree {
 
 		this.URL = 'https://www.phonewarez.ru/files/TW/smart-ctg-tree.json';
 		this.data = null;
+		
+		this.quickCtgs = null;
+		
+		this.NUM_CTGS = 3;
+		
 
 	} //constructor
 	
@@ -44,10 +169,16 @@ class SmartCtgTree {
 		$.get(this.URL, { "_": $.now() }, function(data){
 			console.log('SmartCtgTree.GET-func', data.length);
 			
-			//myself.data = data;
-			
+			//Simple search - prepare	
 			myself.data = [];
 			for (let ctg of data) myself.data.push( [ctg.cat1_name, ctg.cat2_name, ctg.cat3_name] );						
+			
+			myself.quickCtgs = [
+				new Ctg_QuickSearch(1, data),
+				new Ctg_QuickSearch(2, data),
+				new Ctg_QuickSearch(3, data)
+			];			
+			
 		} )
 		.fail(function( jqXHR, textStatus, errorThrown ) {
 			console.log( "SmartCtgTree.GET-fail error", textStatus, errorThrown )
@@ -66,7 +197,7 @@ class SmartCtgTree {
 		hint = hint.toLowerCase().replace(/[,()]/g, '');
 		hint = hint.split(' ');
 		hint = hint.filter( (w)=>{return w!=''} );
-		hint = hint.slice(0,3);
+		hint = hint.slice(0, this.NUM_CTGS);
 		
 		ctg = ctg.toLowerCase();
 		ctg = ctg.split(' ').filter( (w)=>{return w!=''} );
@@ -85,26 +216,26 @@ class SmartCtgTree {
 		return true;
 	} //CompareWithCtg
 
-	//hints = 'abc,cd ef' ctgs = Array(3)
+	//hints = 'abc,cd ef' ctgs = Array(this.NUM_CTGS)
 	CompareWithCtgGroup(hints, ctgs) {
-		hints = hints.split(',').slice(0,3);
+		hints = hints.split(',').slice(0,this.NUM_CTGS);
 		
 		if (hints.length==0) return false;
 				
-		let skipTill = 3-hints.length;		
+		let skipTill = this.NUM_CTGS - hints.length;		
 		let ok = true;
 		
 		//console.log('CWCG', skipTill, hints);
 				
-		for(let i=skipTill;i<3;i++) {
+		for(let i=skipTill;i<this.NUM_CTGS;i++) {
 			ok = ok && this.CompareWithCtg(hints[i-skipTill], ctgs[i]);			
 		} //for
 
 		return ok;
 	} //CompareWithCtgGroup
 
-	//hints = 'об,муж кр' )
-	GetSuitableCtgs(hints) {		
+	//hints = 'об,муж кр' ); Вариант с прямым обходом дерева
+	GetSuitableCtgs_simple(hints) {		
 		if (hints=='') return [];
 		
 		let ctgs_ok = [];
@@ -115,11 +246,38 @@ class SmartCtgTree {
 			}		
 		); //forEach
 		
-		console.log('GetSuitableCtgs', hints, ctgs_ok);
+		//console.log('GetSuitableCtgs_simple', hints, ctgs_ok);
 		
 		return ctgs_ok;
-	} //GetSuitableCtgs
+	} //GetSuitableCtgs_simple
 
+
+	//hint = 'об,муж кр' ); Вариант с быстрым поиском binarySearch
+	GetSuitableCtgs_quick(hint) {		
+		if (!this.quickCtgs) return [];
+	
+		hint = hint.split(',').slice(0,this.NUM_CTGS);		
+		if (hint.length==0) return [];
+				
+		let skipTill = this.NUM_CTGS - hint.length;				
+		
+		let refs_common = this.quickCtgs[skipTill].LocateHint( hint[0] );
+				
+		for(let i=skipTill+1;i<this.NUM_CTGS;i++) {
+			let refs_i = this.quickCtgs[i].LocateHint( hint[i-skipTill] );
+			refs_common = refs_common.intersection( refs_i );
+			
+			if (refs_common.length==0) break;
+		} //for
+
+		//converts refs to ctgs
+		let ctgs_ok = [];
+		
+		for (const r of refs_common) 
+			ctgs_ok.push( this.data[r] );
+
+		return ctgs_ok;
+	} //GetSuitableCtgs_quick
 
 
 }; //SmartCtgTree
@@ -580,12 +738,13 @@ class SmartCatalog {
 		
 		let ctgs;
 		
-		smart_tree.GetSuitableCtgs(hint);
-		
-		if (hint!=this.QuickJump_prev.hint)
+		if (hint!=this.QuickJump_prev.hint) //new hint
 		{
+			//console.log('SmartCatalog.PrintSuitableCtgs', hint);
 			this.QuickJump_prev.hint = hint;
-			this.QuickJump_prev.ctgs = smart_tree.GetSuitableCtgs(hint);						
+			
+			//is.QuickJump_prev.ctgs = smart_tree.GetSuitableCtgs_simple(hint);
+			this.QuickJump_prev.ctgs = smart_tree.GetSuitableCtgs_quick(hint);			
 		}
 		ctgs = this.QuickJump_prev.ctgs; //Кешированное значение
 					

@@ -825,7 +825,7 @@ class ValidBrands {
 
 		this.brandsList = {}; //Empty dictionary
 
-		let rootUrl = 'https://www.phonewarez.ru/files/TW-brands/';
+		let rootUrl = 'https://www.phonewarez.ru/files/TW/brands/';
 
 		//Lamoda
 		let url = rootUrl + 'Lamoda/Lamoda-brands.txt';
@@ -1295,6 +1295,8 @@ class Obuv {
 
 	// Return list of elem like: {id:'vendorCode', values:['123', '159']};
 	Subset_of_attr(id_list) {
+		
+		if (this.attr.length<2) return  null;
 
 		let val_list = [];
 
@@ -1335,7 +1337,8 @@ class Obuv {
 
 	Attr_NoSizeNorColor() {	
 		const id_list = ['Цвет', 'Размер'];
-		let val_list = this.Subset_of_attr(id_list)
+		let val_list = this.Subset_of_attr(id_list);
+		if (!val_list) return true;
 		
 		if (val_list.length==0) return true; //ytn djj,ot 
 
@@ -1382,6 +1385,7 @@ class Obuv {
 			'Тип сим', 'Количество слотов для SIM'];
 
 		let tbl_rows = this.Subset_of_attr(id_list);
+		if (!tbl_rows) return;
 		this.tableCreate(infos[0], tbl_rows);
 
 		//Auto decision
@@ -1553,6 +1557,8 @@ class Obuv {
 	} //DecideBy_Brand
 
 	DecideBy_Size() {
+		//console.log('Obuv.DecideBy_Size', this.attr);
+		if (!this.attr || this.attr.length<2) return -1;		
 
 		let sizes = ['', ''];
 		for (let i=0;i<2;i++)
@@ -1574,7 +1580,7 @@ class Obuv {
 	Parse_Attributes() {
 
 		let nodes = document.getElementsByClassName('attributes');
-		if (nodes.length!=2) return null;
+		if (nodes.length!=2) return [];
 
 		let tbls = [
 			nodes[0].querySelector('table'),
@@ -1608,6 +1614,8 @@ class Obuv {
 
 
 	Letu_add_sku(idx) {
+		if (!this.attr || this.attr.length<2) return;
+		
 		//console.log('Obuv.Letu_add_sku', idx);
 		if (this.links[idx].href.includes('vendorCode')) //Already done
 			return;
