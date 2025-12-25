@@ -643,15 +643,23 @@ class SmartCatalog {
 	Edit_onkeydown(e) {
 		//console.log('SmartCatalog.Edit_onkeydown', e.ctrlKey, e.key);		
 		if (!e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {									
-			let nd = document.querySelector('#quick-jump-ctgs');					
-			if (!nd) return;						
+			let div = document.querySelector('#quick-jump-ctgs');					
+			if (!div) return;						
 			
-			let ctgPath = nd.innerHTML;
+			/* strings
+			let ctgPath = div.innerHTML;
 			//console.log('SmartCatalog.Edit_onkeydown', ctgPath);	
 			
 			if (!ctgPath || ctgPath.indexOf('<br/>')>=0) return; //Должен быть строго один путь						
+			*/
 			
-			smart_cat.SelectCtg(ctgPath);					
+			//buttons
+			let btns = div.querySelectorAll('button');
+			if (btns.length==1) { //Должна быть строго одна кнопка
+				//let ctgPath = btns.firstChild.innerText;
+				//smart_cat.SelectCtg(ctgPath);									
+				btns.firstChild.click();
+			};			
 		}
 	} //Edit_onkeydown
 
@@ -758,6 +766,7 @@ class SmartCatalog {
 			paths.push(  pt  );
 		} //for
 		
+		/* as strings
 		if (ctgs.length>MAX_PATHS) paths.push(`${ctgs.length}...`);
 	
 		//	
@@ -767,15 +776,60 @@ class SmartCatalog {
 				for (let i=1;i<paths.length;i++) content += '<br/>' + paths[i];
 		}
 						
-		let nd = document.querySelector('#quick-jump-ctgs');		
-		if (nd) 
-			if (nd.innerHTML!=content)
-				nd.innerHTML = content;
+		let div = document.querySelector('#quick-jump-ctgs');		
+		if (div) 
+			if (div.innerHTML!=content)
+				div.innerHTML = content;
+		*/
 		
+		//* as buttons
+		let div = document.querySelector('#quick-jump-ctgs');		
+		if (!div) return;
 		
+		if (path.length==0) {
+			//Clear and return
+			while (div.firstChild) {
+				div.removeChild(myNode.lastChild);
+				
+			return;	
+			} //while
+		} 		
+				
+		//Может быть, нужные кнопки уже добавлены?
+		let alreadyDone = true;		
+		let btns = div.querySelectorAll('button');
+		
+		for (let p of paths) {
+			let gotIt = false;
+			for (let b of btns) {if (b.innerText=p) gotIt = true};
+			alreadyDone &&= gotIt;			
+		} //for(p)
+		
+		if (alreadyDone) return;
+
+		//Remove old info
+		while (div.firstChild) 
+			div.removeChild(myNode.lastChild);
+				
+		//Ad new ones		
+		for (let i=0;i<paths.length;i++) {			
+			let btn = document.createElement('button');
+			btn.className = 'button-z';
+			btn.innerText = paths[i];
+			btn.onclick = this.OnClick_btn; //Ттот же обработчик, что и для кнопок из истории
+			
+			div.appendChild(btn);			
+		} //for		
+
+		//Label with total count of options	
+		if (ctgs.length>MAX_PATHS) {
+			let lbl = document.createElement('div');		
+			lbl.textContent = `${ctgs.length}...`
+			div.appendChild(lbl);					
+		}
+				
 	} //PrintSuitableCtgs
 
-	
 	OnClick_btn(elem) {
 		let ctgPath = elem.currentTarget.innerHTML;
 		console.log('SmartCatalog.OnClick_btn', ctgPath);

@@ -56,8 +56,14 @@ class QueAnsw {
 
 		this.header_main = null;
 		this.header_2nd = null;
-
-
+		
+		this.ORDINARY_QUE = 0;
+		this.CHECK_POST = 1;
+		this.MANIPUL_POST = 2;
+		this.THEME_POST = 3;
+	
+		this.QueType = this.ORDINARY_QUE;
+	
 	} //constructor
 
 	//*** Events ***
@@ -266,20 +272,29 @@ class QueAnsw {
 
 		this.GetHeaders();
 
+		this.QueType = this.ORDINARY_QUE;
+
 		if (this.isExam) {
 			this.AutoAnswer();
 			if (autoRun) {
 			}
 		} else {
+			/*
 			let isCheckPost = this.header_main.includes(' пост ') || this.header_main.includes(' коммент');
 			let isManipulPost = isCheckPost&& this.header_2nd.includes('Манипуляция');
 			let isThemePost = isCheckPost && this.header_2nd.includes('Выберите тематик');
+			*/
+			let isCheckPost = this.header_main.includes(' пост ') || this.header_main.includes(' коммент');
+			
+			if (isCheckPost) this.QueType = this.CHECK_POST;
+			if (isCheckPost && this.header_2nd.includes('Манипуляция')) this.QueType = this.MANIPUL_POST;
+			if (isCheckPost && this.header_2nd.includes('Выберите тематик')) this.QueType = this.THEME_POST;		
 
-console.log('QueAnsw.theme', isCheckPost, isManipulPost, isThemePost, this.header_2nd)
+			console.log('QueAnsw.QueType', this.QueType);
 
 			let decision = -1;
 
-			if (!(isManipulPost || isThemePost)) { //Обычная проверка
+			if (this.QueType==this.CHECK_POST) { //Обычная проверка
 
 				decision = this.CheckPost_simple();
 				//RB_uncheckAll();
@@ -303,7 +318,7 @@ console.log('QueAnsw.theme', isCheckPost, isManipulPost, isThemePost, this.heade
 				}
 			} //Обычная проверка
 			
-			if (isManipulPost) { //Манипуляция
+			if (this.QueType==this.MANIPUL_POST) { //Манипуляция
 				let header_2nd = null;
 				let headers = document.querySelectorAll('.tui-text_h6');
 				if (headers && headers.length>0)
@@ -313,7 +328,7 @@ console.log('QueAnsw.theme', isCheckPost, isManipulPost, isThemePost, this.heade
 					header_2nd.innerHTML = 'В посте присутствует нарушение <span style="background-color:BlanchedAlmond;">«Манипуляция рынком»</span>?'
 			}
 
-			if (isThemePost) { //Проверка темы 
+			if (this.QueType==this.THEME_POST) { //Проверка темы 
 				let hasTicker = this.que.match(/\$[A-Z][A-Z\d]+/) //Look for any ticker. Was /\$[A-Z\d]+/
 				console.log('QueAnsw.hasTicker', hasTicker)
 				
@@ -336,7 +351,7 @@ console.log('QueAnsw.theme', isCheckPost, isManipulPost, isThemePost, this.heade
 			}
 
 			//Default
-			if (!isThemePost && !RB_alreadySet())
+			if ((this.QueType!=this.THEME_POST) && !RB_alreadySet())
 				RB_set(1);
 
 		}

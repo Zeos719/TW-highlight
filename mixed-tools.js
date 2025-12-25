@@ -259,22 +259,65 @@ function ParseHtmlTag(tag) {
 
 // Preset RadioButtons
 // Usage: RB_set(0) or RB_set([1,10])
-function RB_set(choice) {
+function RB_set(choice, scrollToView=true) {
 	//console.log(`RB_set(${choice.toString()}) begin`);
 	
-	const radio_btns = document.querySelectorAll('input[type=radio]');
+	const radio_btns = document.querySelectorAll('input[type=radio]');	
+//	if (radio_btns.length==0) 
+//		radio_btns = document.querySelectorAll('input[tuiradiotype=radio]');
+	if (radio_btns.length==0) return;		
+	
 	//console.log('RB_set() rb:', radio_btns);
 
 	if (typeof(choice)=='number') choice = [choice];
-	
+
+	let rbtn;	
 	for(let i=0; i<choice.length; i++) {
-		//radio_btns[ choice[i] ].parentNode.click();
-		triggerClick( radio_btns[ choice[i] ] );
+		if (choice[i]>=radio_btns.length) continue;
+		
+		rbtn = radio_btns[ choice[i] ];
+		
+		//rbtn.parentNode.click();
+		triggerClick( rbtn );		
+		if (scrollToView) rbtn.scrollIntoView();
 	} //for(ch)
 	
+	if (scrollToView) {
+		rbtn = radio_btns[ choice[0] ];
+		
+		//if (!isScrolledIntoView(rbtn)) 
+		isScrolledIntoView(rbtn);	
+			rbtn.scrollIntoView();
+	}
+
 	return;
 }
 
+function isScrolledIntoView(target) {
+	  // Все позиции элемента
+	  let targetPosition = {
+		  top: window.pageYOffset + target.getBoundingClientRect().top,
+		  left: window.pageXOffset + target.getBoundingClientRect().left,
+		  right: window.pageXOffset + target.getBoundingClientRect().right,
+		  bottom: window.pageYOffset + target.getBoundingClientRect().bottom
+		};
+		// Получаем позиции окна
+		let windowPosition = {
+		  top: window.pageYOffset,
+		  left: window.pageXOffset,
+		  right: window.pageXOffset + document.documentElement.clientWidth,
+		  bottom: window.pageYOffset + document.documentElement.clientHeight
+		};
+		
+		console.log('target', targetPosition);
+		console.log('window', windowPosition);
+		
+		return (targetPosition.bottom > windowPosition.top && // Если позиция нижней части элемента больше позиции верхней чайти окна, то элемент виден сверху
+			targetPosition.top < windowPosition.bottom && // Если позиция верхней части элемента меньше позиции нижней чайти окна, то элемент виден снизу
+			targetPosition.right > windowPosition.left && // Если позиция правой стороны элемента больше позиции левой части окна, то элемент виден слева
+			targetPosition.left < windowPosition.right);
+	};
+	
 function RB_get() {
 	//console.log('RB_get() begin');
 	

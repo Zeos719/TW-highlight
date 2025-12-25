@@ -960,8 +960,8 @@ class Obuv {
 		this.links = Obuv_GetMainLinks();
 		
 		this.Reset();
-		//this.SelectDecision([1,7]); //Decision by default
-		this.SelectDecision(2);
+		this.SelectDecision([1,7]); //Decision by default
+		//this.SelectDecision(2);
 		
 		this.subTask = this.DetectSubTask();
 		//console.log('Obuv subTask:', this.subTask);
