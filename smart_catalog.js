@@ -297,6 +297,10 @@ class SmartCatalog {
 		this.RED_COLOR_LIGHT  ='#ffe6e6';
 		
 		this.QuickJump_prev = {'hint':'', 'ctgs':[]};
+		
+		this.linkTabs = [];
+		this.epoch = 0;
+		
 
 	} //constructor
 
@@ -304,7 +308,7 @@ class SmartCatalog {
 	handleEvent(e) {
 				//Ctrl-Enter
 				if (e.type=="keydown") {
-					this.onCtrlEnter(e);
+					this.onKeydown(e);
 					}
 
 				if (e.type=="click") {
@@ -315,12 +319,12 @@ class SmartCatalog {
 
 			}//handleEvent
 
-	onCtrlEnter(e) {
+	onKeydown(e) {
 		let choice = -1;
 
 		//Ctrl-Enter
 		if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
-			console.log('SmartCatalog.onCtrlEnter: CtrlEnter--');
+			console.log('SmartCatalog.onKeydown: CtrlEnter--');
 
 			if (SEND_TO_SERVER) {
 				choice = this.SendToServer()
@@ -335,9 +339,15 @@ class SmartCatalog {
 				let completeBtn = document.querySelector("#completeBtn");
 				completeBtn.removeEventListener("click", this);
 			}
-		}
+		} 
 
-		//console.log('Obuv.onCtrlEnter-key', e.key, e.keyCode, e.code);
+		//Open links
+		if (e.ctrlKey && (e.code == "KeyM")) { //Ctrl + M
+			let link = this.GetGoodsLink();
+			
+			if (link)
+				this.OpenPreviewTab(link);
+		}
 
 		//Toggle AutoRun
 		if (e.ctrlKey && (e.keyCode == 192)) { //Ctrl + ~
@@ -439,8 +449,11 @@ class SmartCatalog {
 		this.PrintQuickJump();
 		this.PrintLastCtgs();
 
-		let nd = document.getElementById('quick-jump-imput');
-		if (nd) nd.focus();
+		const commentEdit = document.querySelector('div.tiptap.ProseMirror');
+		if (document.activeElement != commentEdit) {					
+			let nd = document.getElementById('quick-jump-imput');
+			if (nd) nd.focus();
+		}
 
 		//Append 'Done' marker
 		{ // If valid Answers were loded..
@@ -658,7 +671,7 @@ class SmartCatalog {
 			if (btns.length==1) { //Должна быть строго одна кнопка
 				//let ctgPath = btns.firstChild.innerText;
 				//smart_cat.SelectCtg(ctgPath);									
-				btns.firstChild.click();
+				btns[0].click();
 			};			
 		}
 	} //Edit_onkeydown
@@ -695,8 +708,7 @@ class SmartCatalog {
 		//Remove existing buttons
 		let btns = div.querySelectorAll('button');
 		for (let b of btns) b.remove();
-		
-		
+			
 		//Convert to list and sort on Count
 		let items_byCount = [];
 		
@@ -706,7 +718,11 @@ class SmartCatalog {
 		//Get top values and sort by key
 		let items_byKey = items_byCount.slice(0, MAX_BUTTONS);						
 		items_byKey.sort(function (a, b) {return a[0].localeCompare(b[0])});
-		
+	
+		//Remove old 
+		const MIN_FREQ = 0.5;
+		items_byKey = items_byKey.filter((a)=>{return a[1]>MIN_FREQ});
+			
 		//console.log('SmartCatalog.PrintLastCtgs', items_byKey);		
 		
 		//Create buttons
@@ -766,6 +782,9 @@ class SmartCatalog {
 			paths.push(  pt  );
 		} //for
 		
+		
+		//console.log('SmartCatalog.PrintSuitableCtgs.paths', paths.length, ctgs.length);
+		
 		/* as strings
 		if (ctgs.length>MAX_PATHS) paths.push(`${ctgs.length}...`);
 	
@@ -786,32 +805,34 @@ class SmartCatalog {
 		let div = document.querySelector('#quick-jump-ctgs');		
 		if (!div) return;
 		
-		if (path.length==0) {
+		if (paths.length==0) {
 			//Clear and return
 			while (div.firstChild) {
-				div.removeChild(myNode.lastChild);
+				div.removeChild(div.lastChild);
 				
 			return;	
 			} //while
 		} 		
-				
+/*
 		//Может быть, нужные кнопки уже добавлены?
 		let alreadyDone = true;		
 		let btns = div.querySelectorAll('button');
 		
 		for (let p of paths) {
 			let gotIt = false;
-			for (let b of btns) {if (b.innerText=p) gotIt = true};
+			for (let b of btns) {if (b.innerText==p) gotIt = true};
 			alreadyDone &&= gotIt;			
 		} //for(p)
-		
-		if (alreadyDone) return;
+			
+console.log('SmartCatalog.PrintSuitableCtgs.paths-2', paths.length, ctgs.length, alreadyDone);		
 
+		if (alreadyDone) return;
+*/
 		//Remove old info
 		while (div.firstChild) 
-			div.removeChild(myNode.lastChild);
-				
-		//Ad new ones		
+			div.removeChild(div.lastChild);
+			
+		//Add new ones		
 		for (let i=0;i<paths.length;i++) {			
 			let btn = document.createElement('button');
 			btn.className = 'button-z';
@@ -919,7 +940,8 @@ class SmartCatalog {
 								
 				if (!alreadySelected) triggerClick(d);
 				
-				d.scrollIntoView();
+				//d.scrollIntoView();
+				setTimeout(()=>{if (!isScrolledIntoView(d)) d.scrollIntoView()}, 400);										
 				
 				ok = true;
 				break;
@@ -931,5 +953,33 @@ class SmartCatalog {
 		return ok;
 	}	
 
+	GetGoodsLink() {
+		let ret = document.querySelector('tui-editor-socket a');
+			
+		return ret.href;		
+	} //GetGoodsLink
+	
+	OpenPreviewTab(link) {
+		// May new link are already is alreday open?
+		let alreadyOpen = false;
+		this.linkTabs.forEach((a)=>{alreadyOpen ||= (a[0]==link) });
+		if (alreadyOpen)
+			return;		
+		
+		//Add new item to list and open previews
+		let v0 = {tab:GM_openInTab(link), href: link};
 
+		this.linkTabs.push( [v0, this.epoch] );
+		this.epoch++;
+
+		const MAX_LINKS_COUNT = 10;
+		
+		let link_cnt = this.linkTabs.length;
+		if (link_cnt>MAX_LINKS_COUNT) {}
+			this.linkTabs = this.linkTabs.slice(link_cnt-MAX_LINKS_COUNT, link_cnt);
+			
+		//console.log('SmartCatalog.OpenPreviewTabs', this.linkTabs.length);
+		return;		
+	} //OpenPreviewTab
+	
 } //SmartCatalog
