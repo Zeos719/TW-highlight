@@ -123,7 +123,7 @@ class Ctg_QuickSearch {
 		hint = hint.split(' ');
 		hint = hint.filter( (w)=>{return w!=''} );
 		
-		if (hint.length==0) return null;
+		if (hint.length==0) return new Set();
 	
 		let refs_common = new Set( this.LocateWord( hint[0] ) );  
 		
@@ -299,7 +299,8 @@ class SmartCatalog {
 		this.QuickJump_prev = {'hint':'', 'ctgs':[]};
 		
 		this.linkTabs = [];
-		this.epoch = 0;
+		this.linkHref = null;
+		this.prevLinkHref = null;
 		
 
 	} //constructor
@@ -441,6 +442,10 @@ class SmartCatalog {
 		
 		//Main
 		this.DrawAutoIndicator(autoRun);
+		
+		this.linkHref = this.GetGoodsLink();
+		this.ClosePreviewTabs(this.linkHref);
+		this.ModifyGoodsLink();
 
 		this.GetDescr();
 		console.log('SmartCatalog.descr', this.descr, this.link);
@@ -633,7 +638,6 @@ class SmartCatalog {
 		nd = document.createElement('hr');
 		div_chi.appendChild(nd);			
 
-
 		div_ovr.appendChild(div_chi);		
 
 		//div-buttons
@@ -641,6 +645,21 @@ class SmartCatalog {
 		div_chi.id = 'div-prev-choices';
 
 		div_ovr.appendChild(div_chi);		
+
+		//Exit button
+		nd = document.createElement('hr');
+		div_ovr.appendChild(nd);			
+
+		nd = document.createElement('button');
+		nd.className = 'button-z';
+		nd.style['text-align'] = 'center';
+		nd.style['background-color'] = 'gold';
+		
+		let completeBtn = document.querySelector("#completeBtn");
+		nd.onclick = function(elem) { triggerClick(completeBtn) };
+		
+		nd.innerText = 'Завершить задание';			
+		div_ovr.appendChild(nd);			
 				
 	} //AddOverlay
 
@@ -725,20 +744,38 @@ class SmartCatalog {
 			
 		//console.log('SmartCatalog.PrintLastCtgs', items_byKey);		
 		
-		//Create buttons
+		//Format titles	for buttons
+		let btns_info = [];
 		for (let a of items_byKey) {			
+			let title = a[0].split('|').pop();
+			
+			btns_info.push({'title':title, 'ctgPath':a[0], 'rate':a[1]});						
+		}//for		
+		
+		btns_info.sort((a,b)=>{ return a['title'].localeCompare(b['title']) } );
+		
+		// console.log('SmartCatalog.PrintLastCtgs.btns_info', items_byKey, btns_info);
+	
+		//Create buttons
+		//for (let a of items_byKey) {			
+		for (let bi of btns_info) {			
 			let btn = document.createElement('button');
 			btn.className = 'button-z';
-			btn.innerText = `${a[0]}:${a[1].toFixed(2)}`;
+
+			//btn.innerText = `${a[0]}:${a[1].toFixed(2)}`;
+			btn.innerText = `${bi['title']}:${bi['rate'].toFixed(2)}`;
+			
 			btn.onclick = this.OnClick_btn;
+			
+			btn['ctgPath'] = bi['ctgPath']; //Сохраняем путь для обработчика OnClick_btn
 			
 			div.appendChild(btn);			
 		} //for		
-		
+			
 	} //PrintLastCtgs
 	
 	PrintQuickJump() {
-		//Tree is reday
+		//Tree is ready
 		let txt;
 		if (smart_tree && smart_tree.data) {
 			txt = `Categories are loaded: ${smart_tree.data.length}`
@@ -832,12 +869,25 @@ console.log('SmartCatalog.PrintSuitableCtgs.paths-2', paths.length, ctgs.length,
 		while (div.firstChild) 
 			div.removeChild(div.lastChild);
 			
+		//Format titles	for buttons
+		let btns_info = [];
+		for (let p of paths) {			
+			let title = p.split('|').pop();
+			
+			btns_info.push({'title':title, 'ctgPath':p});						
+		}//for		
+		
+		btns_info.sort((a,b)=>{ return a['title'].localeCompare(b['title']) } );
+			
 		//Add new ones		
-		for (let i=0;i<paths.length;i++) {			
+		for (let bi of btns_info) {			
 			let btn = document.createElement('button');
 			btn.className = 'button-z';
-			btn.innerText = paths[i];
-			btn.onclick = this.OnClick_btn; //Ттот же обработчик, что и для кнопок из истории
+			btn.innerText = bi.title;
+			
+			btn['ctgPath'] = bi.ctgPath; //Сохраняем путь для обработчика OnClick_btn
+			
+			btn.onclick = this.OnClick_btn; //Тот же обработчик, что и для кнопок из истории
 			
 			div.appendChild(btn);			
 		} //for		
@@ -852,7 +902,9 @@ console.log('SmartCatalog.PrintSuitableCtgs.paths-2', paths.length, ctgs.length,
 	} //PrintSuitableCtgs
 
 	OnClick_btn(elem) {
-		let ctgPath = elem.currentTarget.innerHTML;
+		//let ctgPath = elem.currentTarget.innerHTML;
+		let ctgPath = elem.srcElement['ctgPath'];
+					
 		console.log('SmartCatalog.OnClick_btn', ctgPath);
 		smart_cat.SelectCtg(ctgPath);		
 	}
@@ -959,27 +1011,57 @@ console.log('SmartCatalog.PrintSuitableCtgs.paths-2', paths.length, ctgs.length,
 		return ret.href;		
 	} //GetGoodsLink
 	
-	OpenPreviewTab(link) {
+	OpenPreviewTab(linkHref) {
 		// May new link are already is alreday open?
 		let alreadyOpen = false;
-		this.linkTabs.forEach((a)=>{alreadyOpen ||= (a[0]==link) });
+		// this.linkTabs.forEach((a)=>{alreadyOpen ||= (a.href==linkHref) });
 		if (alreadyOpen)
 			return;		
 		
 		//Add new item to list and open previews
-		let v0 = {tab:GM_openInTab(link), href: link};
-
-		this.linkTabs.push( [v0, this.epoch] );
-		this.epoch++;
-
-		const MAX_LINKS_COUNT = 10;
-		
-		let link_cnt = this.linkTabs.length;
-		if (link_cnt>MAX_LINKS_COUNT) {}
-			this.linkTabs = this.linkTabs.slice(link_cnt-MAX_LINKS_COUNT, link_cnt);
+		let v0 = {tab:GM_openInTab(linkHref), href: linkHref};
+		this.linkTabs.push( v0 );
 			
 		//console.log('SmartCatalog.OpenPreviewTabs', this.linkTabs.length);
 		return;		
 	} //OpenPreviewTab
-	
+
+	ClosePreviewTabs(activeLinkHref) {
+		//Close last pre-view tabs
+		let activeItem = null;		
+		
+		for (let item of this.linkTabs) {
+			
+			console.log('SmartCatalog.ClosePreviewTabs-0', item, activeLinkHref);
+			
+			if (item.href==activeLinkHref) {
+				activeItem = item;
+				continue; //Skip current
+			}
+			
+			console.log('SmartCatalog.ClosePreviewTabs-1');
+			
+			if (item.tab==null || item.tab.closed) {
+				continue;
+			} else {
+				console.log('SmartCatalog.ClosePreviewTabs-2 close');
+				item.tab.close();
+			}
+		} //for
+		
+		//Remove closed tabs
+		this.linkTabs = [];
+		if (activeItem) this.linkTabs.push(activeItem);
+
+		return;				
+	} //ClosePreviewTabs
+
+	ModifyGoodsLink() {
+		let lnk = document.querySelector('tui-editor-socket a');
+		if (lnk) {
+			lnk.setAttribute('target', '_blank')
+			lnk.style['background-color'] = 'Honeydew';			
+		}		
+	} //ModifyMainLink
+
 } //SmartCatalog
