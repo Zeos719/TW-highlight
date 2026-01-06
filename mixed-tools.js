@@ -285,9 +285,10 @@ function RB_set(choice, scrollToView=true) {
 	if (scrollToView) {
 		rbtn = radio_btns[ choice[0] ];
 		
-		//if (!isScrolledIntoView(rbtn)) 
-		isScrolledIntoView(rbtn);	
+		if (rbtn && !isScrolledIntoView(rbtn)) {
+		//isScrolledIntoView(rbtn);	{
 			rbtn.scrollIntoView();
+		}	
 	}
 
 	return;
@@ -414,58 +415,83 @@ function triggerClick(node) {
         node.dispatchEvent(event);
     }
 
-	// compare_fn(x, y)
-	function BinarySearch(arr, el, compare_fn) {
-		let low = 0;
-		let top = arr.length - 1;
-		while (low <= top) {
-			let mid = (top + low) >> 1;
-			let cmp = compare_fn(el, arr[mid]);
-			if (cmp > 0) {
-				low = mid + 1;
-			} else if(cmp < 0) {
-				top = mid - 1;
-			} else {
-				return mid;
-			}
+// compare_fn(x, y)
+function BinarySearch(arr, el, compare_fn) {
+	let low = 0;
+	let top = arr.length - 1;
+	while (low <= top) {
+		let mid = (top + low) >> 1;
+		let cmp = compare_fn(el, arr[mid]);
+		if (cmp > 0) {
+			low = mid + 1;
+		} else if(cmp < 0) {
+			top = mid - 1;
+		} else {
+			return mid;
 		}
-		return -1;
-	} //BinarySearch
+	}
+	return -1;
+} //BinarySearch
 
-	// To use with BinarySearch
-	function InflateSearchRange(arr, x, idx, compare_fn) {	
-		if (idx<0) return null;
-		
-		//to bottom
-		let bottom = idx;		
-		while(bottom>=0 && compare_fn(x, arr[bottom])==0) --bottom;
-		bottom++;
+// To use with BinarySearch
+function InflateSearchRange(arr, x, idx, compare_fn) {	
+	if (idx<0) return null;
 	
-		//to top
-		let top = idx;		
-		while(top<arr.length && compare_fn(x, arr[top])==0) ++top;
-		top--;
-		
-		return [bottom, top];
-	} //InflateRange
+	//to bottom
+	let bottom = idx;		
+	while(bottom>=0 && compare_fn(x, arr[bottom])==0) --bottom;
+	bottom++;
 
-	function UniqueSort(arr, compare_fn) {
-		if (!compare_fn) compare_fn = function (x,y) {return x-y};
-				
-		if (arr.length<=1) return arr;		
-		
-		let sorted = arr;
-		sorted.sort(compare_fn);
-				
-		let prev = sorted[0];
-		let unique = [ prev ];
-		
-		for (let i=1;i<sorted.length;i++) {
-			if(compare_fn(prev, sorted[i])!=0) {
-				prev = sorted[i];
-				unique.push(prev);			
-			}		
-		}//for
+	//to top
+	let top = idx;		
+	while(top<arr.length && compare_fn(x, arr[top])==0) ++top;
+	top--;
+	
+	return [bottom, top];
+} //InflateRange
+
+function UniqueSort(arr, compare_fn) {
+	if (!compare_fn) compare_fn = function (x,y) {return x-y};
 			
-		return unique;
-	} //UniqueSort
+	if (arr.length<=1) return arr;		
+	
+	let sorted = arr;
+	sorted.sort(compare_fn);
+			
+	let prev = sorted[0];
+	let unique = [ prev ];
+	
+	for (let i=1;i<sorted.length;i++) {
+		if(compare_fn(prev, sorted[i])!=0) {
+			prev = sorted[i];
+			unique.push(prev);			
+		}		
+	}//for
+		
+	return unique;
+} //UniqueSort
+
+
+function PlayAudio(soundSrc) {
+	
+	defaultSrc = 'https://www.phonewarez.ru/files/TW/sounds/zvukogram-iphone-text-message.mp3';
+	
+	if (!soundSrc) {
+		soundSrc = defaultSrc
+	} else {
+		if (!soundSrc.includes('/')) {//Only name of sound file; add server path from default 
+			let rmost_slash = defaultSrc.lastIndexOf ('/')
+			soundSrc = defaultSrc.slice(0, rmost_slash) + soundSrc; 
+			console.log('PlayAudio.soundSrc', soundSrc);
+		}		
+	}
+		
+	let audio = new Audio(soundSrc);
+	
+	try {
+		audio.play(soundSrc);	
+	}
+	catch (err) {
+		console.log('PlayAudio', err);		
+	}
+} //PlayAudio

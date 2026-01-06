@@ -102,6 +102,10 @@ let startPage;
 
 var observer = null;
 
+var taskHunt_timerId = null;
+var beepEnabled = false;
+
+
 console.log('Before window');
 
 //if (window!=window.top)
@@ -184,11 +188,35 @@ if (window==window.top) {
     console.log( "SmartCtgTree.GET error", textStatus );
   })
 */
-
-
             if (!smart_tree) {
                 smart_tree = new SmartCtgTree();
                 smart_tree.Load_http();
+            }
+
+            //Auto-hunt
+            let tasks = GetOfferedTasks();
+            console.log('GetOfferedTasks.tasks', tasks)
+
+            if (tasks.length==1 && !tasks[0].button) {
+                //'Нет заданий' - reload after delay
+                let reloadDelay = 15*1000;
+
+                clearTimeout(taskHunt_timerId);
+                taskHunt_timerId = setTimeout(()=>{window.location.reload(); beepEnabled = true},
+                                              reloadDelay);
+            }
+
+            if (tasks.length>0 && tasks[0].button) {
+                //have some tasks
+                console.log('GetOfferedTasks - has some', beepEnabled);
+                if (beepEnabled) {
+                    //PlayAudio('zvukogram-iphone-text-message.mp3');
+                    PlayAudio();
+
+                    beepEnabled = false;
+                    console.log('GetOfferedTasks - PlayAudio');
+                }
+
             }
 
 
@@ -688,4 +716,31 @@ function RunTask(docText) {
     }
 
 } //RunTask()
+
+//Return [{'title':.., 'button':..}, ...]
+function GetOfferedTasks() {
+    // if idle
+    let node = document.querySelector('dashboard h4');
+    if (node && node.innerText=='Заданий пока нет') {
+        return [{'title': node.innerText, 'button': null}];
+    }
+
+    //list of tasks
+    let tasks = [];
+
+    let task_items = document.querySelectorAll('task-item');
+    if (task_items.length==0) return tasks;
+
+    for (let tnode of task_items) {
+        let hdr_node = tnode.querySelector('h6');
+        let btn= tnode.querySelector('button');
+
+        if (!hdr_node || hdr_node.innerText=='' || !btn) continue;
+
+        tasks.push({'title': hdr_node.innerText, 'button': btn});
+    } //for
+
+    return tasks;
+} //GetOfferedTasks
+
 
