@@ -1,16 +1,15 @@
-function http_POST(url, data) {
-	console.log('http_POST');
+function http_POST(url, json_payload) {
+	console.log('http_POST', url);
 
 	fetch(url, {
 		method: "POST",
-		body: JSON.stringify(data),
+		body: JSON.stringify(json_payload),
 		headers: {
 			"Content-type": "application/json; charset=UTF-8"
 		}
 	})
 	.then(response => response.json())
 	.then(console.log)
-
 	.catch(console.error);
 
 };//http_POST
@@ -495,3 +494,8 @@ function PlayAudio(soundSrc) {
 		console.log('PlayAudio', err);		
 	}
 } //PlayAudio
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+

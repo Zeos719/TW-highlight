@@ -41,12 +41,16 @@ class QueAnsw {
 	constructor() {
 		console.log('QueAnsw.constructor');
 
-
 		this.JSselector = '.tui-editor-socket';
 		//this.JSselector = 'flex-text';
 
 		this.Answers = []; //for Auto
 
+		this.taskId = null;
+		this.aiTimerId = null;
+
+
+		//Constants
 		this.GREEN_COLOR_LIGHT='#e6fff2';
 		this.RED_COLOR_LIGHT  ='#ffe6e6';
 
@@ -61,9 +65,10 @@ class QueAnsw {
 		this.CHECK_POST = 1;
 		this.MANIPUL_POST = 2;
 		this.THEME_POST = 3;
+
+		this.CHECK_AI_INTERVAL = 1000; 
 	
-		this.QueType = this.ORDINARY_QUE;
-	
+		this.QueType = this.ORDINARY_QUE;	
 	} //constructor
 
 	//*** Events ***
@@ -98,6 +103,8 @@ class QueAnsw {
 
 				let completeBtn = document.querySelector("#completeBtn");
 				completeBtn.removeEventListener("click", this);
+				
+				clearTimeout(this.aiTimerId);
 			}
 		}
 
@@ -128,6 +135,8 @@ class QueAnsw {
 
 			let completeBtn = document.querySelector("#completeBtn");
 			completeBtn.removeEventListener("click", this);
+			
+			clearTimeout(this.aiTimerId);
 		}
 	} //onBtnClick()
 
@@ -151,12 +160,15 @@ class QueAnsw {
 		};
 
 		console.log('QueAnsw.SendToServer-1: ', payload);
-
+		
+/*
 		let json = JSON.stringify(payload);
-
 		$.post('http://localhost:8000/tw', json, function(data){
 			console.log('QueAnsw.SendToServer-2:', data);
 		});
+*/		
+		let json = payload; 
+		http_POST('http://localhost:8000/tw', json);
 
 		return sol;
 	} //SendToServer()
@@ -218,7 +230,7 @@ class QueAnsw {
 		//if (que_low.includes('$ ')) return BAD_POST;
 
 		//*Оскобления политиков, 'плохие' слова
-		const politics = ['рыжий', ' зеля', ' войн', ' 3.14',  ' 3,14', ' еба', 'хуй', ' хуе', 'пидор', 'пизд', ' бля', 'telegram', ' тг ', 'телеграм', 
+		const politics = ['рыжий', ' зеля', ' войн', ' 3.14',  ' 3,14', ' еба', 'хуй', ' хуе', 'пидор', 'пизд', ' бля', 't.me', 'telegram', ' тг ', 'телеграм', 
 			' https://youtu', 'dzen.ru', '🍆', '🖕', '💦'];
 		for (let w of politics) {
 			if (que_low.includes(w)) return BAD_POST;
@@ -269,9 +281,18 @@ class QueAnsw {
 
 		console.log('QueAnsw.que', this.que);
 		console.log('QueAnsw.Solution', this.GetSolution());
-
+		
 		this.GetHeaders();
-
+		
+		let id = this.GetUniqueTaskId();
+		if (id!=this.taskId) {
+			//New task
+			console.log('QueAnsw.taskId', id);
+			
+			this.taskId = id;			
+			this.SendToAI();
+		}
+		
 		this.QueType = this.ORDINARY_QUE;
 
 		if (this.isExam) {
@@ -554,6 +575,84 @@ class QueAnsw {
 
 		return answId;
 	} //AutoAnswer()
+
+	
+	// '/broker/?task=ai&subtask=cli-post-req&id=ABCDEF'
+	SendToAI() {
+		clearTimeout(this.aiTimerId);
+	
+		let payload = {
+			task: 'QueAnsw',
+			//subtask: this.subtask,
+			//solution: sol,
+			question: this.que,
+			header_main: this.header_main || '',
+			header_2nd: this.header_2nd || '',
+		};
+
+		//console.log('QueAnsw.SendToServer-ai: ', payload);
+		
+		/*
+		let json = JSON.stringify(payload);
+		$.post(`http://localhost:8000/broker/?task=ai&subtask=cli-post-req&id=${id}`, json, function(data){
+			console.log('QueAnsw.SendToServer-ai:', data)												
+			
+		this.taskId = id; //already sent
+		});
+		*/
+		
+		http_POST(`http://localhost:8000/broker?task=ai&subtask=cli-post-req&id=${this.taskId}`, payload);
+		
+		/* Привязка контекста: https://learn.javascript.ru/bind
+		
+		1. Через замыкание - создает "замороженную" привязку. 
+			let myself = this;		
+			let AiWaitAnswer_frozen = function () { myself.Ai_OnTimer() };
+
+		2. через вызов bind() - "live" привязка:
+			let AiWaitAnswer_binded = this.Ai_OnTimer.bind(this);
+			
+		В конкретной ситуации замороженная лучше - следовать за измеениями в объекте 
+		не только лишннее, но даже вредно.
+		*/
+				
+		let myself = this;				
+		this.aiTimerId = setTimeout(function() { myself.Ai_OnTimer() }, 
+									this.CHECK_AI_INTERVAL);
+			
+	} //SendToAI
+	
+	GetUniqueTaskId() {
+		let id = `${this.header_main}|${this.header_2nd}|${this.que}`;	
+		let hash = StringHash(id);
+		hash = Math.abs( hash );
+		
+		return (hash).toString(16).toUpperCase();
+	} //GetUniqueTaskId
+	
+	Ai_OnTimer() {
+		//console.log('QueAnsw.Ai_OnTimer', this.que);
+
+		// $.get(`http://localhost:8000/broker?task=ai&subtask=cli-get-answer&id=${this.taskId}`,
+				// { "_": $.now() }, 
+				// function(data){						
+			// console.log('QueAnsw.Ai_OnTimer.answer:', data);								
+		// });
+		
+		let myself = this;		
+		let url = `http://localhost:8000/broker?task=ai&subtask=cli-get-answer&id=${this.taskId}&unique=${$.now()}`		
+		http_GET_JSON(url, function(json) { myself.Ai_OnGET(json) });		
+	} //Ai_OnTimer
+
+	Ai_OnGET(json) {
+		console.log('QueAnsw.Ai_OnGET', json);
+
+		if (json && json['result']!='ok') {				
+			let myself = this;				
+			this.aiTimerId = setTimeout(function() { myself.Ai_OnTimer() }, 
+									this.CHECK_AI_INTERVAL);		
+		}
+	} //Ai_OnGET
 
 
 } //QueAnsw

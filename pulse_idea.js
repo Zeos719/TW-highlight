@@ -219,7 +219,10 @@ class PulseIdea {
 		console.log('PulseIdea.Solution', this.GetSolution());
 
 		this.GetHeaders();
-
+		
+		//Send a request to ai
+		// '/broker/?task=ai&subtask=cli-post-req&id=ABCDEF'
+		
 		this.Analize()
 		//this.AutoAnswer();
 

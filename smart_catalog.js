@@ -449,7 +449,7 @@ class SmartCatalog {
 
 		this.GetDescr();
 		console.log('SmartCatalog.descr', this.descr, this.link);
-
+		
 		if (!document.querySelector('div.z-overlay')) this.AddOverlay();
 		this.PrintQuickJump();
 		this.PrintLastCtgs();
