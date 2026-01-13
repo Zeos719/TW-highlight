@@ -103,8 +103,6 @@ let startPage;
 var observer = null;
 
 var taskHunt_timerId = null;
-var beepEnabled = false;
-
 
 console.log('Before window');
 
@@ -195,26 +193,31 @@ if (window==window.top) {
 
             //Auto-hunt
             let tasks = GetOfferedTasks();
-            console.log('GetOfferedTasks.tasks', tasks)
+            console.log('GetOfferedTasks.tasks', tasks);
 
             if (tasks.length==1 && !tasks[0].button) {
                 //'Нет заданий' - reload after delay
-                let reloadDelay = 15*1000;
+                let reloadDelay = 30*1000;
+                //let reloadDelay = 30 + getRandomInt(30); //30-59 sec
 
                 clearTimeout(taskHunt_timerId);
-                taskHunt_timerId = setTimeout(()=>{window.location.reload(); beepEnabled = true},
-                                              reloadDelay);
+                taskHunt_timerId = setTimeout(function() {
+                    //console.log('GetOfferedTasks - reload');
+                    sessionStorage.setItem('th_beepEnabled', true); //Использую sessionStorage потому что th_beepEnabled должен сохраниться после перезагрузки страницы
+                    window.location.reload();
+                },
+                reloadDelay);
             }
 
             if (tasks.length>0 && tasks[0].button) {
                 //have some tasks
-                console.log('GetOfferedTasks - has some', beepEnabled);
-                if (beepEnabled) {
+                console.log('GetOfferedTasks - has some');
+                if (sessionStorage.getItem('th_beepEnabled')=='true') { // Сравниваем строки - getItem() всегда возвращает string!
                     //PlayAudio('zvukogram-iphone-text-message.mp3');
                     PlayAudio();
 
-                    beepEnabled = false;
-                    console.log('GetOfferedTasks - PlayAudio');
+                    //console.log('GetOfferedTasks - PlayAudio');
+                    sessionStorage.setItem('th_beepEnabled', false);
                 }
 
             }
@@ -270,6 +273,7 @@ function detectTask(docText) {
   return [-1, 0];
 }
 
+/*
 //Returns -1=not a start page; 0 - no jobs; 1 - jobs availabel
 function DetectStartPage() {
 
@@ -286,6 +290,18 @@ function DetectStartPage() {
     });
 
     return -1;
+}
+*/
+
+//Returns -1=not a start page; 0 - no jobs; 1 - jobs availabel
+function DetectStartPage() {
+    let tasks = GetOfferedTasks();
+
+    if (tasks.length==0) return -1;
+
+    if (tasks.length==1 && !tasks[0].button) return 0;
+
+    return 1;
 }
 
 function DrawStartPage(startPage) {
@@ -448,6 +464,7 @@ let PCD_Marks = [
     {'key':'Проверьте наличие тематики "Инвестиции"', 'TextFunc': PCD_Tiker, 'TextPrm':null},
     {'key':'Описание намерения:', 'RButton':0},
     {'key':'Товар на картинке действительно относится к указанной категории?', 'RButton':0},
+    {'key':'Даны два изображения', 'RButton':[0,2,4,6]},
 
 ];
 

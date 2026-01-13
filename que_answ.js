@@ -231,7 +231,7 @@ class QueAnsw {
 
 		//*Оскобления политиков, 'плохие' слова
 		const politics = ['рыжий', ' зеля', ' войн', ' 3.14',  ' 3,14', ' еба', 'хуй', ' хуе', 'пидор', 'пизд', ' бля', 't.me', 'telegram', ' тг ', 'телеграм', 
-			' https://youtu', 'dzen.ru', '🍆', '🖕', '💦'];
+			' https://youtu', 'dzen.ru', '🍆', '🖕', '💦',  'наебулин'];
 		for (let w of politics) {
 			if (que_low.includes(w)) return BAD_POST;
 		}
@@ -239,6 +239,26 @@ class QueAnsw {
 
 		return NOT_SURE;
 	} //CheckPost_simple
+
+	CheckPost_investing() {
+		//console.log('QueAnsw.CheckPost_investing');
+		
+		let que_low = this.que.toLowerCase();
+		
+		//Ticker?
+		let hasTicker = this.que.match(/\$[A-Z][A-Z\d]+/) //Look for any ticker. Was /\$[A-Z\d]+/
+		console.log('QueAnsw.hasTicker', hasTicker)
+		
+		//Good words
+		const investWords = [' акци', ' ОФЗ', ' облигац', ' инвестор', ' дивиденд'];
+		let hasInvestWord = false;
+		for (let w of investWords) {
+			if (que_low.includes(w)) hasInvestWord = true;
+		}				
+		
+		return hasTicker || hasInvestWord;
+	} //CheckPost_investing
+
 
 	Colorize(desision) {
 		//const COLOR_RED = '#FFA07A';
@@ -350,8 +370,7 @@ class QueAnsw {
 			}
 
 			if (this.QueType==this.THEME_POST) { //Проверка темы 
-				let hasTicker = this.que.match(/\$[A-Z][A-Z\d]+/) //Look for any ticker. Was /\$[A-Z\d]+/
-				console.log('QueAnsw.hasTicker', hasTicker)
+				let isInvest = this.CheckPost_investing();
 				
 				const ACTIVE_BADGE_CLASS = 'flex-labeling__badge_active'
 				
@@ -359,9 +378,9 @@ class QueAnsw {
 				
 				let badges_dict = {} //Create a dict of badges: badges_dict['Инвестиции'] -> bd
 				for(let bd of badges) 											
-					badges_dict[bd.innerText] = bd
+					badges_dict[bd.innerText] = bd;
 								
-				if (hasTicker) {
+				if (isInvest) {
 						let bd = badges_dict['Инвестиции']
 						if (bd){ 					
 							//bd.classList.add(ACTIVE_BADGE_CLASS)											
@@ -647,12 +666,29 @@ class QueAnsw {
 	Ai_OnGET(json) {
 		console.log('QueAnsw.Ai_OnGET', json);
 
-		if (json && json['result']!='ok') {				
-			let myself = this;				
-			this.aiTimerId = setTimeout(function() { myself.Ai_OnTimer() }, 
-									this.CHECK_AI_INTERVAL);		
-		}
+		if (json){				
+			if (json['result']=='ok') {
+				//Got AI answer!
+				if (json['answer'].startsWith('Да')) //Есть нарушения
+					Indicate_Violations(true);
+				if (json['answer'].startsWith('Нет')) //Нет нарушений
+					Indicate_Violations(false);
+			} else {			
+				//Still waiting...
+				let myself = this;				
+				this.aiTimerId = setTimeout(function() { myself.Ai_OnTimer() }, 
+										this.CHECK_AI_INTERVAL);		
+			}
+		} //if json	
 	} //Ai_OnGET
+
+	Indicate_Violations(hasViolation) {
+		let color;
+		
+		(hasViolation)? color = 'OrangeRed' : color = 'PaleGreen';						
+		this.queNode.style.border = `3px solid ${color}`;										
+	} //Indicate_Violations
+
 
 
 } //QueAnsw
