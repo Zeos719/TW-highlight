@@ -499,3 +499,76 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
+//****************************
+// Returns list: [ {'word':w, 'pos':p}...  ] where p - position of w in original str
+function Split_WordsAndPos(str, delim =	 /\s|\(|\)|:/) {
+	let words = str.split(delim);
+
+	words = words.filter( function(item) {return item!=''} ); //filter out empty items
+
+	let startFrom = 0;
+	for(let i=0;i<words.length;i++) {
+
+		let pos = str.indexOf(words[i], startFrom);
+		startFrom = pos + words[i].length;
+
+		words[i] = {word: words[i], pos: pos};
+	}
+
+	return words;
+}
+
+//*****************************
+//	Mark string with colors
+//
+//var str1 = 'Aaaa	 CCC Bbbb (123-156) CCC:XL';
+//var str2 = 'Aaaa	 Dddd  (123-156) CCC:S';
+//
+//[str1, str2] = Strings_CompareAndColor(str1, str2, colorRed='RED', colorGreen=null);
+//
+//console.log(str1 , '\n', str2, '\n');
+
+function Strings_CompareAndColor(str1, str2, colorRed='#ff0000', colorGreen='#00ff00', delim=/\s|\(|\)|:|,/) {
+
+	let words1 = Split_WordsAndPos(str1, delim);
+	let words2 = Split_WordsAndPos(str2, delim);
+
+	//Add member 'hasPair'
+	words1.forEach(	 function(item) {item.hasPair = false} );
+	words2.forEach(	 function(item) {item.hasPair = false} );
+
+	//Compare
+	for (let i=0;i<words1.length;i++) {
+		for (let k=0;k<words2.length;k++) {
+			if (words1[i].hasPair || words2[k].hasPair) continue;
+
+			if (words1[i].word == words2[k].word) {
+				words1[i].hasPair = true;
+				words2[k].hasPair = true;
+			}
+		} //for (k)
+	} //for (i)
+
+	//Colorize		
+	let colorized1 = Strings_ApplyColors(str1, words1, colorRed, colorGreen);
+	let colorized2 = Strings_ApplyColors(str2, words2, colorRed, colorGreen);
+
+   return [colorized1, colorized2];
+}
+
+// str - string to color, words = [ {'word':w, 'pos':p, 'haspair':h}...  ]
+function Strings_ApplyColors(str, words, colorRed, colorGreen) {
+	let colorized = str;
+
+	for (let i=words.length-1; i>=0; i--) {
+		let prefix = colorized.slice(0, words[i].pos);
+		let suffix = colorized.slice(words[i].pos+words[i].word.length);
+
+		let color = words[i].hasPair?colorGreen:colorRed;
+		if (color==null) continue;
+
+		colorized = `${prefix}<span style="background-color:${color};">${words[i].word}</span>${suffix}`;
+	} //for (i--)
+
+	return colorized;
+}

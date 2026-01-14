@@ -19,6 +19,7 @@
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\post-theme-nicely-formated.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\pulse_idea.js
 // @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\smart_catalog.js
+// @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\norm_sentences.js
 // ==/UserScript==
 
 // @require      https://zeos719.github.io/TW-highlight/Obuv_v1.js
@@ -48,6 +49,7 @@ const tc_CtgGoods = 11;
 const tc_PostTheme = 12;
 const tc_PulseIdea = 13;
 const tc_SmartCat = 14;
+const tc_NormSent = 15;
 
 const le_UNKNOWN = 0;
 const le_LEARN = 1;
@@ -71,6 +73,8 @@ const taskMarkers = [
     { marker: "Проверьте пост|Проверь пост|Проверь коммент", code: tc_PostTheme}, //'Проверьте пост на принадлежность к тематике', 'Проверь пост на наличие указанного нарушения'
     { marker: "Пост подходит для ленты \"Идеи\"?", code: tc_PulseIdea},
     { marker: "Выберите категорию для товара", code: tc_SmartCat},
+    { marker: "Какое из предложений нормализовано лучше?", code: tc_NormSent},
+
   ].reverse();
 
 
@@ -89,6 +93,7 @@ const taskFuncs = new Map([
     [tc_PostTheme, DoQueAnsw], //!
     [tc_PulseIdea, DoPulseIdea],
     [tc_SmartCat, DoSmartCat],
+    [tc_NormSent, DoNormSent],
 
 ]);
 
