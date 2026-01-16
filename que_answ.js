@@ -28,9 +28,7 @@ function DoQueAnsw(taskVersion, exam){
 	} catch(err) {
 		console.log('QueAnsw.DoQueAnsw', err)
 	}
-	
-
-};
+	};
 
 
 //******************** class QueAnsw ********************
@@ -105,6 +103,7 @@ class QueAnsw {
 				completeBtn.removeEventListener("click", this);
 				
 				clearTimeout(this.aiTimerId);
+				this.ReleaseNodes();
 			}
 		}
 
@@ -137,6 +136,7 @@ class QueAnsw {
 			completeBtn.removeEventListener("click", this);
 			
 			clearTimeout(this.aiTimerId);
+			this.ReleaseNodes();
 		}
 	} //onBtnClick()
 
@@ -690,5 +690,11 @@ class QueAnsw {
 	} //Indicate_Violations
 
 
+	ReleaseNodes() {
+		this.queNode = null;
+		this.que = null;
+		this.header_main = null;
+		this.header_2nd = null;
+	}
 
 } //QueAnsw
