@@ -30,7 +30,6 @@
 //Красивые символы UTF-8
 // https://www.drive2.ru/b/463440578768535663/
 
-
 console.log('Monkey very begin!');
 
 const MARK_SAME_COLOR = '#e6fff3';
@@ -73,7 +72,7 @@ const taskMarkers = [
     { marker: "Проверьте пост|Проверь пост|Проверь коммент", code: tc_PostTheme}, //'Проверьте пост на принадлежность к тематике', 'Проверь пост на наличие указанного нарушения'
     { marker: "Пост подходит для ленты \"Идеи\"?", code: tc_PulseIdea},
     { marker: "Выберите категорию для товара", code: tc_SmartCat},
-    { marker: "Какое из предложений нормализовано лучше?", code: tc_NormSent},
+    { marker: "Какое из предложений нормализовано лучше?|Прослушайте аудио и выберите наилучшую транскрипцию", code: tc_NormSent},
 
   ].reverse();
 
@@ -564,6 +563,7 @@ const ignoredTasks = [
     //"Исполнитель (БЕЗ ИП)",
     "Анализ отзывов",
     "В какой аудиозаписи голос больше похож на оригинал",
+    //"Прослушайте аудио и выберите наилучшую транскрипцию",
 ];
 
 function IsIgnoredTask(docText) {
@@ -619,100 +619,6 @@ function ExitTask_v0() {
     return
 }
 
-function ExitTask() {
-    if (!Object.hasOwn(this, 'timerId')) {
-			this.timerId = null;
-			this.stage = 0;
-        this.tryCount = 0;
-		}
-
-return;
-
-    let myself = this;
-    this.stage = 10; //wait "Начать" button
-    this.timerId = SetInterval(ExitTask_onTimer, 100);
-
-    return;
-} //ExitTask
-
-function ExitTask_onTimer() {
-
-    //Если присутствует кнопка 'Начать'..
-    if (myself.stage==10) {
-        let res = ExitTask_clickBtn(myself, 'button.tui-space_top-6', 'Начать');
-
-        if (res==BC_OK) {myself.tryCount=0; myself.stage=15}; // переход на закрытие pdf
-        if (res==BC_TIMEOUT) {myself.tryCount=0; myself.stage=20}; //переход на кнопку 'Выйти..'
-
-    } //if (stage==10)
-
-
-    // Кнопка 'Начать' была обнаружена и нажата, ждем кнопку закрытия pdf
-    if (myself.stage==15) {
-        let res = ExitTask_clickBtn(myself, 'button.t-close', 'Закрыть');
-
-        if (res!=BC_WAITING) {myself.tryCount=0; myself.stage=20}; //В любом случае переходим к кнопке 'Выйти..'
-    } //if (stage==15)
-
-    // Кнопка 'Выйти из задания'
-    if (myself.stage==20) {
-        let res = ExitTask_clickBtn(myself, 'button.task-exit-button', 'Выйти из задания');
-
-        if (res!=BC_WAITING) {myself.tryCount=0; myself.stage=30}; //В любом случае переходим к кнопке 'Да, выйти..'
-    } //if (stage==20)
-
-    // Кнопка 'Да, выйти'
-    if (myself.stage==30) {
-        let res = ExitTask_clickBtn(myself, 'button.t-button', 'Да, выйти');
-
-        if (res!=BC_WAITING) {myself.tryCount=0; myself.stage=99}; //В любом случае переходим к финальному блоку
-    } //if (stage==30)
-
-
-
-    //Final
-    if (myself.stage==99) {
-        clearInterval(myself.timerId);
-        myself.timerId = null;
-        myself.stage = 0; //Idle
-        myself.tryCount = 0;
-    } // if (stage==99)
-
-
-} //ExitTask_onTimer
-
-const BC_WAITING = 0;
-const BC_OK = 1;
-const BC_TIMEOUT = 2;
-
-function ExitTask_clickBtn(myself, btn_class, btn_title) {
-
-    console.log('ExitTask_clickBtn', myself, btn_class, btn_title);
-
-    const MAX_TRY = 10;
-
-    if (myself.tryCount>=MAX_TRY) {
-        console.log('ExitTask_clickBtn:timeout');
-        return BC_TIMEOUT;
-    } else {
-        myself.tryCount++;
-
-        let btns = document.querySelectorAll(btn_class);
-        for (let b of btns) {
-            if (b.innerText.trim()==btn_title) { //Got it!
-                triggerClick(b);
-                console.log('ExitTask_clickBtn:clicked');
-                return BC_OK;
-            }
-        } //for(btns)
-    } //if (tryCount)
-
-    console.log('ExitTask_clickBtn:waiting', myself.tryCount);
-    return BC_WAITING;
-} //ExitTask_clickBtn
-
-
-
 function RunTask(docText) {
 
     //Exams: le_UNKNOWN, le_LEARN, le_EXAM
@@ -727,7 +633,7 @@ function RunTask(docText) {
 
     if (taskCode==-1) {
         if (IsIgnoredTask(docText)) {
-            //console.log('Ignored task');
+            console.log('Ignored task');
             ExitTask();
         } else {
             PresetCommonDefaults();
@@ -738,6 +644,7 @@ function RunTask(docText) {
     }
 
 } //RunTask()
+
 
 //Return [{'title':.., 'button':..}, ...]
 function GetOfferedTasks() {
@@ -765,4 +672,152 @@ function GetOfferedTasks() {
     return tasks;
 } //GetOfferedTasks
 
+// *** ExitTask() ***
+var et_data = {
+		'timerId':null,
+		'stage':0,
+        'tryCount': 0,
+		};
 
+function ExitTask() {
+
+//return;
+
+    if (et_data.timerId>0) return; //Prevent re-entry
+
+    et_data.stage = 10; //wait "Начать" button
+
+    et_data.timerId = setInterval(ExitTask_onTimer, 200);
+
+    console.log('ExitTask.start ***', et_data);
+
+    return;
+} //ExitTask
+
+function ExitTask_onTimer() {
+
+    console.log('ExitTask_onTimer', et_data);
+
+    //Если присутствует кнопка 'Начать'..
+    if (et_data.stage==10) {
+        let res = ExitTask_clickBtn('button.tui-space_top-6', 'Начать');
+
+        if (res==BC_OK) {et_data.tryCount=0; et_data.stage=15}; // переход на закрытие pdf
+        if (res==BC_TIMEOUT) {et_data.tryCount=0; et_data.stage=20}; //переход на кнопку 'Выйти..'
+
+        return;
+    } //if (stage==10)
+
+
+    // Кнопка 'Начать' была обнаружена и нажата, ждем кнопку закрытия pdf
+    if (et_data.stage==15) {
+        let res = ExitTask_clickBtn('button.t-close', 'Закрыть');
+        if (res!=BC_WAITING) {et_data.tryCount=0; et_data.stage=20}; //В любом случае переходим к кнопке 'Выйти..'
+
+        return;
+    } //if (stage==15)
+
+    // Кнопка 'Выйти из задания'
+    if (et_data.stage==20) {
+        let res = ExitTask_clickBtn('button.task-exit-button', 'Выйти из задания');
+        if (res!=BC_WAITING) {et_data.tryCount=0; et_data.stage=30}; //В любом случае переходим к кнопке 'Да, выйти..'
+
+        return;
+    } //if (stage==20)
+
+    // Кнопка 'Да, выйти'
+    if (et_data.stage==30) {
+        let res = ExitTask_clickBtn('button.t-button', 'Да, выйти');
+        if (res!=BC_WAITING) {et_data.tryCount=0; et_data.stage=85}; //В любом случае переходим к финальному блоку
+
+        return;
+    } //if (stage==30)
+
+/*
+    //Задержка перед финалом
+    if (et_data.stage==80) {
+        const FINAL_DELAY = 10;
+
+        console.log('ExitTask_onTimer.final delay', et_data);
+
+        et_data.tryCount++;
+        if (et_data.tryCount>=FINAL_DELAY) {et_data.tryCount=0; et_data.stage=99} //На выход!
+
+    return;
+    }
+*/
+    //Ожидаем стартовой страницы - 'Клекс в мобильном приложении'
+    if (et_data.stage==85) {
+        const MAX_TRY = 10;
+
+        console.log('ExitTask_onTimer.WaitStartPage', et_data);
+
+        et_data.tryCount++;
+        let docText = document.documentElement.textContent;
+        if (et_data.tryCount>=FINAL_DELAY || docText.includes('Клекс в мобильном приложении')) {
+            et_data.tryCount=0;
+            et_data.stage=99; //На выход!
+        }
+
+        return;
+    }
+
+
+    //Final
+    if (et_data.stage==99) {
+		console.log('ExitTask_onTimer.exit 99', et_data);
+
+        clearInterval(et_data.timerId);
+        et_data.timerId = -1;
+        et_data.stage = 0; //Idle
+        et_data.tryCount = 0;
+
+        //Блокируем работу ExitTask to N sec чтобы дать обновиться странице
+        //et_data.disabled = true;
+        //setTimeout(function () {et_data.disabled = false; console.log('ExitTask.afterFinalDelay')}, 1000);
+
+    } // if (stage==99)
+
+
+
+
+    if (et_data.stage==0) {
+        //Странная ошибка? Таймер продолжает работать?
+    }
+
+
+} //ExitTask_onTimer
+
+const BC_WAITING = 0;
+const BC_OK = 1;
+const BC_TIMEOUT = 2;
+
+function ExitTask_clickBtn(btn_class, btn_title) {
+
+    console.log('ExitTask_clickBtn', et_data, btn_class, btn_title);
+
+    const MAX_TRY = 5;
+
+    if (et_data.tryCount>=MAX_TRY) {
+        console.log('ExitTask_clickBtn:timeout');
+        return BC_TIMEOUT;
+    } else {
+        et_data.tryCount++;
+
+        let btns = document.querySelectorAll(btn_class);
+        for (let b of btns) {
+            if (b.innerText.trim()==btn_title) { //Got it!
+                triggerClick(b);
+                console.log('ExitTask_clickBtn:clicked', btn_class, btn_title);
+                return BC_OK;
+            }
+        } //for(btns)
+
+		console.log('ExitTask_clickBtn:btn not found');
+        return BC_WAITING;
+    } //if (tryCount)
+
+    //Здесь я не могу оказаться!
+    console.log('ExitTask_clickBtn:waiting', et_data);
+    return BC_WAITING;
+} //ExitTask_clickBtn
