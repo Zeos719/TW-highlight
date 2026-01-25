@@ -231,7 +231,7 @@ class QueAnsw {
 
 		//*Оскобления политиков, 'плохие' слова
 		const politics = ['рыжий', ' зеля', ' войн', ' 3.14',  ' 3,14', ' еба', 'хуй', ' хуе', 'пидор', 'пизд', ' бля', 'бляд', 't.me', 'telegram', ' тг ', 'телеграм', 
-			' https://youtu', 'dzen.ru', '🍆', '🖕', '💦',  'наебулин'];
+			' https://youtu', 'dzen.ru', '🍆', '🖕', '💦',  'наебулин', '190 руб'];
 		for (let w of politics) {
 			if (que_low.includes(w)) return BAD_POST;
 		}
@@ -258,6 +258,12 @@ class QueAnsw {
 		
 		return hasTicker || hasInvestWord;
 	} //CheckPost_investing
+
+	CheckPost_restorans() {
+		let que_low = this.que.toLowerCase();
+		return (que_low.includes(' ресторан'));
+	} //CheckPost_restorans
+
 
 
 	Colorize(desision) {
@@ -371,6 +377,7 @@ class QueAnsw {
 
 			if (this.QueType==this.THEME_POST) { //Проверка темы 
 				let isInvest = this.CheckPost_investing();
+				let isRestorans = this.CheckPost_restorans();
 				
 				const ACTIVE_BADGE_CLASS = 'flex-labeling__badge_active'
 				
@@ -388,6 +395,16 @@ class QueAnsw {
 							triggerClick(bd);
 						}
 				}
+				
+				if (isRestorans) {
+						let bd = badges_dict['Рестораны']
+						if (bd){ 					
+							triggerClick(bd);
+						}
+				}
+				
+				
+				
 			}
 
 			//Default
