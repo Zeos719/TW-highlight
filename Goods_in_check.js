@@ -215,7 +215,7 @@ class GiC {
 						
 		let nodeA; let nodeB;				
 		[nodeA, nodeB] = this.GetMainNodes();	
-		console.log('GiC.nodes', nodes)
+		console.log('GiC.nodes', [nodeA, nodeB]);
 			
 		if (nodeA.innerText.includes('backgroud')) {return -1}; //Already colorized
 		
@@ -227,12 +227,12 @@ class GiC {
 		
 		//Reformat if v2
 		if (this.task_version==1) {
-			this.GIC_ReformatPage(nodeA, nodeB);
+			this.ReformatPage(nodeA, nodeB);
 			
-			this.GIC_SelectDecision(0); // 0 = 'подходит', 1 = 'Совсем не подходит'		
+			this.SelectDecision(0); // 0 = 'подходит', 1 = 'Совсем не подходит'		
 			}
 
-		//Scrool to view - should be after GIC_SelectDecision()
+		//Scrool to view - should be after SelectDecision()
 		let bound = document.links[0].getBoundingClientRect();
 		const REQUIRED_TOP = 80;
 		if (window.pageYOffset==0) {
@@ -256,7 +256,7 @@ class GiC {
 
 	} //Run()
 
-	GIC_SetMark(inner, match, index) {	
+	SetMark(inner, match, index) {	
 
 		const MARK_SAME_COLOR = '#ccffcc'; //defined in Obuv
 
@@ -282,10 +282,10 @@ class GiC {
 		//console.log('colored:', colored_text);
 
 		return colored_text;
-	} //GIC_SetMark
+	} //SetMark
 
 //Разместить копию nodeB сразу под nodeA
-	GIC_ReformatPage(nodeA, nodeB){
+	ReformatPage(nodeA, nodeB){
 		let title = document.querySelector("#klecks-app > tui-root > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(5)")
 			
 		let pic = document.querySelector("#klecks-app > tui-root > div > task > flex-view > flex-common-view > div.tui-container.tui-container_adaptive.flex-common-view__main > div > main > flex-element > flex-container > flex-element:nth-child(6)");
@@ -300,10 +300,10 @@ class GiC {
 		dest_point.parentNode.insertBefore(pic, dest_point);	
 		dest_point.parentNode.insertBefore(title, pic);	
 		*/
-		console.log('GIC_ReformatPage-after');		
-	} //GIC_ReformatPage
+		console.log('GiC.ReformatPage-after');		
+	} //ReformatPage
 
-	GIC_SelectDecision(choice) {
+	SelectDecision(choice) {
 		const radio_btns = document.querySelectorAll('input[type=radio]');
 		
 		let anyChecked = false;
@@ -311,18 +311,18 @@ class GiC {
 			{anyChecked = anyChecked || btn.checked }
 			
 		if (anyChecked) {
-			console.log('GIC_SelectDecision: already done');
+			console.log('GiC.SelectDecision: already done');
 			return;
 		}
 	
-		console.log('GIC_SelectDecision: before click()');
+		console.log('GiC.SelectDecision: before click()');
 		//radio_btns[choice].checked = true;	
 		//radio_btns[choice].click();
 		
 		radio_btns[choice].parentNode.click();
 		window.scroll(0, 0); //scroll back to top
  	
-	} //GIC_SelectDecision
+	} //SelectDecision
 
 	
 	MarkSameLatin(nodeA, nodeB) {
@@ -367,12 +367,12 @@ class GiC {
 				if (Ar[i].match.toUpperCase()==Br[j].match.toUpperCase()) {		
 					
 					/*if (!Ar[i].marked) {
-						this.GIC_SetMark(nodeA, Ar[i].match, Ar[i].index);
+						this.SetMark(nodeA, Ar[i].match, Ar[i].index);
 						Ar[i].marked = true;
 					}*/
 					
 					if (!Br[j].marked) {
-						innerB = this.GIC_SetMark(innerB, Br[j].match, Br[j].index);
+						innerB = this.SetMark(innerB, Br[j].match, Br[j].index);
 						Br[j].marked = true;
 					} 
 					
@@ -394,12 +394,12 @@ class GiC {
 				if (Ar[i].match.toUpperCase()==Br[j].match.toUpperCase()) {		
 					
 					if (!Ar[i].marked) {
-						innerA = this.GIC_SetMark(innerA, Ar[i].match, Ar[i].index);
+						innerA = this.SetMark(innerA, Ar[i].match, Ar[i].index);
 						Ar[i].marked = true;
 					}
 					
 					/*if (!Br[j].marked) {
-						this.GIC_SetMark(nodeB, Br[j].match, Br[j].index);
+						this.SetMark(nodeB, Br[j].match, Br[j].index);
 						Br[j].marked = true; 
 					} */
 					
@@ -494,7 +494,8 @@ class GiC {
 			if (nd.innerText.startsWith('Название:')) nodeB = nd;
 		}
 		
-		return {'locatorA':nodeA, 'locatorB':nodeB};				
+		//return {'locatorA':nodeA, 'locatorB':nodeB};				
+		return [nodeA, nodeB];				
 	} //GetMainNodes
 
 /*
