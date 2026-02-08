@@ -6,7 +6,7 @@
 document.querySelector('.tui-editor-socket').textContent
 */
 
-var	play_exam = null;
+var	que_answ = null;
 
 function DoQueAnsw(taskVersion, exam){
 	
@@ -14,17 +14,17 @@ function DoQueAnsw(taskVersion, exam){
 	
 	let isExam = (exam==2); // ==le_EXAM
 	
-	if (play_exam==null) {
-		play_exam = new QueAnsw();
+	if (que_answ==null) {
+		que_answ = new QueAnsw();
 	}
 
-	if (isExam) { //&& play_exam.subversion!=subversion) {
-		//play_exam.subversion=subversion;
-		play_exam.Load_TXT(null);
+	if (isExam) { //&& que_answ.subversion!=subversion) {
+		//que_answ.subversion=subversion;
+		que_answ.Load_TXT(null);
 	}
 
 	try {
-		play_exam.Run(isExam)
+		que_answ.Run(isExam)
 	} catch(err) {
 		console.log('QueAnsw.DoQueAnsw', err)
 	}
@@ -141,13 +141,13 @@ class QueAnsw {
 	} //onBtnClick()
 
 	SendToServer() {
-		if (!play_exam) return -1;
+		if (!que_answ) return -1;
 
 		let sol = this.GetSolution();
 		if ((sol==-1) || (sol==''))
 			return;
 
-		//let node = document.querySelector(play_exam.JSselector);
+		//let node = document.querySelector(que_answ.JSselector);
 		//let question = node.textContent;
 
 		let payload = {
@@ -231,7 +231,7 @@ class QueAnsw {
 
 		//*Оскобления политиков, 'плохие' слова
 		const politics = ['рыжий', ' зеля', ' войн', ' 3.14',  ' 3,14', ' еба', 'хуй', ' хуе', 'пидор', 'пизд', ' бля', 'бляд', 't.me', 'telegram', ' тг ', 'телеграм', 
-			' https://youtu', 'dzen.ru', '🍆', '🖕', '💦',  'наебулин', '190 руб'];
+			' https://youtu', 'dzen.ru', 'vkvideo.ru', '🍆', '🖕', '💦',  'наебулин', 'пукин', '190 руб', 'жидо', 'жиды'];
 		for (let w of politics) {
 			if (que_low.includes(w)) return BAD_POST;
 		}
@@ -250,7 +250,7 @@ class QueAnsw {
 		console.log('QueAnsw.hasTicker', hasTicker)
 		
 		//Good words
-		const investWords = [' акци', ' ОФЗ', ' облигац', ' инвестор', ' дивиденд'];
+		const investWords = [' акци', ' ОФЗ', ' облигац', ' инвестор', ' дивиденд', ' фьючерс'];
 		let hasInvestWord = false;
 		for (let w of investWords) {
 			if (que_low.includes(w)) hasInvestWord = true;
@@ -526,8 +526,8 @@ class QueAnsw {
 
 		//console.log('QueAnsw.ProcessHttpAnswer dataLines:', dataLines);
 
-		play_exam.Answers = dataLines;
-		console.log('QueAnsw.ProcessHttpAnswer got lines:', play_exam.Answers.length);
+		que_answ.Answers = dataLines;
+		console.log('QueAnsw.ProcessHttpAnswer got lines:', que_answ.Answers.length);
 
 		return;
 	}

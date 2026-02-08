@@ -9,7 +9,7 @@
 // @grant        GM_openInTab
 // @run-at       document-end
 // @require      https://code.jquery.com/jquery-3.7.1.min.js
-// @require      https://zeos719.github.io/TW-highlight/Goods_in_check.js
+// @require      file://C:\temp\Projects.tmp\Tinkoff-Kleks\Pair-highlighter\Goods_in_check.js
 // @require      file://C:/temp/Projects.tmp/Tinkoff-Kleks/Pair-highlighter/Obuv_v1.js
 // @require      https://zeos719.github.io/TW-highlight/Call_027.js
 // @require      https://zeos719.github.io/TW-highlight/Preset_defaults.js
@@ -165,10 +165,12 @@ if (window==window.top) {
 
             //some DOM changes
             let docText = document.documentElement.textContent;
+            /*
             if (docText.includes('👌')) { //Already done
                 this.connect();
                 return;
             };
+            */
 
             //Check for error
             if (docText.includes('Не удалось')) {
@@ -469,6 +471,9 @@ let PCD_Marks = [
     {'key':'Описание намерения:', 'RButton':0},
     {'key':'Товар на картинке действительно относится к указанной категории?', 'RButton':0},
     {'key':'Даны два изображения', 'RButton':[0,2,4,6]},
+    {'key':'Товар подходит для размещения на главной странице?', 'RButton':0},
+
+
 
 ];
 
