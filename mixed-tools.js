@@ -528,7 +528,7 @@ function Split_WordsAndPos(str, delim =	 /\s|\(|\)|:/) {
 //
 //console.log(str1 , '\n', str2, '\n');
 
-function Strings_CompareAndColor(str1, str2, colorRed='#ff0000', colorGreen='#00ff00', delim=/\s|\(|\)|:|,/) {
+function Strings_CompareAndColor(str1, str2, colorRed='#ffd6cc', colorGreen='LightCyan', delim=/\s|\(|\)|:|,/) {
 
 	let words1 = Split_WordsAndPos(str1, delim);
 	let words2 = Split_WordsAndPos(str2, delim);
@@ -571,4 +571,82 @@ function Strings_ApplyColors(str, words, colorRed, colorGreen) {
 	} //for (i--)
 
 	return colorized;
+}
+
+function ClickTuiBadge(label) {
+	let badges = document.querySelectorAll('tui-badge');
+	
+	for (bd of badges) {
+		if (bd.innerText.trim()==label) {
+				triggerClick( bd );
+				break;
+		}				
+	} //for	
+}
+
+/* Usage:
+
+	WaitBrokerAnswer(url).then(Parser));
+
+*/
+async function WaitBrokerAnswer(url) {
+
+	let response;			
+	let result = {'status': 'ok', 'answer': ''}
+
+	//Wait for answer
+	//url = `http://127.0.0.1:8000/broker?id=${id}&task=ai&subtask=cli-get-answer`
+	
+	const MAX_TRY = 20;
+	const GET_DELAY = 1000;
+
+	let timeStart = (new Date()).getTime();
+
+	for(let tryCount=0; tryCount<MAX_TRY; tryCount++) {
+		//send GET 
+		
+		response = await fetch(url)				
+						.catch(console.log);
+							
+		if (!response || !response.ok) {
+			result['status']='error:network';			
+			
+			let timeStop = (new Date()).getTime();
+			result['elapsed-time'] = ((timeStop-timeStart)/1000).toFixed(1);
+							
+			return result;
+			
+		} else { //GET succeeded								
+		
+			let json = await response.json();
+			
+			console.log('WaitBrokerAnswer', tryCount, json);
+					
+			if (json.result=='ok') {		
+				result['answer'] = json;
+				
+				let timeStop = (new Date()).getTime();
+				result['elapsed-time'] = ((timeStop-timeStart)/1000).toFixed(1);
+									
+				return result;
+			}
+		}
+	
+		//Delay before next try
+		let promiseDelay = new Promise((resolve, reject) => {
+			setTimeout(() => {
+				resolve("delay-ends");
+				}, GET_DELAY);
+		});		
+					
+		await promiseDelay;
+
+	} //for(tryCount)
+	
+	result['status'] = 'timeout';
+	
+	let timeStop = (new Date()).getTime();
+	result['elapsed-time'] = ((timeStop-timeStart)/1000).toFixed(1);
+			
+	return result
 }

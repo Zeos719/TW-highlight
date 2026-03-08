@@ -103,8 +103,14 @@ function Obuv_onCtrlEnter(e) {
 	if ( (RB_selected!=-1) && (RB_selected!=RB_get()) ) {
 		console.error('Obuv.RB_set err', RB_selected);
 	}
+	
+	//Tui badges
+	if (!e.shiftKey && !e.ctrlKey) {
+		if (e.code=="KeyC") {RB_set(1); ClickTuiBadge('Цвет');}
+		if (e.code=="KeyD") {RB_set(1); ClickTuiBadge('Диагональ');}
 		
-
+	} //badges
+		
 }
 
 //********************* class PreviewWindows ********************************
@@ -224,9 +230,13 @@ function Obuv_SendToServer() {
 
 	let json = JSON.stringify(payload);
 
+	/*
 	$.post('http://localhost:8000/tw', json, function(data){
 		console.log('Obuv.SendToServer-2:', data);
 	});
+	*/
+		
+	http_POST('http://localhost:8000/tw', json);
 
 	return user_choice;
 }

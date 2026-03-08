@@ -160,16 +160,15 @@ class GiC {
 		};	
 		
 		console.log('GiC_SendToServer: ', payload);
-		
-		let json = JSON.stringify(payload);
-		
+				
 		/*
+		let json = JSON.stringify(payload);
 		$.post('http://localhost:8000/tw', json, function(data){
 			console.log('GiC_SendToServer:', data);
 		});
 		*/
 		
-		http_POST('http://localhost:8000/tw', json);
+		http_POST('http://localhost:8000/tw', payload);
 		
 		return user_choice;
 	} //SendToServer()

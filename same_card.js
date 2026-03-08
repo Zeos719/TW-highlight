@@ -75,16 +75,30 @@ class SameCard {
 			
 			this.preview.OpenPreviewTabs(links[0], links[1]);
 		}
+	
+		//1..4 -> Radio buttons
+		const RB_keys  = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9"];
+		const NP_keys  = ["Numpad1", "Numpad2", "Numpad3", "Numpad4", "Numpad5", "Numpad6", "Numpad7", "Numpad8", "Numpad9"];
+		let RB_selected = -1;
 		
+		if (!e.shiftKey && !e.ctrlKey) {
+			for (let i=0;i<RB_keys.length;i++) {
+				if (e.code==RB_keys[i] || e.code==NP_keys[i]) {
+					RB_set(i);
+					RB_selected = i;
+					break;
+				}
+			} //for(RB_keys[])
+		}
 		
-
+/*
 		//Toggle AutoRun
 		if (e.ctrlKey && (e.keyCode == 192)) { //Ctrl + ~
 			console.log('SameCard.onCtrlEnter: AutoRun');
 			autoRun = !autoRun;
 			this.DrawAutoIndicator(autoRun);
 		}
-
+*/
 	} //onCtrlEnter()
 
 	onBtnClick(e) {
@@ -150,14 +164,11 @@ class SameCard {
 		document.addEventListener("keydown", this);
 
 		// Insert a Button
-		let btn = document.querySelector('#previewBtn');
-		if (!btn)
-			this.InsertPreviewBtn();
+		let previewBtn = document.querySelector('#previewBtn');
+		if (!previewBtn)
+			previewBtn = this.InsertPreviewBtn();
 
 		//Main
-		//let links = this.GetLinks();
-		//console.log('SameCard.links', links);
-
 		let id = this.GetTaskId();
 		console.log('SameCard.id', id);		
 		
@@ -167,14 +178,25 @@ class SameCard {
 			//new task
 			console.log('SameCard-new task');						
 			this.taskId = id;
-			preview.ClosePreviewTabs();
+			this.preview.ClosePreviewTabs();
 		}
-		
+
+		//Links
+		let links = this.GetLinks();
+		if (links[0].includes('www.rendez-vous.ru') && !links[0].includes('twinId')) {		
+			this.Links_AddTwinId();
+		}
 
 
-		//Default
+		//Defaults
 		RB_set(1);
-
+		
+		let rb = document.querySelector('input[type=radio]');
+		if (rb) rb.focus();		
+		
+		let img = document.querySelector('img');
+		if (img) img.scrollIntoView();
+			
 		//Append 'Done' marker
 /*		
 		{ 
@@ -229,16 +251,23 @@ class SameCard {
 
 	InsertPreviewBtn() {
 		//console.log('SameCard.InsertPreviewBtn');
-		let dest_point = document.querySelector('flex-header');
+		
+		//Insert point
+		//let dest_point = document.querySelector('flex-header');
+		let dest_point = document.querySelector('tui-editor-socket a');
 		if (!dest_point) return;
 		
+		//Create button
 		let btn = document.createElement('button');
 		btn.id = 'previewBtn';
 		btn.style.width = "120px";
 		btn.style.height = "40px";
 		btn.innerHTML = "Open links";
 		btn.onclick = this.PreviewBtn_onclick;
-		dest_point.parentNode.insertBefore(btn, dest_point);			
+		//dest_point.parentNode.insertBefore(btn, dest_point);			
+		dest_point.after(btn);
+		
+		return btn;
 	} //InsertPreviewBtn
 
 	PreviewBtn_onclick() {
@@ -247,7 +276,106 @@ class SameCard {
 		
 		if (links.length!=2) return;			
 		
-		same_card.preview.OpenPreviewTabs(links[0], links[1]);		
+		same_card.preview.OpenPreviewTabs(links[0], links[1]);				
 	}
 
+	RendesVous(links) {
+		//console.log('SameCard.RendesVous');
+		
+		//Wait a broker
+		let url;
+		let id;
+		
+		id = StringHash(links[0]);
+		url = `http://localhost:8000/broker?id=${id}&task=rendez-vous`;		
+		WaitBrokerAnswer(url).then(this.InterpretAnswer);
+/*		
+		id = StringHash(links[1]);
+		url = `http://localhost:8000/broker?id=${id}&task=rendez-vous`;
+		WaitBrokerAnswer(url).then(this.InterpretAnswer);
+*/
+
+
+/*		
+		
+		//Compare answers
+		let baseArts = [];
+		for (let lk of links) {
+            let splited = lk.href.split('-');
+            let art = splited.pop();
+            art = art.replace('/', '');
+			
+			baseArts.push(art);
+		}
+
+		let articules = [answ1['articuls'], answ2['articuls']];
+		
+		let sameCard = articules[0].includes(baseArts[1]);
+		console.log('SameCard.RendesVous', sameCard);
+*/		
+	} //RendesVous
+	
+	InterpretAnswer(answ) {
+		console.log('SameCard.InterpretAnswer', answ);
+		return answ;				
+	} //InterpretAnswer
+	
+/*	
+	RendesVous_modifyLinks(links) {
+		let artcs = [];
+		
+		for (let lk of links) {
+			artcs.push( this.Get_RV_sku( lk ) );
+		}
+		
+		links[0] = `${links[0]}?art=${artcs[1]}`;
+		links[1] = `${links[1]}?art=${artcs[0]}`;
+
+		console.log('RendesVous_modifyLinks', links);
+
+		return links;
+	} //RendesVous_modifyLinks
+*/
+
+	Links_AddTwinId() {
+		//Get link nodes
+		let links = document.querySelectorAll('tui-editor-socket a');
+		
+		let nodes = [];
+		for (let lk of links) {
+			//console.log('SameCard.GetLinks', lk.parentNode);						
+			
+			if(lk.parentNode && lk.parentNode.innerText.includes('Страница товара на сайте магазина:'))
+				nodes.push(lk);
+		}
+		
+		if (nodes.length!=2) return;
+		
+		//Extact base articules
+		let artcs = [];
+		for (let nd of nodes) {
+			artcs.push( this.Get_RV_sku( nd.href ) );
+		}
+
+		//Modify nodes
+		let new_url;
+		new_url = `${nodes[0].href}?twinId=${artcs[1]}`
+		nodes[0].href = new_url;
+		nodes[0].textContent = new_url;
+		
+		new_url = `${nodes[1].href}?twinId=${artcs[0]}`
+		nodes[1].href = new_url;
+		nodes[1].textContent = new_url;
+		
+		return;
+	} //Links_AddTwinId
+
+	// Extract main SKU (last digits of url):
+	// 'https://www.rendez-vous.ru/catalog/female/lofery/tendance_ys_2299k_x20_svetlo_bezhevyy-4751856/'  -> '4751856'
+	Get_RV_sku(url) {
+		let sku = url.split('-').pop().replace('/', '');		
+		return sku;
+	}
+
+	
 } //SameCard
